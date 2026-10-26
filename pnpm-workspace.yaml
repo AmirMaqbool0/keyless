@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Packages allowed to run install scripts (native bindings / binary downloads).
+allowBuilds:
+  argon2: true
+  esbuild: true
+  mongodb-memory-server: true
