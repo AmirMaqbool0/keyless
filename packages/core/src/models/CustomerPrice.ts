@@ -44,5 +44,6 @@ customerPriceSchema.plugin(tenantScoped);
 customerPriceSchema.index({ orgId: 1, priceKey: 1 }, { unique: true });
 customerPriceSchema.index({ orgId: 1, customerId: 1, skuKey: 1 });
 customerPriceSchema.index({ orgId: 1, priceListCode: 1, skuKey: 1 });
+customerPriceSchema.index({ orgId: 1, updatedAt: -1 });
 
 export const CustomerPrice = model<ICustomerPrice>('CustomerPrice', customerPriceSchema);

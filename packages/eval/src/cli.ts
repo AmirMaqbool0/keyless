@@ -40,6 +40,8 @@ const GATED = [
   'lineRecall',
   'linePrecision',
   'orderRecall',
+  'skuMatchAccuracy',
+  'customerAccuracy',
 ] as const;
 
 const { env } = await import('@keyless/core/config/env');
@@ -72,6 +74,7 @@ for (const { dir, fixture } of fixtures) {
     `${s.perfect ? '✓' : '·'} ${dir.padEnd(28)} header ${pctOf(s.header).padStart(4)}  lines ${pctOf(s.lineFields).padStart(4)}  found ${pctOf(s.lineRecall).padStart(4)}  ${String(run.latencyMs).padStart(6)} ms  ${status}`,
   );
   if (values.verbose) {
+    for (const m of run.matching.misses) console.log(`    ${m}`);
     const show = (v: unknown) => JSON.stringify(v ?? null);
     for (const o of run.orders) {
       if (o.expected && !o.actual) console.log(`    missing order ${o.expected.poNumber}`);
@@ -105,7 +108,8 @@ Lines found (recall)    ${pct(t.lineRecall)}
 Lines correct (prec.)   ${pct(t.linePrecision)}
 Orders found            ${pct(t.orderRecall)}
 Perfect documents       ${pct(t.perfectDocs)}
-SKU match accuracy      n/a until M5 (matching)
+SKU match accuracy      ${pct(t.skuMatchAccuracy)}
+Customer identified     ${pct(t.customerAccuracy)}
 Cost                    $${t.costUsd.toFixed(4)} total, $${t.costPerDoc.toFixed(4)} per document
 Median latency          ${t.medianLatencyMs} ms`);
 

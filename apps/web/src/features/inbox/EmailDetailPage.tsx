@@ -15,6 +15,7 @@ import { api, errorMessage } from '../../lib/api';
 import { useHasRole } from '../../lib/session';
 import { ClassificationBadge } from './ClassificationBadge';
 import { ExtractedOrders } from './ExtractedOrders';
+import { StatusPill } from '../orders/OrderBits';
 
 const formatSize = (bytes: number) =>
   bytes < 1024
@@ -144,6 +145,28 @@ export function EmailDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
+          {e.orders.length > 0 && (
+            <Card
+              title={e.orders.some((o) => o.relation === 'changes') ? 'Orders' : 'Orders created'}
+            >
+              <ul className="space-y-2 text-sm">
+                {e.orders.map((o) => (
+                  <li key={o.id} className="flex flex-wrap items-center gap-3">
+                    <StatusPill status={o.status} colour={o.colour} />
+                    <Link
+                      to={`/orders/${o.id}`}
+                      className="font-medium text-brand-700 hover:underline"
+                    >
+                      PO {o.poNumber ?? '(no number)'}
+                    </Link>
+                    {o.relation === 'changes' && (
+                      <span className="text-xs text-slate-500">this email changes it</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
           {(e.extraction || e.extractions.length > 0) && (
             <ExtractedOrders
               extractions={e.extractions}

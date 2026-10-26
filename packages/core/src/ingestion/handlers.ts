@@ -7,6 +7,7 @@ import { runMailboxSync } from '../mailboxes/sync';
 import type { FetchLike } from '../mailboxes/oauth';
 import type { JobHandlers, JobQueue } from '../queue/types';
 import { runExtraction } from '../extraction/job';
+import { buildOrdersForEmail } from '../matching/job';
 import { classifyEmail, processEmail } from './process';
 
 export type WorkerDeps = { storage: Storage; queue: JobQueue; llm: LlmProvider; fetch?: FetchLike };
@@ -17,6 +18,7 @@ export function createJobHandlers(deps: WorkerDeps): JobHandlers {
     'process-email': (data) => processEmail(deps, data),
     'classify-email': (data) => classifyEmail(deps, data),
     'extract-email': (data) => runExtraction(deps, data),
+    'build-orders': (data) => buildOrdersForEmail(data),
     'mailbox-sync': (data) => runMailboxSync(deps, data),
   };
 }

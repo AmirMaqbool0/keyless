@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@kingscarehome.example>
 To: orders@distributor.example
 Subject: Orders PO-405282 and PO-607642
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-5@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-502b208fee1ef65a-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-cd599f23a502eed4-Part_1"
 
-----_NmP-502b208fee1ef65a-Part_1
+----_NmP-cd599f23a502eed4-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Two orders attached, one per site.
 Kind regards,
 Sam Buyer
 Kings Care Home
-----_NmP-502b208fee1ef65a-Part_1
+----_NmP-cd599f23a502eed4-Part_1
 Content-Type: application/pdf; name=orders.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=orders.pdf
@@ -63,7 +63,7 @@ tDvqvyqqXJkbAVtjDQIcszot+48xb9ZsBCyL3hEgw+xHt+79Jo5zhid+0yIzHe88Ys+CDDPawt60
 12yWM7SZiwbbotR5q0PGPaitSUoT3c4vGyRlySB2vdXB9WCiRnFbmE9RcWeQdul5Zq5MLDSybLbh
 QBtq1nJdRbnc7s58NLdo5+PRzGqzlgbciaDBxKbzGZfAJrN2pSlWA8e4E9h5K203tPcn4P8AAU5W
 WwplbmRzdHJlYW0KZW5kb2JqCjE0IDAgb2JqCihQREZLaXQpCmVuZG9iagoxNSAwIG9iagooUERG
-S2l0KQplbmRvYmoKMTYgMCBvYmoKKEQ6MjAyNjEwMjYxMDIzNTlaKQplbmRvYmoKMTMgMCBvYmoK
+S2l0KQplbmRvYmoKMTYgMCBvYmoKKEQ6MjAyNjEwMjYxMTEwMjhaKQplbmRvYmoKMTMgMCBvYmoK
 PDwKL1Byb2R1Y2VyIDE0IDAgUgovQ3JlYXRvciAxNSAwIFIKL0NyZWF0aW9uRGF0ZSAxNiAwIFIK
 Pj4KZW5kb2JqCjkgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL1N1
 YnR5cGUgL1R5cGUxCi9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nCj4+CmVuZG9iago4IDAgb2Jq
@@ -79,6 +79,6 @@ biAKMDAwMDAwMjY3MiAwMDAwMCBuIAowMDAwMDAyNTc1IDAwMDAwIG4gCjAwMDAwMDEzOTkgMDAw
 MDAgbiAKMDAwMDAwMTI4MSAwMDAwMCBuIAowMDAwMDAxMTY4IDAwMDAwIG4gCjAwMDAwMDI0OTkg
 MDAwMDAgbiAKMDAwMDAwMjQxMyAwMDAwMCBuIAowMDAwMDAyNDM4IDAwMDAwIG4gCjAwMDAwMDI0
 NjMgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSAxNwovUm9vdCAzIDAgUgovSW5mbyAxMyAwIFIK
-L0lEIFs8YzdlNGM2NjkwOGEwMWRmZDFhM2FjZTg5YTNkMDhjOGQ+IDxjN2U0YzY2OTA4YTAxZGZk
-MWEzYWNlODlhM2QwOGM4ZD5dCj4+CnN0YXJ0eHJlZgoyOTY4CiUlRU9GCg==
-----_NmP-502b208fee1ef65a-Part_1--
+L0lEIFs8ZDIyMTc4OTgzODZlYWY3ZTYwOGRjZDU1ZjlkYTQyZmM+IDxkMjIxNzg5ODM4NmVhZjdl
+NjA4ZGNkNTVmOWRhNDJmYz5dCj4+CnN0YXJ0eHJlZgoyOTY4CiUlRU9GCg==
+----_NmP-cd599f23a502eed4-Part_1--

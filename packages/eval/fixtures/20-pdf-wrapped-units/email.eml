@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@thistlehotel.example>
 To: orders@distributor.example
 Subject: PO PO-804021
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-20@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-b1aef7c041413e96-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-94f665d283336297-Part_1"
 
-----_NmP-b1aef7c041413e96-Part_1
+----_NmP-94f665d283336297-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Order attached.
 Kind regards,
 Sam Buyer
 Thistle Hotel
-----_NmP-b1aef7c041413e96-Part_1
+----_NmP-94f665d283336297-Part_1
 Content-Type: application/pdf; name=PO-804021.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=PO-804021.pdf
@@ -47,7 +47,7 @@ R+w6fPMhoH1Mc6i9icN98cVFpG/w4mLfJPHX/uKaL/WG90uwYP7e/gMNZg0+EFloVNuA2KUog1xC
 JaZGXU0wUkislhXPe9nTvpRMFOP5E0sN3/pxrC1DF8294kBEG3Z1zL4NfM6lnuh31Jxo+7EBG3xH
 EYCJFeTh1NdVpi2Wo0s11pKxhQ+0oR61MLasr3dc/wBz/+52CmVuZHN0cmVhbQplbmRvYmoKMTEg
 MCBvYmoKKFBERktpdCkKZW5kb2JqCjEyIDAgb2JqCihQREZLaXQpCmVuZG9iagoxMyAwIG9iagoo
-RDoyMDI2MTAyNjEwMjM1OVopCmVuZG9iagoxMCAwIG9iago8PAovUHJvZHVjZXIgMTEgMCBSCi9D
+RDoyMDI2MTAyNjExMTAyOVopCmVuZG9iagoxMCAwIG9iago8PAovUHJvZHVjZXIgMTEgMCBSCi9D
 cmVhdG9yIDEyIDAgUgovQ3JlYXRpb25EYXRlIDEzIDAgUgo+PgplbmRvYmoKOSAwIG9iago8PAov
 VHlwZSAvRm9udAovQmFzZUZvbnQgL0hlbHZldGljYQovU3VidHlwZSAvVHlwZTEKL0VuY29kaW5n
 IC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCjggMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL0Jhc2VG
@@ -61,7 +61,7 @@ MDAwMCBuIAowMDAwMDAxODQwIDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAwMDEy
 NSAwMDAwMCBuIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDE3MzggMDAwMDAgbiAKMDAwMDAw
 MTY0MSAwMDAwMCBuIAowMDAwMDAxNTY1IDAwMDAwIG4gCjAwMDAwMDE0NzkgMDAwMDAgbiAKMDAw
 MDAwMTUwNCAwMDAwMCBuIAowMDAwMDAxNTI5IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgMTQK
-L1Jvb3QgMyAwIFIKL0luZm8gMTAgMCBSCi9JRCBbPGQ0NzFjMThjMjllYjcwMTZkMWNlMzM5YTMy
-Yzc3ZDQ2PiA8ZDQ3MWMxOGMyOWViNzAxNmQxY2UzMzlhMzJjNzdkNDY+XQo+PgpzdGFydHhyZWYK
+L1Jvb3QgMyAwIFIKL0luZm8gMTAgMCBSCi9JRCBbPDE4NjdjYTg4NTVkZDA5YmFiZmQ3ZDA0Njc5
+MDgzODQxPiA8MTg2N2NhODg1NWRkMDliYWJmZDdkMDQ2NzkwODM4NDE+XQo+PgpzdGFydHhyZWYK
 MjAyNwolJUVPRgo=
-----_NmP-b1aef7c041413e96-Part_1--
+----_NmP-94f665d283336297-Part_1--

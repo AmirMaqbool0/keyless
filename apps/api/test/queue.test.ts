@@ -13,6 +13,7 @@ function handlers(impl: Partial<JobHandlers>): JobHandlers {
     'process-email': noop,
     'classify-email': noop,
     'extract-email': noop,
+    'build-orders': noop,
     'mailbox-sync': noop,
     ...impl,
   };

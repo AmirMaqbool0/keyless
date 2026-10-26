@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@marketkitchen.example>
 To: orders@distributor.example
 Subject: New order PO-702116
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-2@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-3b9dbe0b0711b466-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-b2d4c85c70bcc70b-Part_1"
 
-----_NmP-3b9dbe0b0711b466-Part_1
+----_NmP-b2d4c85c70bcc70b-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Morning, order attached.
 Kind regards,
 Sam Buyer
 Market Kitchen
-----_NmP-3b9dbe0b0711b466-Part_1
+----_NmP-b2d4c85c70bcc70b-Part_1
 Content-Type: application/pdf; name=order.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=order.pdf
@@ -46,7 +46,7 @@ m5fWhrw2zkbYgk1lb9zyal1ggyS15MJyeetx2QddjWLrd4lqjqW5vY+A1kyVrUHNq5t081ks1xmf
 tk8F0k5wH9e/U4k7brKsVK8iiBi4tfPVg0f4d80w419G/wtnLlwYWyGvXasUkihk9enyytT1x34/
 ImwcS2es9q0a2+ZxImjNnE3HzZTABjNqb2ZCluPv6b3R+c3N9d76L+8vKYgKZW5kc3RyZWFtCmVu
 ZG9iagoxMSAwIG9iagooUERGS2l0KQplbmRvYmoKMTIgMCBvYmoKKFBERktpdCkKZW5kb2JqCjEz
-IDAgb2JqCihEOjIwMjYxMDI2MTAyMzU5WikKZW5kb2JqCjEwIDAgb2JqCjw8Ci9Qcm9kdWNlciAx
+IDAgb2JqCihEOjIwMjYxMDI2MTExMDI4WikKZW5kb2JqCjEwIDAgb2JqCjw8Ci9Qcm9kdWNlciAx
 MSAwIFIKL0NyZWF0b3IgMTIgMCBSCi9DcmVhdGlvbkRhdGUgMTMgMCBSCj4+CmVuZG9iago5IDAg
 b2JqCjw8Ci9UeXBlIC9Gb250Ci9CYXNlRm9udCAvSGVsdmV0aWNhCi9TdWJ0eXBlIC9UeXBlMQov
 RW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZwo+PgplbmRvYmoKOCAwIG9iago8PAovVHlwZSAvRm9u
@@ -60,7 +60,7 @@ MDAxODEyIDAwMDAwIG4gCjAwMDAwMDE3OTEgMDAwMDAgbiAKMDAwMDAwMDI0MiAwMDAwMCBuIAow
 MDAwMDAwMTI1IDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMTY4OSAwMDAwMCBu
 IAowMDAwMDAxNTkyIDAwMDAwIG4gCjAwMDAwMDE1MTYgMDAwMDAgbiAKMDAwMDAwMTQzMCAwMDAw
 MCBuIAowMDAwMDAxNDU1IDAwMDAwIG4gCjAwMDAwMDE0ODAgMDAwMDAgbiAKdHJhaWxlcgo8PAov
-U2l6ZSAxNAovUm9vdCAzIDAgUgovSW5mbyAxMCAwIFIKL0lEIFs8N2MxNGU3NGMyZjhjNzUxNjI4
-Y2MyMzIyMmQyYzZlYWU+IDw3YzE0ZTc0YzJmOGM3NTE2MjhjYzIzMjIyZDJjNmVhZT5dCj4+CnN0
+U2l6ZSAxNAovUm9vdCAzIDAgUgovSW5mbyAxMCAwIFIKL0lEIFs8MjQ5YmVmMTNhNDRkMmY5YzVi
+YTZlMTE3MWMwOWQ3MmI+IDwyNDliZWYxM2E0NGQyZjljNWJhNmUxMTcxYzA5ZDcyYj5dCj4+CnN0
 YXJ0eHJlZgoxOTc4CiUlRU9GCg==
-----_NmP-3b9dbe0b0711b466-Part_1--
+----_NmP-b2d4c85c70bcc70b-Part_1--

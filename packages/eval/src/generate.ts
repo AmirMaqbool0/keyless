@@ -175,7 +175,9 @@ type FixtureDef = {
 
 const fixtures: FixtureDef[] = [];
 const add = (f: FixtureDef) => fixtures.push(f);
-const id = () => `fx-${fixtures.length + 1}`;
+// Called from build(), so count calls rather than registered fixtures (all are registered by then).
+let seq = 0;
+const id = () => `fx-${++seq}`;
 
 add({
   name: 'pdf-standard',

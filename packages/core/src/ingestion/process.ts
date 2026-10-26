@@ -7,6 +7,7 @@ import type { LlmProvider } from '../llm/types';
 import { Attachment, attachmentKind } from '../models/Attachment';
 import { InboundEmail, type Classification } from '../models/InboundEmail';
 import { recordUsage } from '../models/UsageRecord';
+import { linkChangeEmail } from '../matching/job';
 import { PermanentJobError, type JobQueue } from '../queue/types';
 import { HEURISTIC_CONFIDENT, classifyHeuristically } from './classify';
 
@@ -199,7 +200,8 @@ export async function classifyEmail(
     });
   }
   if (result.label === 'new_order') await queueExtraction(deps.queue, data);
-  // TODO(M5): amendment/cancellation -> link to the existing order.
+  if (result.label === 'amendment' || result.label === 'cancellation')
+    await linkChangeEmail(email, result.label);
 }
 
 /** Queue (or re-run) extraction for an email. */

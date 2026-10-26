@@ -13,6 +13,8 @@ import { DevEmailsPage } from '../features/dev/DevEmailsPage';
 import { ImportJobPage, ImportsPage, NewImportPage } from '../features/imports/ImportWizard';
 import { EmailDetailPage } from '../features/inbox/EmailDetailPage';
 import { InboxPage } from '../features/inbox/InboxPage';
+import { OrderDetailPage } from '../features/orders/OrderDetailPage';
+import { OrdersPage } from '../features/orders/OrdersPage';
 import { MailboxesPage } from '../features/settings/MailboxesPage';
 import { ProcessingErrorsPage } from '../features/settings/ProcessingErrorsPage';
 import { IntegrationsPage } from '../features/settings/IntegrationsPage';
@@ -74,14 +76,9 @@ export const router = createBrowserRouter([
       { index: true, element: <OverviewPage /> },
       {
         path: 'orders',
-        element: (
-          <ComingSoonPage
-            title="Orders"
-            milestone="M5"
-            description="The review queue: needs review, ready, on hold, pushed and failed."
-          />
-        ),
+        element: <OrdersPage />,
       },
+      { path: 'orders/:id', element: <OrderDetailPage /> },
       {
         path: 'emails',
         element: <Navigate to="/inbox?view=other" replace />,

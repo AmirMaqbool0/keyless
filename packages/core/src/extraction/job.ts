@@ -5,12 +5,12 @@ import { Attachment } from '../models/Attachment';
 import { Extraction } from '../models/Extraction';
 import { InboundEmail, type ExtractionSummary } from '../models/InboundEmail';
 import { recordUsage } from '../models/UsageRecord';
-import { PermanentJobError } from '../queue/types';
+import { PermanentJobError, type JobQueue } from '../queue/types';
 import { extractEmail, extractionSources, type SourceFile } from './extract';
 
 /** Job: read the order(s) out of an email classified as a new order. Safe to re-run. */
 export async function runExtraction(
-  deps: { storage: Storage; llm: LlmProvider },
+  deps: { storage: Storage; llm: LlmProvider; queue: JobQueue },
   data: { orgId: string; emailId: string },
 ): Promise<void> {
   const orgId = new Types.ObjectId(data.orgId);
@@ -37,7 +37,7 @@ export async function runExtraction(
   email.extraction = { status: 'running', orderCount: 0, lineCount: 0, issueCount: 0, costUsd: 0 };
   await email.save();
 
-  // TODO(M5): pass the identified customer's learned extractionHints.
+  // TODO(M6): pass the identified customer's learned extractionHints (taught by reviewers).
   const results = await extractEmail(deps.llm, {
     email: {
       subject: email.subject,
@@ -94,5 +94,8 @@ export async function runExtraction(
     pagesProcessed: results.reduce((n, r) => n + r.pageCount, 0),
     ordersExtracted: orders.length,
   });
-  // TODO(M5): create Orders from these extractions (customer identification, SKU matching).
+  await deps.queue.add('build-orders', data, {
+    uniqueKey: `build-orders:${data.emailId}`,
+    reset: true,
+  });
 }

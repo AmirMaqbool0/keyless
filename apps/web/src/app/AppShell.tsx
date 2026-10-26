@@ -15,7 +15,7 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
     items: [
       { to: '/', label: 'Overview' },
       { to: '/inbox', label: 'Inbox' },
-      { to: '/orders', label: 'Orders', soon: 'M5' },
+      { to: '/orders', label: 'Orders' },
     ],
   },
   {

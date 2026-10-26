@@ -4,6 +4,8 @@
     "lineFieldAccuracy": 0.955,
     "lineRecall": 0.943,
     "linePrecision": 1,
-    "orderRecall": 0.913
+    "orderRecall": 0.913,
+    "skuMatchAccuracy": 0.927,
+    "customerAccuracy": 1
   }
 }

@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@kingsprimaryschool.example>
 To: orders@distributor.example
 Subject: Order PO-742584
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-7@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-cae7a799adaca22e-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-b0dc1bef4f2e2f4f-Part_1"
 
-----_NmP-cae7a799adaca22e-Part_1
+----_NmP-b0dc1bef4f2e2f4f-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Order attached.
 Kind regards,
 Sam Buyer
 Kings Primary School
-----_NmP-cae7a799adaca22e-Part_1
+----_NmP-b0dc1bef4f2e2f4f-Part_1
 Content-Type: application/pdf; name=PO-742584.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=PO-742584.pdf
@@ -45,7 +45,7 @@ CzsoX9Uz2tWRz7xnXVsx/H7kj642xJinUbnLyjOOGOM7hoENpn2c9zUgtEUMAplm4RzbfJgMFbp9
 9cVl6xiKdgPIKBeKuqbPTro6zre1Hos6v1LZIaywa4r+juH94hcq1fTSTVMIsVgeGQxt3B65uGWg
 y/Er59cBc3f67DHUTTMLpXxMn3omI0HXgLGLdoVCYJNZV58lttu4dwpRFF/qyb3VL/8B8M/RTwpl
 bmRzdHJlYW0KZW5kb2JqCjExIDAgb2JqCihQREZLaXQpCmVuZG9iagoxMiAwIG9iagooUERGS2l0
-KQplbmRvYmoKMTMgMCBvYmoKKEQ6MjAyNjEwMjYxMDIzNTlaKQplbmRvYmoKMTAgMCBvYmoKPDwK
+KQplbmRvYmoKMTMgMCBvYmoKKEQ6MjAyNjEwMjYxMTEwMjhaKQplbmRvYmoKMTAgMCBvYmoKPDwK
 L1Byb2R1Y2VyIDExIDAgUgovQ3JlYXRvciAxMiAwIFIKL0NyZWF0aW9uRGF0ZSAxMyAwIFIKPj4K
 ZW5kb2JqCjkgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL1N1YnR5
 cGUgL1R5cGUxCi9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nCj4+CmVuZG9iago4IDAgb2JqCjw8
@@ -59,7 +59,7 @@ MDAwIG4gCjAwMDAwMDE3NjYgMDAwMDAgbiAKMDAwMDAwMTc0NSAwMDAwMCBuIAowMDAwMDAwMjQy
 IDAwMDAwIG4gCjAwMDAwMDAxMjUgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAx
 NjQzIDAwMDAwIG4gCjAwMDAwMDE1NDYgMDAwMDAgbiAKMDAwMDAwMTQ3MCAwMDAwMCBuIAowMDAw
 MDAxMzg0IDAwMDAwIG4gCjAwMDAwMDE0MDkgMDAwMDAgbiAKMDAwMDAwMTQzNCAwMDAwMCBuIAp0
-cmFpbGVyCjw8Ci9TaXplIDE0Ci9Sb290IDMgMCBSCi9JbmZvIDEwIDAgUgovSUQgWzwwMjRlOTA1
-MjJmNDJiNDY0YzFjM2I3OGE3MTZjMDc0ND4gPDAyNGU5MDUyMmY0MmI0NjRjMWMzYjc4YTcxNmMw
-NzQ0Pl0KPj4Kc3RhcnR4cmVmCjE5MzIKJSVFT0YK
-----_NmP-cae7a799adaca22e-Part_1--
+cmFpbGVyCjw8Ci9TaXplIDE0Ci9Sb290IDMgMCBSCi9JbmZvIDEwIDAgUgovSUQgWzw0NzVmYWI3
+MWU0ZGEzNmM5Mzk0MDQ3NjYxYjkzNTc5ZT4gPDQ3NWZhYjcxZTRkYTM2YzkzOTQwNDc2NjFiOTM1
+NzllPl0KPj4Kc3RhcnR4cmVmCjE5MzIKJSVFT0YK
+----_NmP-b0dc1bef4f2e2f4f-Part_1--

@@ -30,6 +30,8 @@ import {
 import { Mailbox } from '@keyless/core/models/Mailbox';
 import { Extraction, type IExtraction } from '@keyless/core/models/Extraction';
 import { queueExtraction } from '@keyless/core/ingestion/process';
+import { linkChangeEmail } from '@keyless/core/matching/job';
+import { Order } from '@keyless/core/models/Order';
 import type { JobName } from '@keyless/core/queue/types';
 import { authed, requireRole } from '../../middleware/auth';
 import { objectId } from '../shared';
@@ -220,6 +222,20 @@ export function emailsRouter(deps: IngestDeps): Router {
       }),
       timeline: timeline.sort((a, b) => a.at.localeCompare(b.at)),
       extractions: extractions.map(extractionDto),
+      orders: (
+        await Order.find(
+          { orgId, _id: { $in: [...email.orderIds, ...email.relatedOrderIds] } },
+          { poNumber: 1, status: 1, colour: 1 },
+        )
+      ).map((o) => ({
+        id: o._id.toString(),
+        poNumber: o.poNumber ?? null,
+        status: o.status,
+        colour: o.colour,
+        relation: email.relatedOrderIds.some((r) => r.equals(o._id))
+          ? ('changes' as const)
+          : ('created' as const),
+      })),
     };
     res.json(body);
   });
@@ -301,6 +317,8 @@ export function emailsRouter(deps: IngestDeps): Router {
     if (label === 'new_order' && before !== 'new_order' && email.status !== 'failed') {
       await queueExtraction(deps.queue, { orgId: orgId.toString(), emailId: email._id.toString() });
     }
+    if ((label === 'amendment' || label === 'cancellation') && before !== label)
+      await linkChangeEmail(email, label);
     res.json(listItem(email));
   });
 

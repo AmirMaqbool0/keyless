@@ -10,6 +10,8 @@ export type JobPayloads = {
   'classify-email': { orgId: string; emailId: string };
   /** Read the purchase order(s) out of an email classified as a new order. */
   'extract-email': { orgId: string; emailId: string };
+  /** Match, validate and route the extracted orders into Order records. */
+  'build-orders': { orgId: string; emailId: string };
   /** Pull new messages from a connected Graph/Gmail mailbox. */
   'mailbox-sync': { orgId: string; mailboxId: string };
 };
@@ -54,6 +56,8 @@ const ENTITY_BY_JOB: Record<
   'classify-email': (d) =>
     typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
   'extract-email': (d) =>
+    typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
+  'build-orders': (d) =>
     typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
   'mailbox-sync': (d) =>
     typeof d.mailboxId === 'string' ? { type: 'mailbox', id: d.mailboxId } : undefined,

@@ -24,6 +24,7 @@ import { devTestEmailRouter } from './modules/dev/testEmail';
 import { emailsRouter, processingErrorsRouter } from './modules/inbound/emails';
 import { filesRouter } from './modules/inbound/files';
 import { mailboxesRouter } from './modules/inbound/mailboxes';
+import { ordersRouter } from './modules/orders/routes';
 import { inboundWebhookRouter } from './modules/inbound/webhook';
 import type { Storage } from '@keyless/core/lib/storage';
 import type { FetchLike } from '@keyless/core/mailboxes/oauth';
@@ -89,6 +90,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/imports', importsRouter(deps));
   app.use('/api/connectors', connectorsRouter());
   app.use('/api/emails', emailsRouter(deps));
+  app.use('/api/orders', ordersRouter(deps));
   app.use('/api/mailboxes', mailboxesRouter(deps));
   app.use('/api/processing-errors', processingErrorsRouter(deps));
   if (!isProd) app.use('/api/dev', devTestEmailRouter(deps));

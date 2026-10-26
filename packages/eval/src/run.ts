@@ -4,6 +4,7 @@ import { simpleParser } from 'mailparser';
 import { extractEmail, type SourceExtraction } from '@keyless/core/extraction/extract';
 import type { LlmProvider } from '@keyless/core/llm/types';
 import { attachmentKind } from '@keyless/core/models/Attachment';
+import { scoreMatching, type MatchScore } from './matching';
 import { scoreOrders, summarise, type FixtureScore, type OrderResult } from './score';
 import type { Fixture } from './types';
 
@@ -13,6 +14,7 @@ export type FixtureRun = {
   extractions: SourceExtraction[];
   orders: OrderResult[];
   score: FixtureScore;
+  matching: MatchScore;
   costUsd: number;
   latencyMs: number;
   error: string | null;
@@ -67,6 +69,7 @@ export async function runFixture(
       extractions,
       orders,
       score: summarise(orders),
+      matching: scoreMatching(orders, { fromAddress: from?.address, text: parsed.text ?? '' }),
       costUsd: extractions.reduce((c, x) => c + x.usage.costUsd, 0),
       latencyMs: Date.now() - started,
       error: null,
@@ -79,6 +82,7 @@ export async function runFixture(
       extractions: [],
       orders,
       score: summarise(orders),
+      matching: scoreMatching(orders, { fromAddress: from?.address, text: parsed.text ?? '' }),
       costUsd: 0,
       latencyMs: Date.now() - started,
       error: err instanceof Error ? err.message : String(err),

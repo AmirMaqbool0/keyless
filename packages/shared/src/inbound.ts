@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ExtractionDto } from './extraction';
+import type { OrderStatus, RouteColour } from './orders';
 
 export const EMAIL_CLASSIFICATIONS = [
   'new_order',
@@ -76,6 +77,14 @@ export type EmailDetailDto = EmailListItemDto & {
   rawUrl: string;
   timeline: { at: string; event: string; detail?: string }[];
   extractions: ExtractionDto[];
+  /** Orders created from this email, and existing orders it amends or cancels. */
+  orders: {
+    id: string;
+    poNumber: string | null;
+    status: OrderStatus;
+    colour: RouteColour;
+    relation: 'created' | 'changes';
+  }[];
 };
 
 export const reclassifySchema = z.object({ label: emailClassificationSchema });

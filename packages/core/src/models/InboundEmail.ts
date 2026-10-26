@@ -54,6 +54,8 @@ export interface IInboundEmail {
   attachmentIds: Types.ObjectId[];
   /** Filled from M5 when orders are created from this email. */
   orderIds: Types.ObjectId[];
+  /** Existing orders this email amends or cancels. */
+  relatedOrderIds: Types.ObjectId[];
   /** Roll-up of the latest extraction run (details live in Extraction records). */
   extraction?: ExtractionSummary;
   uploadedBy?: Types.ObjectId;
@@ -102,6 +104,7 @@ const inboundEmailSchema = new Schema<IInboundEmail>(
     classificationHistory: { type: [classificationSchema], default: [] },
     attachmentIds: { type: [Schema.Types.ObjectId], ref: 'Attachment', default: [] },
     orderIds: { type: [Schema.Types.ObjectId], default: [] },
+    relatedOrderIds: { type: [Schema.Types.ObjectId], default: [] },
     extraction: {
       type: new Schema<ExtractionSummary>(
         {

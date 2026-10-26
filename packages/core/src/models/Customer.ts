@@ -62,6 +62,7 @@ customerSchema.index({ orgId: 1, accountKey: 1 }, { unique: true });
 customerSchema.index({ orgId: 1, senderAddresses: 1 });
 customerSchema.index({ orgId: 1, emailDomains: 1 });
 customerSchema.index({ orgId: 1, name: 1 });
+customerSchema.index({ orgId: 1, updatedAt: -1 });
 
 export const Customer = model<ICustomer>('Customer', customerSchema);
 export type CustomerDoc = HydratedDocument<ICustomer>;

@@ -47,7 +47,7 @@ describe('forwarding address -> classified email (the M3 "done when")', () => {
 
     // Before the worker runs, the email is listed as received.
     expect((await c.get('/api/emails')).body.items[0]).toMatchObject({ status: 'received' });
-    expect(await t.drainJobs()).toBe(3); // process-email, classify-email, extract-email
+    expect(await t.drainJobs()).toBe(4); // process, classify, extract, build-orders
 
     const list = await c.get('/api/emails?view=orders');
     expect(list.body.total).toBe(1);

@@ -331,10 +331,100 @@ AI model with vision" rather than guessed.
 - **Orders:** extractions are stored but not yet turned into Orders. That is M5 (matching,
   validation, routing).
 
-## Next: M5 - Matching, validation, routing
+## M5 - Matching, validation, routing ✅ (2026-10-26)
 
-Customer identification (sender → domain → account number → fuzzy name), line matching
-(cross-reference → description → SKU/barcode → fuzzy search via `ProductSearch`, top-3
-candidates), UoM conversion, the validation rules from spec section 8, and green/amber/red routing
-into real Order records. The eval gains SKU match accuracy using the `expectedSku` already in
-every fixture.
+**Done when:** a test PO produces a coloured order with the correct issues. A PO emailed to the
+forwarding address now becomes an Order that is **green** (ready), **amber** (check) or **red**
+(blocked), with the reasons listed. This is shown end to end in `orders.test.ts` and was checked in
+the browser.
+
+**Offline eval (mock provider):** SKU match **92.7%**, customer identified **100%**. Both are now
+gated in CI with the extraction metrics. The misses are 7 lines that were never read (the scan
+and the photo, which need vision) and 2 free-text lines whose wording sits between two pack sizes.
+Those 2 are left unmatched with candidates rather than guessed.
+
+### Built
+
+- **Catalogue index** (`packages/core/src/matching/catalogue.ts`): an in-memory index of
+  products, customers, prices and cross-references per org. It is cached and rebuilt when any of
+  them changes (count + latest `updatedAt`). Fuzzy search sits behind `ProductSearch`
+  (`TokenProductSearch`: IDF-weighted word overlap plus trigrams) so it can later be swapped for
+  Atlas Search.
+- **Customer identification:** known sender → email domain (never public webmail) → account
+  number on the PO → the original sender of a hand-forwarded email → fuzzy company name.
+  - A domain shared by several customers is settled by the account number or the name, or left
+    for the reviewer with candidates.
+  - A sender/account disagreement is flagged.
+- **Line matching:** the customer's learned code → the customer's learned description → our SKU or
+  barcode → fuzzy description (top 3 candidates).
+  - Near-identical candidates are not guessed between.
+  - A code that hits our SKU while the words disagree is distrusted.
+  - "Each" quantities are converted to packs (part packs flagged), and cross-reference UoM
+    factors are applied.
+- **Pricing:** contract price (with quantity breaks and validity dates) → price list → list
+  price, compared within a 2% tolerance.
+- **Validation rules** (spec section 8), each a coded issue with severity and blocking flag:
+  - Customer: unknown customer, matched by name only, sender/account conflict, credit hold
+    (blocking).
+  - Order: duplicate PO (blocking), most items unknown (blocking), new delivery address, high
+    value (threshold per org).
+  - Lines: unmatched line, uncertain match, inactive SKU, price mismatch, insufficient stock
+    (information only).
+  - Extraction: every extraction issue carries over, plus a low-confidence read.
+  - Documents that could not be read become red placeholder orders: needs vision, unreadable, or
+    no order found.
+- **Routing:** any blocking issue → red (`on_hold`, or `duplicate`); otherwise the lowest of
+  customer, line and extraction confidence against the green/amber thresholds (0.9 / 0.6).
+- **Order model and jobs:** `build-orders` runs after extraction. It is idempotent: it rebuilds
+  only orders that are still reviewable and unedited. Amendment and cancellation emails are
+  linked to the original order by PO number and customer. A cancellation blocks the order and an
+  amendment sends it back to review.
+- **API** `/api/orders`: list (views, colour, customer, search; work queues oldest first), counts,
+  detail (lines, candidates, conversions, prices, issues, source document link, related emails),
+  and `POST /:id/rematch` for reviewers after the catalogue changes.
+- **Web:**
+  - An Orders page with tabs and counts, a colour filter and search.
+  - A read-only order page: what to check, the customer with candidates, each line against its
+    match with candidates, converted quantities and both prices, and Re-match.
+  - "Orders created" on the email page, and live counts on Overview.
+- **Eval:** SKU match accuracy and customer identification accuracy, using the same production
+  matching code on the extracted data. Misses are listed with `-v` and in the HTML report.
+- **Fixture fix:** every eval fixture had the same Message-ID (`fx-21`), so sending more than one
+  to a real inbox was deduplicated. The fixtures were regenerated with unique IDs; only the IDs,
+  MIME boundaries and PDF timestamps changed.
+
+### How to try it
+
+1. Run `pnpm dev` and sign in. Run `pnpm --filter @keyless/api samples`, then import
+   `samples/*.csv`, including cross-references.
+2. Post a fixture to your forwarding address:
+   `curl -X POST localhost:4000/webhooks/inbound -H "Content-Type: message/rfc822" -H "X-Inbound-Secret: $INBOUND_WEBHOOK_SECRET" -H "X-Envelope-To: <your address>" --data-binary @packages/eval/fixtures/01-pdf-standard/email.eml`
+3. Open **Orders**.
+
+### Tests (114 total: 109 API + 3 eval + 2 shared, all passing)
+
+- `matching.test.ts` (unit): customer identification order, ambiguity and conflicts, forwarded
+  senders, cross-reference priority (per customer), SKU/barcode, code/description mismatch,
+  fuzzy match and refusal to guess, pack conversion, price precedence, and each routing outcome.
+- `orders.test.ts` (end to end through the webhook and worker):
+  - green/ready, amber (unknown customer + price), red (credit hold), duplicate PO across formats;
+  - amendment then cancellation linked to the order;
+  - re-match after a product import, with roles, edited and approved orders refused;
+  - tenant isolation.
+
+### Not verified / known gaps
+
+- **Matching quality** has only been measured on the synthetic demo catalogue. Real catalogues
+  with many near-identical variants will need the M6 learning loop and possibly Atlas Search.
+- **Customer extraction hints** are still not passed to the model. They are only useful once
+  reviewers teach them (M6), so the TODO moved to M6.
+- **Re-match** rebuilds every order from that email, not only the one clicked (they come from
+  the same extraction).
+- The **high-value threshold** is read from org settings, but no settings UI exists for it yet
+  (M8, with rules).
+
+## Next: M6 - Review screen + learning
+
+Full review UI with the document beside the lines, editing, keyboard shortcuts,
+approve/hold/reject, and corrections feeding CrossReference. Done when correcting a line once makes
+the next PO from that customer match automatically.

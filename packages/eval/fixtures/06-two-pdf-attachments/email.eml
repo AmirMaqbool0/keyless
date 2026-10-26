@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@marketprimaryschool.example>
 To: orders@distributor.example
 Subject: Two orders
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-6@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-4b2d63929fea316e-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-046a0f08fc76d618-Part_1"
 
-----_NmP-4b2d63929fea316e-Part_1
+----_NmP-046a0f08fc76d618-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Hi, two orders attached.
 Kind regards,
 Sam Buyer
 Market Primary School
-----_NmP-4b2d63929fea316e-Part_1
+----_NmP-046a0f08fc76d618-Part_1
 Content-Type: application/pdf; name=PO-342101.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=PO-342101.pdf
@@ -40,7 +40,7 @@ VZxepMuYy/Q6jc3cGLpIz99yg/HMwAOfSMd+66TszaNrLSXFfkbtL/krtDr2XvpLWI+SROIp94J7
 Kn8FUw98ItG1njqChRS2k2Sd1hwJc84xvWhWDmvt28ajCAmLCt5l0xAs95p26t56FJ6l4EsN+zya
 3L31gnde7Bm7xojbMlMYfXbv20T1FpLvwX6gV1+OXk6c/wEJJG5eCmVuZHN0cmVhbQplbmRvYmoK
 MTEgMCBvYmoKKFBERktpdCkKZW5kb2JqCjEyIDAgb2JqCihQREZLaXQpCmVuZG9iagoxMyAwIG9i
-agooRDoyMDI2MTAyNjEwMjM1OVopCmVuZG9iagoxMCAwIG9iago8PAovUHJvZHVjZXIgMTEgMCBS
+agooRDoyMDI2MTAyNjExMTAyOFopCmVuZG9iagoxMCAwIG9iago8PAovUHJvZHVjZXIgMTEgMCBS
 Ci9DcmVhdG9yIDEyIDAgUgovQ3JlYXRpb25EYXRlIDEzIDAgUgo+PgplbmRvYmoKOSAwIG9iago8
 PAovVHlwZSAvRm9udAovQmFzZUZvbnQgL0hlbHZldGljYQovU3VidHlwZSAvVHlwZTEKL0VuY29k
 aW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCjggMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL0Jh
@@ -54,10 +54,10 @@ NSAwMDAwMCBuIAowMDAwMDAxNDQ0IDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAw
 MDEyNSAwMDAwMCBuIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDEzNDIgMDAwMDAgbiAKMDAw
 MDAwMTI0NSAwMDAwMCBuIAowMDAwMDAxMTY5IDAwMDAwIG4gCjAwMDAwMDEwODMgMDAwMDAgbiAK
 MDAwMDAwMTEwOCAwMDAwMCBuIAowMDAwMDAxMTMzIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUg
-MTQKL1Jvb3QgMyAwIFIKL0luZm8gMTAgMCBSCi9JRCBbPGYzZTVlNGI2YTUwOTk1YzY1ZmQ4YWI2
-Mjc3M2Y3ZGVjPiA8ZjNlNWU0YjZhNTA5OTVjNjVmZDhhYjYyNzczZjdkZWM+XQo+PgpzdGFydHhy
+MTQKL1Jvb3QgMyAwIFIKL0luZm8gMTAgMCBSCi9JRCBbPDIwYTU1M2NmZWY1YmFhNjc4ZWU2OWM0
+YTRmNTRiY2M1PiA8MjBhNTUzY2ZlZjViYWE2NzhlZTY5YzRhNGY1NGJjYzU+XQo+PgpzdGFydHhy
 ZWYKMTYzMQolJUVPRgo=
-----_NmP-4b2d63929fea316e-Part_1
+----_NmP-046a0f08fc76d618-Part_1
 Content-Type: application/pdf; name=PO-304070.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=PO-304070.pdf
@@ -84,7 +84,7 @@ TBedKIfZDU5RQlOLtpbFrbFO+6oKxq9bPqwy07LkAdgu3tdT3cn7OtgT4GidoLKD95ugBQ3Umaft
 2Rol1ZqryouVvlhcuBqHRVv2VRg16U7zrLWG2mPu8CEKyXjxTvUitmUSLXujW5HJzFp3cX3wnJi6
 aEJA3U4w2WzWjWRIA/HuvAyesy9+bTb+A/Fr1+sKZW5kc3RyZWFtCmVuZG9iagoxMSAwIG9iagoo
 UERGS2l0KQplbmRvYmoKMTIgMCBvYmoKKFBERktpdCkKZW5kb2JqCjEzIDAgb2JqCihEOjIwMjYx
-MDI2MTAyMzU5WikKZW5kb2JqCjEwIDAgb2JqCjw8Ci9Qcm9kdWNlciAxMSAwIFIKL0NyZWF0b3Ig
+MDI2MTExMDI4WikKZW5kb2JqCjEwIDAgb2JqCjw8Ci9Qcm9kdWNlciAxMSAwIFIKL0NyZWF0b3Ig
 MTIgMCBSCi9DcmVhdGlvbkRhdGUgMTMgMCBSCj4+CmVuZG9iago5IDAgb2JqCjw8Ci9UeXBlIC9G
 b250Ci9CYXNlRm9udCAvSGVsdmV0aWNhCi9TdWJ0eXBlIC9UeXBlMQovRW5jb2RpbmcgL1dpbkFu
 c2lFbmNvZGluZwo+PgplbmRvYmoKOCAwIG9iago8PAovVHlwZSAvRm9udAovQmFzZUZvbnQgL0hl
@@ -98,7 +98,7 @@ CjAwMDAwMDE1NDggMDAwMDAgbiAKMDAwMDAwMDI0MiAwMDAwMCBuIAowMDAwMDAwMTI1IDAwMDAw
 IG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMTQ0NiAwMDAwMCBuIAowMDAwMDAxMzQ5IDAw
 MDAwIG4gCjAwMDAwMDEyNzMgMDAwMDAgbiAKMDAwMDAwMTE4NyAwMDAwMCBuIAowMDAwMDAxMjEy
 IDAwMDAwIG4gCjAwMDAwMDEyMzcgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSAxNAovUm9vdCAz
-IDAgUgovSW5mbyAxMCAwIFIKL0lEIFs8MDgyNWRjMWMyYjNjOTVhMmQxZTMxNDQzOWYzYzI3NWU+
-IDwwODI1ZGMxYzJiM2M5NWEyZDFlMzE0NDM5ZjNjMjc1ZT5dCj4+CnN0YXJ0eHJlZgoxNzM1CiUl
+IDAgUgovSW5mbyAxMCAwIFIKL0lEIFs8NGYxYzMzNzFjMzdiNjdjOTRjYzBkN2JmM2E2NGQ5Yzg+
+IDw0ZjFjMzM3MWMzN2I2N2M5NGNjMGQ3YmYzYTY0ZDljOD5dCj4+CnN0YXJ0eHJlZgoxNzM1CiUl
 RU9GCg==
-----_NmP-4b2d63929fea316e-Part_1--
+----_NmP-046a0f08fc76d618-Part_1--

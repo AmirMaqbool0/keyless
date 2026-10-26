@@ -12,7 +12,8 @@ export type Totals = {
   costUsd: number;
   costPerDoc: number;
   medianLatencyMs: number;
-  skuMatchAccuracy: null;
+  skuMatchAccuracy: number;
+  customerAccuracy: number;
 };
 
 const add = (a: Tally, b: Tally): Tally => ({ ok: a.ok + b.ok, total: a.total + b.total });
@@ -24,12 +25,16 @@ export function totals(runs: FixtureRun[]): Totals {
   let lineRecall = zero();
   let linePrecision = zero();
   let orders = zero();
+  let sku = zero();
+  let customer = zero();
   for (const r of runs) {
     header = add(header, r.score.header);
     lineFields = add(lineFields, r.score.lineFields);
     lineRecall = add(lineRecall, r.score.lineRecall);
     linePrecision = add(linePrecision, r.score.linePrecision);
     orders = add(orders, r.score.ordersFound);
+    sku = add(sku, r.matching.sku);
+    customer = add(customer, r.matching.customer);
   }
   const latencies = runs.map((r) => r.latencyMs).sort((a, b) => a - b);
   const cost = runs.reduce((c, r) => c + r.costUsd, 0);
@@ -44,8 +49,8 @@ export function totals(runs: FixtureRun[]): Totals {
     costUsd: cost,
     costPerDoc: cost / Math.max(runs.length, 1),
     medianLatencyMs: latencies[Math.floor(latencies.length / 2)] ?? 0,
-    // Matching arrives in M5; the fixtures already carry expectedSku for it.
-    skuMatchAccuracy: null,
+    skuMatchAccuracy: rate(sku),
+    customerAccuracy: rate(customer),
   };
 }
 
@@ -92,7 +97,7 @@ function fixtureSection(r: FixtureRun): string {
       return `<h4>${title}</h4>${missing}<table><thead><tr><th>Field</th><th>Expected</th><th>Got</th></tr></thead><tbody>${head}${lines || ''}</tbody></table>`;
     })
     .join('');
-  return `<details${s.perfect ? '' : ' open'}><summary><b>${esc(r.dir)}</b> ${s.perfect ? '<span class="good">perfect</span>' : ''} - header ${pct(rate(s.header))}, line fields ${pct(rate(s.lineFields))}, lines found ${pct(rate(s.lineRecall))} <span class="muted">(${r.latencyMs} ms, $${r.costUsd.toFixed(4)})</span></summary><p class="muted">${esc(r.fixture.description)}<br>${status}</p>${orders}</details>`;
+  return `<details${s.perfect ? '' : ' open'}><summary><b>${esc(r.dir)}</b> ${s.perfect ? '<span class="good">perfect</span>' : ''} - header ${pct(rate(s.header))}, line fields ${pct(rate(s.lineFields))}, lines found ${pct(rate(s.lineRecall))} <span class="muted">(${r.latencyMs} ms, $${r.costUsd.toFixed(4)})</span></summary><p class="muted">${esc(r.fixture.description)}<br>${status}</p>${orders}${r.matching.misses.length ? `<h4>Matching misses</h4><ul>${r.matching.misses.map((m) => `<li class="bad">${esc(m)}</li>`).join('')}</ul>` : ''}</details>`;
 }
 
 export function htmlReport(
@@ -115,7 +120,7 @@ table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0 12px}th,td
 tr.miss td{background:var(--badbg);color:var(--bad)}.bad{color:var(--bad)}.good{color:var(--good);font-weight:600}
 </style></head><body>
 <h1>Extraction eval</h1><p class="muted">Provider <b>${esc(provider)}</b> - ${t.fixtures} fixtures - ${generatedAt.toISOString()}</p>
-<div class="cards">${card('Header fields', pct(t.headerAccuracy))}${card('Line fields', pct(t.lineFieldAccuracy))}${card('Lines found', pct(t.lineRecall))}${card('Lines correct (no extras)', pct(t.linePrecision))}${card('Orders found', pct(t.orderRecall))}${card('Perfect documents', pct(t.perfectDocs))}${card('Cost per document', `$${t.costPerDoc.toFixed(4)}`)}${card('Median latency', `${t.medianLatencyMs} ms`)}${card('SKU match', 'M5')}</div>
+<div class="cards">${card('Header fields', pct(t.headerAccuracy))}${card('Line fields', pct(t.lineFieldAccuracy))}${card('Lines found', pct(t.lineRecall))}${card('Lines correct (no extras)', pct(t.linePrecision))}${card('Orders found', pct(t.orderRecall))}${card('Perfect documents', pct(t.perfectDocs))}${card('Cost per document', `$${t.costPerDoc.toFixed(4)}`)}${card('Median latency', `${t.medianLatencyMs} ms`)}${card('SKU match', pct(t.skuMatchAccuracy))}${card('Customer identified', pct(t.customerAccuracy))}</div>
 <p class="muted">Highlighted rows are mismatches. Null vs null is not counted; an invented value is counted as wrong.</p>
 ${runs.map(fixtureSection).join('\n')}
 </body></html>`;

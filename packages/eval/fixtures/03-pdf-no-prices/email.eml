@@ -1,12 +1,12 @@
 From: Sam Buyer <orders@riversidehotel.example>
 To: orders@distributor.example
 Subject: PO PO-485097
-Message-ID: <fx-21@fixtures.keyless.local>
+Message-ID: <fx-3@fixtures.keyless.local>
 Date: Tue, 20 Oct 2026 09:14:00 +0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--_NmP-7a23b8aeb8d4d686-Part_1"
+Content-Type: multipart/mixed; boundary="--_NmP-72ea32ccbe86be8c-Part_1"
 
-----_NmP-7a23b8aeb8d4d686-Part_1
+----_NmP-72ea32ccbe86be8c-Part_1
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -15,7 +15,7 @@ Please supply as attached.
 Kind regards,
 Sam Buyer
 Riverside Hotel
-----_NmP-7a23b8aeb8d4d686-Part_1
+----_NmP-72ea32ccbe86be8c-Part_1
 Content-Type: application/pdf; name=PO_PO-485097.pdf
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=PO_PO-485097.pdf
@@ -43,7 +43,7 @@ prhqul2PSv5GEJDVC1MTBGJpQFgQuSdmhey2YNd3B8NqabrGxTtV7oMCW+YFsrxNC2fuQ8KazZVh
 dfk2iKzVbOVgcxNGVnv6KtIOmCBm1YVqHhVDu7aKdaNLoJz6HsrftopVwXh/bsSbbiWWxp5QATPK
 gnbrQqH9KFityN07dgPBese6hUKK52InVJVjsw4q3TJvp6y9mdXG6sbcHUFjJZvOJyUCm8zakbjE
 QTL+O9lhRrQT/ttz1P9Go8hVCmVuZHN0cmVhbQplbmRvYmoKMTEgMCBvYmoKKFBERktpdCkKZW5k
-b2JqCjEyIDAgb2JqCihQREZLaXQpCmVuZG9iagoxMyAwIG9iagooRDoyMDI2MTAyNjEwMjM1OVop
+b2JqCjEyIDAgb2JqCihQREZLaXQpCmVuZG9iagoxMyAwIG9iagooRDoyMDI2MTAyNjExMTAyOFop
 CmVuZG9iagoxMCAwIG9iago8PAovUHJvZHVjZXIgMTEgMCBSCi9DcmVhdG9yIDEyIDAgUgovQ3Jl
 YXRpb25EYXRlIDEzIDAgUgo+PgplbmRvYmoKOSAwIG9iago8PAovVHlwZSAvRm9udAovQmFzZUZv
 bnQgL0hlbHZldGljYQovU3VidHlwZSAvVHlwZTEKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcK
@@ -58,6 +58,6 @@ IDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAwMDEyNSAwMDAwMCBuIAowMDAwMDAw
 MDE1IDAwMDAwIG4gCjAwMDAwMDE1NDkgMDAwMDAgbiAKMDAwMDAwMTQ1MiAwMDAwMCBuIAowMDAw
 MDAxMzc2IDAwMDAwIG4gCjAwMDAwMDEyOTAgMDAwMDAgbiAKMDAwMDAwMTMxNSAwMDAwMCBuIAow
 MDAwMDAxMzQwIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgMTQKL1Jvb3QgMyAwIFIKL0luZm8g
-MTAgMCBSCi9JRCBbPDlmYjA0OGZlZTQ1YmVlMDY5ZTMxOWY4YjgwM2U0OTY2PiA8OWZiMDQ4ZmVl
-NDViZWUwNjllMzE5ZjhiODAzZTQ5NjY+XQo+PgpzdGFydHhyZWYKMTgzOAolJUVPRgo=
-----_NmP-7a23b8aeb8d4d686-Part_1--
+MTAgMCBSCi9JRCBbPGM2NzUzNWY0ODAyNmI5MjAxNGI2NWEzYTlhNmQyMzM5PiA8YzY3NTM1ZjQ4
+MDI2YjkyMDE0YjY1YTNhOWE2ZDIzMzk+XQo+PgpzdGFydHhyZWYKMTgzOAolJUVPRgo=
+----_NmP-72ea32ccbe86be8c-Part_1--

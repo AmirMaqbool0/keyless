@@ -288,6 +288,11 @@ const PO_PATTERNS = [
   new RegExp(String.raw`\bpurchase\s+order\s*[:#]?\s*${PO_VALUE}`, 'i'),
 ];
 
+/** The first PO number in a text (also used to link amendments to orders). */
+export function findPoNumber(text: string): string | null {
+  return poNumber(text);
+}
+
 function poNumber(text: string): string | null {
   for (const re of PO_PATTERNS) {
     const m = re.exec(text);

@@ -45,6 +45,7 @@ productSchema.plugin(tenantScoped);
 productSchema.index({ orgId: 1, skuKey: 1 }, { unique: true });
 productSchema.index({ orgId: 1, barcode: 1 }, { sparse: true });
 productSchema.index({ orgId: 1, active: 1, skuKey: 1 });
+productSchema.index({ orgId: 1, updatedAt: -1 });
 // Word search over descriptions; substring search uses searchText. M5 adds fuzzy matching.
 productSchema.index({ description: 'text', sku: 'text' }, { weights: { sku: 5, description: 1 } });
 
