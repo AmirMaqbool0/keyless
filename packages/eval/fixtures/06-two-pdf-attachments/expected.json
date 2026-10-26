@@ -1,0 +1,85 @@
+{
+  "name": "two-pdf-attachments",
+  "description": "Two POs as two separate PDF attachments.",
+  "tags": ["pdf", "multi-order"],
+  "orders": [
+    {
+      "customerName": "Market Primary School",
+      "accountNumber": null,
+      "poNumber": "PO-342101",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "137 Park Avenue",
+        "postcode": "NG14 6WW"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 1240.14,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1071",
+          "description": "ProClean Heavy Duty Degreaser 750ml Lavender (Case 6)",
+          "quantity": 25,
+          "unit": null,
+          "unitPrice": 32.32,
+          "expectedSku": "CH1071"
+        },
+        {
+          "customerPartCode": "CH1097",
+          "description": "Caterpak Oven Cleaner 1L Original (Case 6)",
+          "quantity": 17,
+          "unit": null,
+          "unitPrice": 25.42,
+          "expectedSku": "CH1097"
+        }
+      ]
+    },
+    {
+      "customerName": "Market Primary School",
+      "accountNumber": null,
+      "poNumber": "PO-304070",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "137 Park Avenue",
+        "postcode": "NG14 6WW"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 2598.07,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1639",
+          "description": "Hygenix Floor Cleaner 1L Lemon (Case 2)",
+          "quantity": 25,
+          "unit": null,
+          "unitPrice": 17.83,
+          "expectedSku": "CH1639"
+        },
+        {
+          "customerPartCode": "GL1774",
+          "description": "ProClean Latex Gloves Lightly Powdered Blue Small (Box 200)",
+          "quantity": 24,
+          "unit": null,
+          "unitPrice": 10.47,
+          "expectedSku": "GL1774"
+        },
+        {
+          "customerPartCode": "PP1178",
+          "description": "Centrefeed Roll 1 Ply White (Pack 36)",
+          "quantity": 24,
+          "unit": null,
+          "unitPrice": 79.21,
+          "expectedSku": "PP1178"
+        }
+      ]
+    }
+  ]
+}

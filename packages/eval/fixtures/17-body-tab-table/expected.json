@@ -1,0 +1,66 @@
+{
+  "name": "body-tab-table",
+  "description": "A table pasted from Excel into the email (tab-separated).",
+  "tags": ["body"],
+  "orders": [
+    {
+      "customerName": "Lantern Primary School",
+      "accountNumber": null,
+      "poNumber": "PO-248123",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CU1178",
+          "description": "Double Wall Paper Cup 12oz Printed (Case 500)",
+          "quantity": 27,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CU1178"
+        },
+        {
+          "customerPartCode": "GL1133",
+          "description": "Hygenix Polythene Gloves Powder Free Blue XS (Box 200)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "GL1133"
+        },
+        {
+          "customerPartCode": "BG1114",
+          "description": "Grip Seal Bag Medium White (Case 250)",
+          "quantity": 30,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BG1114"
+        },
+        {
+          "customerPartCode": "CH2340",
+          "description": "Hygenix Thick Bleach 5L Original (Case 2)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CH2340"
+        },
+        {
+          "customerPartCode": "BL1997",
+          "description": "Caterpak Refuse Sack Blue 18x29x39\" Medium Duty (Case 500)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BL1997"
+        }
+      ]
+    }
+  ]
+}

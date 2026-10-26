@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs';
 import Papa from 'papaparse';
 import { describe, expect, it } from 'vitest';
 import { generateDemoData } from '@keyless/core/demo/generator';
@@ -134,7 +135,15 @@ describe('product import', () => {
       ).body.error.code,
     ).toBe('EMPTY_FILE');
     expect(
+      (await c.upload('/api/imports', { type: 'products' }, { name: 'p.xls', content: 'x' })).body
+        .error.code,
+    ).toBe('UNSUPPORTED_FILE');
+    expect(
       (await c.upload('/api/imports', { type: 'products' }, { name: 'p.xlsx', content: 'x' })).body
+        .error.code,
+    ).toBe('INVALID_FILE');
+    expect(
+      (await c.upload('/api/imports', { type: 'products' }, { name: 'p.pdf', content: 'x' })).body
         .error.code,
     ).toBe('UNSUPPORTED_FILE');
     expect(
@@ -196,6 +205,33 @@ describe('product import', () => {
     const byBarcode = await c.get(`/api/products?q=${target.barcode}`);
     expect(byBarcode.body.items[0].sku).toBe(target.sku);
     console.info(`5,000-product import: ${importMs} ms; search: ${searchMs} ms`);
+  });
+});
+
+describe('Excel imports', () => {
+  it('imports the first sheet of an .xlsx exactly like a CSV', async () => {
+    const { c, admin } = await adminClient();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Stock');
+    ws.addRow(['Stock Code', 'Description', 'Sell Price']);
+    ws.addRow(['GL1001', 'Nitrile Gloves Blue Medium (Box 100)', 4.5]);
+    ws.addRow(['GL1002', 'Nitrile Gloves Blue Large (Box 100)', 4.75]);
+    const up = await c.upload(
+      '/api/imports',
+      { type: 'products' },
+      { name: 'stock.xlsx', content: Buffer.from(await wb.xlsx.writeBuffer()) },
+    );
+    expect(up.status).toBe(201);
+    expect(up.body.job.mapping).toMatchObject({
+      sku: 'Stock Code',
+      description: 'Description',
+      defaultPrice: 'Sell Price',
+    });
+    const done = await c.post(`/api/imports/${up.body.job.id}/commit`, {});
+    expect(done.body.job.totals).toMatchObject({ created: 2, errors: 0 });
+    expect(await Product.findOne({ orgId: admin.orgId, skuKey: 'GL1002' })).toMatchObject({
+      defaultPrice: 4.75,
+    });
   });
 });
 

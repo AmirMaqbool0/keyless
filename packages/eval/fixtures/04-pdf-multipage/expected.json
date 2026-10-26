@@ -1,0 +1,330 @@
+{
+  "name": "pdf-multipage",
+  "description": "38 lines over two pages with a repeated table header.",
+  "tags": ["pdf", "long"],
+  "orders": [
+    {
+      "customerName": "Oak Bistro",
+      "accountNumber": null,
+      "poNumber": "PO-156439",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "126 Church Lane",
+        "postcode": "LS13 4AE"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 9890.36,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "GL1150",
+          "description": "Hygenix Polythene Gloves Powder Free Clear Small (Box 100)",
+          "quantity": 11,
+          "unit": null,
+          "unitPrice": 7.32,
+          "expectedSku": "GL1150"
+        },
+        {
+          "customerPartCode": "CH1520",
+          "description": "Brite Hand Soap 5L Original (Case 6)",
+          "quantity": 16,
+          "unit": null,
+          "unitPrice": 23.05,
+          "expectedSku": "CH1520"
+        },
+        {
+          "customerPartCode": "PP1064",
+          "description": "Kitchen Roll 2 Ply Blue (Pack 24)",
+          "quantity": 4,
+          "unit": null,
+          "unitPrice": 69.87,
+          "expectedSku": "PP1064"
+        },
+        {
+          "customerPartCode": "CT1053",
+          "description": "Wooden Teaspoon Black (Box 1000)",
+          "quantity": 8,
+          "unit": null,
+          "unitPrice": 26.36,
+          "expectedSku": "CT1053"
+        },
+        {
+          "customerPartCode": "GL1821",
+          "description": "Caterpak Latex Gloves Powder Free Blue Small (Box 100)",
+          "quantity": 19,
+          "unit": null,
+          "unitPrice": 7.59,
+          "expectedSku": "GL1821"
+        },
+        {
+          "customerPartCode": "BL1483",
+          "description": "Caterpak Pedal Bin Liner Red 15x24x24\" Light Duty (Case 200)",
+          "quantity": 4,
+          "unit": null,
+          "unitPrice": 16.84,
+          "expectedSku": "BL1483"
+        },
+        {
+          "customerPartCode": "BL1422",
+          "description": "ProClean Clinical Waste Sack Black 11x17x18\" Heavy Duty (Case 500)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 26.22,
+          "expectedSku": "BL1422"
+        },
+        {
+          "customerPartCode": "GL1509",
+          "description": "ProClean Nitrile Gloves Lightly Powdered White Medium (Box 200)",
+          "quantity": 4,
+          "unit": null,
+          "unitPrice": 11.05,
+          "expectedSku": "GL1509"
+        },
+        {
+          "customerPartCode": "BL1459",
+          "description": "ProClean Pedal Bin Liner White 15x24x24\" Medium Duty (Case 500)",
+          "quantity": 21,
+          "unit": null,
+          "unitPrice": 24.38,
+          "expectedSku": "BL1459"
+        },
+        {
+          "customerPartCode": "GL1777",
+          "description": "Hygenix Polythene Gloves Lightly Powdered Black XS (Box 200)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 11.29,
+          "expectedSku": "GL1777"
+        },
+        {
+          "customerPartCode": "BG1116",
+          "description": "Paper Bag Flat Handle Small Kraft (Case 250)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 23.06,
+          "expectedSku": "BG1116"
+        },
+        {
+          "customerPartCode": "BL1983",
+          "description": "ProClean Refuse Sack White 11x17x18\" Medium Duty (Case 500)",
+          "quantity": 22,
+          "unit": null,
+          "unitPrice": 22.15,
+          "expectedSku": "BL1983"
+        },
+        {
+          "customerPartCode": "CH2102",
+          "description": "ProClean Floor Cleaner 20L Lemon (Case 6)",
+          "quantity": 3,
+          "unit": null,
+          "unitPrice": 24.65,
+          "expectedSku": "CH2102"
+        },
+        {
+          "customerPartCode": "GL1769",
+          "description": "Hygenix Vinyl Gloves Powder Free Blue Large (Box 100)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": 6.75,
+          "expectedSku": "GL1769"
+        },
+        {
+          "customerPartCode": "GL1706",
+          "description": "Caterpak Polythene Gloves Lightly Powdered White XL (Box 100)",
+          "quantity": 30,
+          "unit": null,
+          "unitPrice": 8.01,
+          "expectedSku": "GL1706"
+        },
+        {
+          "customerPartCode": "BL2053",
+          "description": "Caterpak Compactor Sack Yellow 15x24x24\" Heavy Duty (Case 200)",
+          "quantity": 25,
+          "unit": null,
+          "unitPrice": 15.13,
+          "expectedSku": "BL2053"
+        },
+        {
+          "customerPartCode": "CH1698",
+          "description": "Brite Rinse Aid 1L Unfragranced (Case 2)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 17.12,
+          "expectedSku": "CH1698"
+        },
+        {
+          "customerPartCode": "CH1892",
+          "description": "Hygenix Glass Cleaner 750ml Lemon (Case 6)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 32.82,
+          "expectedSku": "CH1892"
+        },
+        {
+          "customerPartCode": "BL1764",
+          "description": "ProClean Clinical Waste Sack Green 18x29x39\" Light Duty (Case 200)",
+          "quantity": 16,
+          "unit": null,
+          "unitPrice": 19.9,
+          "expectedSku": "BL1764"
+        },
+        {
+          "customerPartCode": "FF1008",
+          "description": "Baking Parchment 450mm 300m (Pack 1)",
+          "quantity": 28,
+          "unit": null,
+          "unitPrice": 11.5,
+          "expectedSku": "FF1008"
+        },
+        {
+          "customerPartCode": "GL1355",
+          "description": "Hygenix Nitrile Gloves Lightly Powdered Black XS (Box 200)",
+          "quantity": 2,
+          "unit": null,
+          "unitPrice": 10.14,
+          "expectedSku": "GL1355"
+        },
+        {
+          "customerPartCode": "CH2042",
+          "description": "Hygenix Floor Cleaner 5L Lemon (Case 2)",
+          "quantity": 8,
+          "unit": null,
+          "unitPrice": 14.35,
+          "expectedSku": "CH2042"
+        },
+        {
+          "customerPartCode": "CH2210",
+          "description": "Brite Dishwasher Detergent 1L Lemon (Case 6)",
+          "quantity": 26,
+          "unit": null,
+          "unitPrice": 26.33,
+          "expectedSku": "CH2210"
+        },
+        {
+          "customerPartCode": "CH2100",
+          "description": "Brite Toilet Cleaner 20L Lavender (Case 2)",
+          "quantity": 23,
+          "unit": null,
+          "unitPrice": 18.91,
+          "expectedSku": "CH2100"
+        },
+        {
+          "customerPartCode": "CH2139",
+          "description": "ProClean Multi-Surface Cleaner 1L Original (Case 6)",
+          "quantity": 28,
+          "unit": null,
+          "unitPrice": 34.49,
+          "expectedSku": "CH2139"
+        },
+        {
+          "customerPartCode": "BL1169",
+          "description": "Caterpak Refuse Sack Yellow 15x24x24\" Medium Duty (Case 200)",
+          "quantity": 14,
+          "unit": null,
+          "unitPrice": 15.62,
+          "expectedSku": "BL1169"
+        },
+        {
+          "customerPartCode": "BL1614",
+          "description": "ProClean Compactor Sack Yellow 18x29x39\" Light Duty (Case 200)",
+          "quantity": 8,
+          "unit": null,
+          "unitPrice": 15.1,
+          "expectedSku": "BL1614"
+        },
+        {
+          "customerPartCode": "BG1027",
+          "description": "Paper Carrier Bag Twisted Handle Medium Clear (Case 1000)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 49.5,
+          "expectedSku": "BG1027"
+        },
+        {
+          "customerPartCode": "NP1011",
+          "description": "2 Ply Napkin 33cm Navy 4 Fold (Case 2000)",
+          "quantity": 24,
+          "unit": null,
+          "unitPrice": 21.86,
+          "expectedSku": "NP1011"
+        },
+        {
+          "customerPartCode": "GL1187",
+          "description": "Hygenix Polythene Gloves Lightly Powdered White XS (Box 200)",
+          "quantity": 22,
+          "unit": null,
+          "unitPrice": 11.32,
+          "expectedSku": "GL1187"
+        },
+        {
+          "customerPartCode": "FF1008",
+          "description": "Baking Parchment 450mm 300m (Pack 1)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 11.5,
+          "expectedSku": "FF1008"
+        },
+        {
+          "customerPartCode": "CT1082",
+          "description": "Wooden Teaspoon Natural (Box 1000)",
+          "quantity": 30,
+          "unit": null,
+          "unitPrice": 27.42,
+          "expectedSku": "CT1082"
+        },
+        {
+          "customerPartCode": "CH1713",
+          "description": "Hygenix Oven Cleaner 5L Original (Case 2)",
+          "quantity": 15,
+          "unit": null,
+          "unitPrice": 18.6,
+          "expectedSku": "CH1713"
+        },
+        {
+          "customerPartCode": "GL1842",
+          "description": "Hygenix Polythene Gloves Lightly Powdered Blue Small (Box 100)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 6.53,
+          "expectedSku": "GL1842"
+        },
+        {
+          "customerPartCode": "BL2285",
+          "description": "Caterpak Pedal Bin Liner Black 15x24x24\" Medium Duty (Case 500)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": 29.23,
+          "expectedSku": "BL2285"
+        },
+        {
+          "customerPartCode": "CH1894",
+          "description": "Brite Rinse Aid 20L Lavender (Case 2)",
+          "quantity": 18,
+          "unit": null,
+          "unitPrice": 14.24,
+          "expectedSku": "CH1894"
+        },
+        {
+          "customerPartCode": "BL1210",
+          "description": "ProClean Compactor Sack Red 15x24x24\" Heavy Duty (Case 200)",
+          "quantity": 11,
+          "unit": null,
+          "unitPrice": 15.91,
+          "expectedSku": "BL1210"
+        },
+        {
+          "customerPartCode": "GL1487",
+          "description": "ProClean Vinyl Gloves Powder Free White Large (Box 200)",
+          "quantity": 15,
+          "unit": null,
+          "unitPrice": 10.31,
+          "expectedSku": "GL1487"
+        }
+      ]
+    }
+  ]
+}

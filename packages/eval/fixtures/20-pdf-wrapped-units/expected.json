@@ -1,0 +1,66 @@
+{
+  "name": "pdf-wrapped-units",
+  "description": "Long descriptions that wrap onto two lines, plus a unit column.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Thistle Hotel",
+      "accountNumber": null,
+      "poNumber": "PO-804021",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "213 Mill Road",
+        "postcode": "NR15 2TG"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 2751.34,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "MC1066",
+          "description": "Microfibre Cloth Green (Pack 50) - food safe, recyclable, supplied in outer cartons",
+          "quantity": 10,
+          "unit": "Pack",
+          "unitPrice": 23.19,
+          "expectedSku": "MC1066"
+        },
+        {
+          "customerPartCode": "BL1565",
+          "description": "ProClean Compactor Sack White 15x24x24\" Heavy Duty (Case 500) - food safe, recyclable, supplied in outer cartons",
+          "quantity": 9,
+          "unit": "Case",
+          "unitPrice": 28.09,
+          "expectedSku": "BL1565"
+        },
+        {
+          "customerPartCode": "CH1369",
+          "description": "ProClean Toilet Cleaner 5L Unfragranced (Case 2) - food safe, recyclable, supplied in outer cartons",
+          "quantity": 13,
+          "unit": "Case",
+          "unitPrice": 19.01,
+          "expectedSku": "CH1369"
+        },
+        {
+          "customerPartCode": "BL1929",
+          "description": "Caterpak Clinical Waste Sack Clear 15x24x24\" Light Duty (Case 200) - food safe, recyclable, supplied in outer cartons",
+          "quantity": 29,
+          "unit": "Case",
+          "unitPrice": 17.27,
+          "expectedSku": "BL1929"
+        },
+        {
+          "customerPartCode": "PP1141",
+          "description": "Kitchen Roll 3 Ply Blue (Pack 36) - food safe, recyclable, supplied in outer cartons",
+          "quantity": 19,
+          "unit": "Case",
+          "unitPrice": 79.93,
+          "expectedSku": "PP1141"
+        }
+      ]
+    }
+  ]
+}

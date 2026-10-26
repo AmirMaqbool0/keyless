@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ExtractionDto } from './extraction';
 
 export const EMAIL_CLASSIFICATIONS = [
   'new_order',
@@ -55,19 +56,26 @@ export type EmailListItemDto = {
   attachmentCount: number;
   classification: ClassificationDto | null;
   error: string | null;
+  extraction: {
+    status: 'running' | 'completed' | 'partial' | 'failed' | 'needs_llm';
+    orderCount: number;
+    lineCount: number;
+    issueCount: number;
+  } | null;
 };
 
 export type EmailDetailDto = EmailListItemDto & {
   to: string[];
   cc: string[];
   text: string;
-  /** Sanitised HTML, safe to render in a sandboxed iframe. */
+  /** HTML as received. Only render it in a sandboxed iframe with a restrictive CSP. */
   html: string | null;
   messageId: string | null;
   mailbox: { id: string; type: string; address: string } | null;
   attachments: AttachmentDto[];
   rawUrl: string;
   timeline: { at: string; event: string; detail?: string }[];
+  extractions: ExtractionDto[];
 };
 
 export const reclassifySchema = z.object({ label: emailClassificationSchema });

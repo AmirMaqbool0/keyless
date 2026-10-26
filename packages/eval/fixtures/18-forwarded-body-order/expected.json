@@ -1,0 +1,50 @@
+{
+  "name": "forwarded-body-order",
+  "description": "A colleague forwards a customer order written in the email body.",
+  "tags": ["body", "forwarded"],
+  "orders": [
+    {
+      "customerName": "Elm Deli",
+      "accountNumber": null,
+      "poNumber": "PO-924908",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "PP1106",
+          "description": "Z-Fold Hand Towel 1 Ply Blue (Pack 36)",
+          "quantity": 2,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "PP1106"
+        },
+        {
+          "customerPartCode": "BL2415",
+          "description": "ProClean Clinical Waste Sack Yellow 18x29x39\" Medium Duty (Case 200)",
+          "quantity": 10,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BL2415"
+        },
+        {
+          "customerPartCode": "GL1381",
+          "description": "ProClean Polythene Gloves Lightly Powdered Blue Medium (Box 100)",
+          "quantity": 22,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "GL1381"
+        }
+      ]
+    }
+  ]
+}

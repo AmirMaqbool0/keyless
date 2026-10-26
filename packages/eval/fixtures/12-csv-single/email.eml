@@ -1,0 +1,29 @@
+From: Sam Buyer <orders@lanternprimaryschool.example>
+To: orders@distributor.example
+Subject: PO PO-586584
+Message-ID: <fx-21@fixtures.keyless.local>
+Date: Tue, 20 Oct 2026 09:14:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="--_NmP-283e97faf9b63e10-Part_1"
+
+----_NmP-283e97faf9b63e10-Part_1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Order export attached.
+
+Kind regards,
+Sam Buyer
+Lantern Primary School
+----_NmP-283e97faf9b63e10-Part_1
+Content-Type: text/csv; name=export.csv
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=export.csv
+
+Ikl0ZW0gQ29kZSIsIkRlc2NyaXB0aW9uIiwiUXR5IiwiVW5pdCBQcmljZSINCiJDSDE0ODAiLCJQ
+cm9DbGVhbiBIZWF2eSBEdXR5IERlZ3JlYXNlciA1TCBPcmlnaW5hbCAoQ2FzZSA2KSIsNywyOS4z
+Mg0KIk1DMTA2MyIsIlNvY2tldCBNb3AgSGVhZCBHcmVlbiAoUGFjayAxMCkiLDI4LDEwLjIwDQoi
+R0wxMTg0IiwiUHJvQ2xlYW4gTGF0ZXggR2xvdmVzIFBvd2RlciBGcmVlIEJsdWUgWFMgKEJveCAx
+MDApIiwyMyw3LjY2DQoiR0wxMTM3IiwiSHlnZW5peCBMYXRleCBHbG92ZXMgUG93ZGVyIEZyZWUg
+V2hpdGUgU21hbGwgKEJveCAxMDApIiwyNiw3LjEy
+----_NmP-283e97faf9b63e10-Part_1--

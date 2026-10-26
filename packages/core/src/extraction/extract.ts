@@ -1,0 +1,216 @@
+import { z } from 'zod';
+import {
+  extractionOutputSchema,
+  type ExtractedOrderDto,
+  type ExtractionDto,
+} from '@keyless/shared';
+import { prepareAttachment, prepareBody, type PreparedDocument } from '../documents/prepare';
+import { logger } from '../lib/logger';
+import { EXTRACTION_PROMPT_VERSION } from '../llm/prompts';
+import { LlmRefusalError, type LlmProvider, type LlmUsage } from '../llm/types';
+import type { AttachmentKind } from '../models/Attachment';
+import { checkOrder } from './checks';
+
+/*
+ * Extraction for one email, independent of the database so the eval harness runs exactly the
+ * same code as production. Order documents (PDF, image, spreadsheet, CSV) are read one by one;
+ * the email body is used only when there is no document.
+ */
+
+export type SourceFile = {
+  id?: string;
+  filename: string;
+  kind: AttachmentKind;
+  isInline: boolean;
+  content: Buffer;
+};
+export type EmailForExtraction = {
+  subject: string;
+  fromName?: string;
+  fromAddress?: string;
+  receivedAt: Date;
+  text: string;
+};
+
+export type SourceExtraction = Omit<ExtractionDto, 'id' | 'createdAt'> & { pageCount: number };
+
+const ORDER_KINDS: AttachmentKind[] = ['pdf', 'image', 'spreadsheet', 'csv'];
+const zeroUsage = (): LlmUsage => ({ inputTokens: 0, outputTokens: 0, costUsd: 0 });
+
+/** Which parts of an email to read. */
+export function extractionSources(files: SourceFile[]): SourceFile[] {
+  return files.filter((f) => !f.isInline && ORDER_KINDS.includes(f.kind));
+}
+
+async function extractOne(
+  llm: LlmProvider,
+  doc: PreparedDocument,
+  email: EmailForExtraction,
+  hints: string[],
+  source: SourceExtraction['source'],
+  now: Date,
+): Promise<SourceExtraction> {
+  const started = Date.now();
+  const base = {
+    source,
+    provider: llm.name,
+    promptVersion: EXTRACTION_PROMPT_VERSION,
+    pageCount: doc.pageCount,
+    documentNotes: null,
+  };
+  if (doc.unsupported) {
+    return {
+      ...base,
+      status: 'failed',
+      model: null,
+      orders: [],
+      error: doc.unsupported,
+      usage: zeroUsage(),
+      durationMs: 0,
+      attempts: 0,
+    };
+  }
+  if (doc.text === null && !llm.supportsVision) {
+    return {
+      ...base,
+      status: 'needs_llm',
+      model: null,
+      orders: [],
+      error:
+        'This is a scan or photo. Reading it needs an AI model with vision: set LLM_PROVIDER=anthropic.',
+      usage: zeroUsage(),
+      durationMs: 0,
+      attempts: 0,
+    };
+  }
+
+  const usage = zeroUsage();
+  let model: string | null = null;
+  let retryFeedback: string | undefined;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await llm.extractOrder({
+        document: doc,
+        email: {
+          subject: email.subject,
+          fromName: email.fromName,
+          fromAddress: email.fromAddress,
+          receivedAt: email.receivedAt,
+          bodyExcerpt: email.text,
+        },
+        hints,
+        retryFeedback,
+      });
+      model = res.model;
+      usage.inputTokens += res.usage.inputTokens;
+      usage.outputTokens += res.usage.outputTokens;
+      usage.costUsd += res.usage.costUsd;
+      const parsed = extractionOutputSchema.safeParse(res.output);
+      if (!parsed.success) {
+        // Retry once, telling the model exactly what was wrong (spec section 6).
+        retryFeedback = z.prettifyError(parsed.error).slice(0, 1500);
+        logger.warn({ source: source.label, attempt }, 'Extraction output failed validation');
+        continue;
+      }
+      const multiOrder = parsed.data.orders.length > 1;
+      const orders: ExtractedOrderDto[] = parsed.data.orders.map((o) => ({
+        ...o,
+        ...checkOrder(o, { now, documentText: doc.text, multiOrder }),
+      }));
+      return {
+        ...base,
+        status: 'completed',
+        model,
+        orders,
+        documentNotes: parsed.data.documentNotes,
+        error: null,
+        usage,
+        durationMs: Date.now() - started,
+        attempts: attempt,
+      };
+    } catch (err) {
+      if (err instanceof LlmRefusalError) {
+        return {
+          ...base,
+          status: 'failed',
+          model,
+          orders: [],
+          error: err.message,
+          usage,
+          durationMs: Date.now() - started,
+          attempts: attempt,
+        };
+      }
+      throw err; // transient (network, 5xx): let the job retry with backoff
+    }
+  }
+  return {
+    ...base,
+    status: 'failed',
+    model,
+    orders: [],
+    error:
+      `The model's answer did not match the expected format twice: ${retryFeedback ?? ''}`.slice(
+        0,
+        2000,
+      ),
+    usage,
+    durationMs: Date.now() - started,
+    attempts: 2,
+  };
+}
+
+export async function extractEmail(
+  llm: LlmProvider,
+  input: { email: EmailForExtraction; files: SourceFile[]; hints?: string[]; now?: Date },
+): Promise<SourceExtraction[]> {
+  const now = input.now ?? new Date();
+  const hints = input.hints ?? [];
+  const docs = extractionSources(input.files);
+  const results: SourceExtraction[] = [];
+
+  if (!docs.length) {
+    const body = prepareBody(input.email.subject, input.email.text);
+    results.push(
+      await extractOne(
+        llm,
+        body,
+        input.email,
+        hints,
+        { kind: 'body', label: 'Email body', attachmentId: null, mode: 'text' },
+        now,
+      ),
+    );
+  }
+  for (const file of docs) {
+    const doc = await prepareAttachment(file);
+    results.push(
+      await extractOne(
+        llm,
+        doc,
+        input.email,
+        hints,
+        { kind: 'attachment', label: file.filename, attachmentId: file.id ?? null, mode: doc.mode },
+        now,
+      ),
+    );
+  }
+
+  // The same PO sent twice (say, PDF and spreadsheet copies) is flagged, not silently merged.
+  const seen = new Map<string, string>();
+  for (const r of results) {
+    for (const o of r.orders) {
+      const key = o.poNumber?.trim().toUpperCase();
+      if (!key) continue;
+      const first = seen.get(key);
+      if (first)
+        o.issues.push({
+          code: 'duplicate_in_email',
+          severity: 'warning',
+          message: `PO ${o.poNumber} also appears in ${first}`,
+        });
+      else seen.set(key, r.source.label);
+    }
+  }
+  return results;
+}

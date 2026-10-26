@@ -1,0 +1,58 @@
+{
+  "name": "body-qty-x-code",
+  "description": "Order typed in the email: \"10 x CODE description\".",
+  "tags": ["body"],
+  "orders": [
+    {
+      "customerName": "Kings Catering Ltd",
+      "accountNumber": null,
+      "poNumber": "PO-925651",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1833",
+          "description": "Hygenix Washing Up Liquid 1L Lavender (Case 2)",
+          "quantity": 8,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CH1833"
+        },
+        {
+          "customerPartCode": "BG1035",
+          "description": "Grip Seal Bag Small White (Case 500)",
+          "quantity": 30,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BG1035"
+        },
+        {
+          "customerPartCode": "GL1688",
+          "description": "Hygenix Latex Gloves Lightly Powdered Clear Medium (Box 100)",
+          "quantity": 23,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "GL1688"
+        },
+        {
+          "customerPartCode": "CH1519",
+          "description": "Hygenix Thick Bleach 1L Unfragranced (Case 2)",
+          "quantity": 1,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CH1519"
+        }
+      ]
+    }
+  ]
+}

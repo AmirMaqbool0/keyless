@@ -40,13 +40,11 @@ async function sampleContext(org: OrganizationDoc, to: string): Promise<SampleCo
     defaultPrice?: number;
   }>([{ $match: { orgId, active: true } }, { $sample: { size: 4 - Math.min(xrefs.length, 2) } }]);
   const lines = [
-    ...xrefs
-      .slice(0, 2)
-      .map((x) => ({
-        code: x.customerPartCode!,
-        description: x.customerDescription ?? 'As per your catalogue',
-        quantity: 2 + crypto.randomInt(10),
-      })),
+    ...xrefs.slice(0, 2).map((x) => ({
+      code: x.customerPartCode!,
+      description: x.customerDescription ?? 'As per your catalogue',
+      quantity: 2 + crypto.randomInt(10),
+    })),
     ...products.map((p) => ({
       code: p.sku,
       description: p.description,

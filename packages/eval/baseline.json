@@ -1,0 +1,9 @@
+{
+  "mock": {
+    "headerAccuracy": 0.826,
+    "lineFieldAccuracy": 0.955,
+    "lineRecall": 0.943,
+    "linePrecision": 1,
+    "orderRecall": 0.913
+  }
+}

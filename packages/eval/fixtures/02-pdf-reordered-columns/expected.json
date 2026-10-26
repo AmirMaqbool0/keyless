@@ -1,0 +1,66 @@
+{
+  "name": "pdf-reordered-columns",
+  "description": "Quantity first, unusual headers (\"Your Ref\", \"Price Each\", \"Value\"), long dates, VAT totals.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Market Kitchen",
+      "accountNumber": null,
+      "poNumber": "PO-702116",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "159 Bridge Street",
+        "postcode": "S7 6QW"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 1568.32,
+        "tax": 313.66,
+        "total": 1881.98
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH2360",
+          "description": "ProClean Washroom Cleaner 1L Lavender (Case 2)",
+          "quantity": 20,
+          "unit": null,
+          "unitPrice": 17.47,
+          "expectedSku": "CH2360"
+        },
+        {
+          "customerPartCode": "BL1166",
+          "description": "ProClean Clinical Waste Sack Blue 11x17x18\" Light Duty (Case 500)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": 25.52,
+          "expectedSku": "BL1166"
+        },
+        {
+          "customerPartCode": "BL1194",
+          "description": "ProClean Clinical Waste Sack Green 11x17x18\" Heavy Duty (Case 200)",
+          "quantity": 15,
+          "unit": null,
+          "unitPrice": 20.2,
+          "expectedSku": "BL1194"
+        },
+        {
+          "customerPartCode": "CH1003",
+          "description": "Brite Hand Sanitiser Gel 750ml Original (Case 6)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 29.85,
+          "expectedSku": "CH1003"
+        },
+        {
+          "customerPartCode": "BL1853",
+          "description": "Caterpak Refuse Sack White 22x34x47\" Medium Duty (Case 500)",
+          "quantity": 23,
+          "unit": null,
+          "unitPrice": 25.19,
+          "expectedSku": "BL1853"
+        }
+      ]
+    }
+  ]
+}

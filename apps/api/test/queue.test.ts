@@ -9,7 +9,13 @@ const t = useTestApp();
 
 function handlers(impl: Partial<JobHandlers>): JobHandlers {
   const noop = async () => undefined;
-  return { 'process-email': noop, 'classify-email': noop, 'mailbox-sync': noop, ...impl };
+  return {
+    'process-email': noop,
+    'classify-email': noop,
+    'extract-email': noop,
+    'mailbox-sync': noop,
+    ...impl,
+  };
 }
 
 /** Make delayed retries due now so drain() picks them up. */

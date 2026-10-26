@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "pnpm -r test",
-    "seed": "pnpm --filter @keyless/api seed"
+    "seed": "pnpm --filter @keyless/api seed",
+    "eval": "pnpm --filter @keyless/eval eval"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

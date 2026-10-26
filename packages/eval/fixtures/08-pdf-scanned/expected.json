@@ -1,0 +1,58 @@
+{
+  "name": "pdf-scanned",
+  "description": "Scanned PO: image-only PDF, slightly rotated and blurred, no text layer.",
+  "tags": ["pdf", "scanned", "vision"],
+  "orders": [
+    {
+      "customerName": "Copper Leisure Centre",
+      "accountNumber": null,
+      "poNumber": "PO-587799",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "82 Market Place",
+        "postcode": "BA14 3PG"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 1480.68,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1207",
+          "description": "Brite Floor Cleaner 750ml Unfragranced (Case 6)",
+          "quantity": 22,
+          "unit": null,
+          "unitPrice": 32.07,
+          "expectedSku": "CH1207"
+        },
+        {
+          "customerPartCode": "GL1468",
+          "description": "ProClean Nitrile Gloves Lightly Powdered Clear XL (Box 200)",
+          "quantity": 29,
+          "unit": null,
+          "unitPrice": 9,
+          "expectedSku": "GL1468"
+        },
+        {
+          "customerPartCode": "CU1165",
+          "description": "Ripple Cup 8oz Printed (Case 500)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": 28.13,
+          "expectedSku": "CU1165"
+        },
+        {
+          "customerPartCode": "BL1354",
+          "description": "Caterpak Compactor Sack Blue 11x17x18\" Medium Duty (Case 500)",
+          "quantity": 13,
+          "unit": null,
+          "unitPrice": 28.73,
+          "expectedSku": "BL1354"
+        }
+      ]
+    }
+  ]
+}

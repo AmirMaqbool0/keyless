@@ -1,0 +1,58 @@
+{
+  "name": "body-code-dash-qty",
+  "description": "Order typed as \"CODE - description - qty\".",
+  "tags": ["body"],
+  "orders": [
+    {
+      "customerName": "Willow Pub & Dining",
+      "accountNumber": null,
+      "poNumber": "PO-581554",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH-1451",
+          "description": "Brite Rinse Aid 20L Unfragranced",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CH1451"
+        },
+        {
+          "customerPartCode": "BL-1985",
+          "description": "PROCLEAN COMPACTOR SACK BLUE 18X29X39\" MEDIUM DUTY",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BL1985"
+        },
+        {
+          "customerPartCode": "CU-1115",
+          "description": "PLASTIC PINT CUP 8OZ WHITE",
+          "quantity": 21,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "CU1115"
+        },
+        {
+          "customerPartCode": "BL-1536",
+          "description": "Caterpak Clinical Waste Sack Yellow 22x34x47\" Light Duty",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": null,
+          "expectedSku": "BL1536"
+        }
+      ]
+    }
+  ]
+}

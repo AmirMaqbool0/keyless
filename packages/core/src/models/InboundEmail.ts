@@ -18,6 +18,15 @@ export type Classification = {
   classifiedBy?: Types.ObjectId;
 };
 
+export type ExtractionSummary = {
+  status: 'running' | 'completed' | 'partial' | 'failed' | 'needs_llm';
+  orderCount: number;
+  lineCount: number;
+  issueCount: number;
+  costUsd: number;
+  completedAt?: Date;
+};
+
 export interface IInboundEmail {
   _id: Types.ObjectId;
   orgId: Types.ObjectId;
@@ -32,7 +41,7 @@ export interface IInboundEmail {
   subject: string;
   /** Plain-text body (capped). */
   text: string;
-  /** Sanitised HTML body (capped). */
+  /** HTML body as received (capped). Only ever rendered in a sandboxed iframe. */
   html?: string;
   headers: Record<string, string>;
   receivedAt: Date;
@@ -45,6 +54,8 @@ export interface IInboundEmail {
   attachmentIds: Types.ObjectId[];
   /** Filled from M5 when orders are created from this email. */
   orderIds: Types.ObjectId[];
+  /** Roll-up of the latest extraction run (details live in Extraction records). */
+  extraction?: ExtractionSummary;
   uploadedBy?: Types.ObjectId;
   error?: string;
   parsedAt?: Date;
@@ -91,6 +102,24 @@ const inboundEmailSchema = new Schema<IInboundEmail>(
     classificationHistory: { type: [classificationSchema], default: [] },
     attachmentIds: { type: [Schema.Types.ObjectId], ref: 'Attachment', default: [] },
     orderIds: { type: [Schema.Types.ObjectId], default: [] },
+    extraction: {
+      type: new Schema<ExtractionSummary>(
+        {
+          status: {
+            type: String,
+            enum: ['running', 'completed', 'partial', 'failed', 'needs_llm'],
+            required: true,
+          },
+          orderCount: { type: Number, default: 0 },
+          lineCount: { type: Number, default: 0 },
+          issueCount: { type: Number, default: 0 },
+          costUsd: { type: Number, default: 0 },
+          completedAt: Date,
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     error: String,
     parsedAt: Date,

@@ -1,0 +1,42 @@
+{
+  "name": "body-free-text",
+  "description": "Free text, no codes: \"Can we get 5 cases of ... and 2 boxes of ...\".",
+  "tags": ["body"],
+  "orders": [
+    {
+      "customerName": "Abbey Care Home",
+      "accountNumber": null,
+      "poNumber": "PO-594103",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": null,
+          "description": "Hygenix Latex Gloves Lightly Powdered Black XL",
+          "quantity": 7,
+          "unit": "cases",
+          "unitPrice": null,
+          "expectedSku": "GL1318"
+        },
+        {
+          "customerPartCode": null,
+          "description": "ProClean Pedal Bin Liner White 11x17x18\" Light Duty",
+          "quantity": 3,
+          "unit": "cases",
+          "unitPrice": null,
+          "expectedSku": "BL1320"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "pdf-customer-codes",
+  "description": "Customer's own part codes (cross-referenced), delivery date and delivery notes.",
+  "tags": ["pdf", "customer-codes"],
+  "orders": [
+    {
+      "customerName": "Kings Primary School",
+      "accountNumber": null,
+      "poNumber": "PO-742584",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": "2026-10-27",
+      "deliveryAddress": {
+        "line1": "33 Queen Street",
+        "postcode": "NR17 5SZ"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 1807.97,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "KIN-1007",
+          "description": "Hygenix Hand Sanitiser Gel 1L Unfragranced",
+          "quantity": 14,
+          "unit": null,
+          "unitPrice": 32.92,
+          "expectedSku": "CH1687"
+        },
+        {
+          "customerPartCode": "KIN-1014",
+          "description": "BRITE FLOOR CLEANER 750ML UNFRAGRANCED",
+          "quantity": 9,
+          "unit": null,
+          "unitPrice": 32.07,
+          "expectedSku": "CH1207"
+        },
+        {
+          "customerPartCode": "KIN-1021",
+          "description": "2 PLY NAPKIN 24CM BLACK 8 FOLD",
+          "quantity": 24,
+          "unit": null,
+          "unitPrice": 15.16,
+          "expectedSku": "NP1166"
+        },
+        {
+          "customerPartCode": "KIN-1028",
+          "description": "3 Ply Napkin 33cm Navy 8 Fold",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 22.18,
+          "expectedSku": "NP1159"
+        },
+        {
+          "customerPartCode": "KIN-1035",
+          "description": "Hygenix Multi-Surface Cleaner 20L Original",
+          "quantity": 21,
+          "unit": null,
+          "unitPrice": 26.74,
+          "expectedSku": "CH2175"
+        }
+      ]
+    }
+  ]
+}

@@ -222,8 +222,119 @@ any 401 from a non-auth endpoint. Verified in the browser.
 - **Scale:** the Mongo queue suits one worker or a few. Use BullMQ for more.
 - **No web unit tests yet;** the UI was checked by hand in the browser.
 
-## Next: M4 - Extraction + eval harness
+## M4 - Extraction + eval harness ✅ (2026-10-26)
 
-LLM provider (Anthropic) with structured JSON + vision, extraction for PDF/scan/Excel/CSV/body,
-schema validation and deterministic checks, usage/cost tracking, and `pnpm eval` over 20
-synthetic fixtures (built on `sampleEmails.ts`).
+**Done when:** the eval runs and reports accuracy on 20 fixtures. `pnpm eval` runs all 20 and prints
+field-level and line-level accuracy, cost per document and latency. It writes an HTML report that
+highlights every mismatch, and CI fails if accuracy drops below `packages/eval/baseline.json`.
+
+**Offline results (mock provider, no API key):**
+
+| Metric                    | Result  |
+| ------------------------- | ------- |
+| Header fields             | 82.7%   |
+| Line fields               | 95.6%   |
+| Lines found               | 94.4%   |
+| Lines correct (no extras) | 100%    |
+| Orders found              | 91.3%   |
+| Perfect documents         | 18 / 20 |
+| Cost                      | $0      |
+| Median latency            | ~20 ms  |
+
+The two misses are the scanned PDF and the phone photo. They are correctly reported as "needs an
+AI model with vision" rather than guessed.
+
+> **Read these numbers carefully.** The offline reader was improved against these same fixtures,
+> so treat its score as a regression gate for the pipeline, not as real-world accuracy. Claude has
+> not been run against the fixtures because no Anthropic key is available here.
+> `pnpm eval --provider anthropic` produces that report as soon as a key is set (roughly
+> $0.02-0.10 per document on claude-opus-5-5, to be confirmed by the report).
+
+### Built
+
+- **Extraction schema** (`packages/shared/src/extraction.ts`): the spec's JSON shape as Zod, with
+  `orders: []` so one document can hold several POs. Every value is nullable ("never invent").
+  There is a confidence per field and per line.
+- **Document preparation:**
+  - **PDFs:** text layer via pdf.js, with line and column layout rebuilt so tables survive.
+    Wrapped cells and repeated page headers are handled.
+  - **Scanned PDFs** (under 80 characters per page) go to the model as the PDF itself, for vision.
+  - **Photos** are EXIF-rotated, resized and converted with sharp.
+  - **Excel and CSV** become pipe-separated tables.
+  - **Email bodies** have quoted replies trimmed but forwarded content kept.
+- **LLM providers** behind `LlmProvider`:
+  - **AnthropicProvider** (official SDK 0.135):
+    - Structured output via `output_config.format` + `betaZodOutputFormat`.
+    - PDFs as `document` blocks and images as `image` blocks for vision.
+    - Prompt-cached system prompt.
+    - Server-side refusal fallbacks (`fallbacks: "default"`): if Claude's safety filters decline a
+      document, it is retried on another model within the same call. A refusal that survives
+      that is recorded as failed, not retried.
+    - Default model `claude-opus-5-5` (effort `medium` for extraction, `low` for
+      classification), configurable through `LLM_MODEL_EXTRACTION` / `LLM_MODEL_CLASSIFY`.
+  - **MockLlmProvider:** a deterministic offline reader (`ruleExtractor.ts`) for tables, wrapped
+    rows, multi-page and multi-PO documents, PO numbers in subjects, signatures, "10 x CODE",
+    "CODE - desc - qty" and free text such as "5 cases of …". It never claims to read scans.
+- **Pipeline** (`extractEmail`, no database, so the eval runs exactly the production code):
+  - It reads order documents, or the body when there are none.
+  - Model output is validated against the schema; on failure it **retries once with the
+    validation error**, then marks the source failed.
+  - **Deterministic checks:** no lines, missing PO, missing/non-positive quantities, line total ≠
+    qty × price, lines ≠ subtotal, subtotal + VAT ≠ total, invalid/future/old dates, delivery
+    before order or in the past, a line count different from the document's own table rows, and
+    the same PO twice in one email. Each issue lowers the order's confidence.
+- **Storage and cost:** an `Extraction` record per source (prompt version, provider, model,
+  tokens, cost, duration, attempts) and an email-level summary. `UsageRecord` adds up LLM calls,
+  tokens, cost, pages, documents and orders per org per month (classification calls included).
+- **Triggers:** classified `new_order` → `extract-email` job. A reviewer reclassifying an email as
+  "New order" (the spec's "convert to order") queues extraction too, and there is a
+  **Re-extract** button.
+- **Web:**
+  - **Inbox:** a "Read" column ("4 lines", "2 orders", "needs AI key", "3 to check").
+  - **Email page:** an "Extracted orders" card with header fields, issues, and a lines table
+    where values the model was unsure of are amber, plus the model, prompt version and cost.
+- **Eval harness** (`packages/eval`):
+  - `generate` builds 20 deterministic fixtures from the demo catalogue: standard, reordered
+    columns with a wrapped header, no prices, 38-line multi-page, 2 POs in one PDF, 2 PDFs,
+    customer codes with delivery date and notes, a scanned PDF (image only, skewed), a phone
+    photo, Excel with title rows, bare Excel, CSV, CSV holding 2 POs, four email-body styles,
+    a forwarded order, VAT/account/long dates, and wrapped descriptions with units.
+  - The ground truth includes the expected SKU for M5.
+  - `eval` scores with these rules: null vs null is not counted, an invented value is wrong,
+    codes ignore separators, descriptions are compared by word overlap, numbers within 0.01.
+  - It prints a summary (`-v` lists every mismatch), writes `reports/report-<provider>.html`
+    and `latest-<provider>.json`, and supports `--ci` (2-point tolerance) and
+    `--update-baseline`.
+- **M2 gap closed:** catalogue/customer imports now accept **.xlsx** (first sheet), not only CSV.
+
+### Tests (96 total, all passing)
+
+- `extraction.test.ts`: checks (clean order, and every issue type), UK/long dates, a PDF read end
+  to end, retry-once-then-fail with usage summed, refusal (no retry), photo without vision →
+  `needs_llm`, automatic extraction with the email summary/timeline/usage, reclassify →
+  extraction, re-extract replaces results, viewer cannot re-extract.
+- `packages/eval/src/score.test.ts`: the scoring rules.
+- Excel import end to end; the earlier M1-M3 suites updated for the new extraction step.
+- CI gate verified both ways: the full run passes, and a scan-only subset fails with exit 1.
+
+### Not verified / known gaps
+
+- **Claude itself has not been run** (no key on this machine). The provider follows the bundled
+  SDK documentation and typechecks against SDK 0.135, but its first real run should be
+  `pnpm eval --provider anthropic` to measure accuracy and cost before trusting it.
+- **Visual highlighting:** the spec's "highlight the area for the selected line" needs positions
+  from the model or OCR. It is M6 work with the review screen.
+- **Document types:** Word (.docx) attachments and old .xls files are not read (the email body is
+  still used). Embedded/forwarded `.eml` attachments are not opened yet.
+- **Customer hints** are plumbed into the prompt but not filled until customer identification
+  exists (M5).
+- **Orders:** extractions are stored but not yet turned into Orders. That is M5 (matching,
+  validation, routing).
+
+## Next: M5 - Matching, validation, routing
+
+Customer identification (sender → domain → account number → fuzzy name), line matching
+(cross-reference → description → SKU/barcode → fuzzy search via `ProductSearch`, top-3
+candidates), UoM conversion, the validation rules from spec section 8, and green/amber/red routing
+into real Order records. The eval gains SKU match accuracy using the `expectedSku` already in
+every fixture.

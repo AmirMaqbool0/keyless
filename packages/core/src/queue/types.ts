@@ -8,6 +8,8 @@ export type JobPayloads = {
   'process-email': { orgId: string; emailId: string };
   /** Decide what kind of email it is (order, amendment, quote...). */
   'classify-email': { orgId: string; emailId: string };
+  /** Read the purchase order(s) out of an email classified as a new order. */
+  'extract-email': { orgId: string; emailId: string };
   /** Pull new messages from a connected Graph/Gmail mailbox. */
   'mailbox-sync': { orgId: string; mailboxId: string };
 };
@@ -50,6 +52,8 @@ const ENTITY_BY_JOB: Record<
   'process-email': (d) =>
     typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
   'classify-email': (d) =>
+    typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
+  'extract-email': (d) =>
     typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
   'mailbox-sync': (d) =>
     typeof d.mailboxId === 'string' ? { type: 'mailbox', id: d.mailboxId } : undefined,

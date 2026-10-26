@@ -14,6 +14,7 @@ import { Badge, Button, Card, FormError, FullPageSpinner } from '../../component
 import { api, errorMessage } from '../../lib/api';
 import { useHasRole } from '../../lib/session';
 import { ClassificationBadge } from './ClassificationBadge';
+import { ExtractedOrders } from './ExtractedOrders';
 
 const formatSize = (bytes: number) =>
   bytes < 1024
@@ -63,7 +64,11 @@ export function EmailDetailPage() {
     queryKey: ['email', id],
     queryFn: () => api.get<EmailDetailDto>(`/api/emails/${id}`),
     refetchInterval: (q) =>
-      q.state.data && ['received', 'parsed'].includes(q.state.data.status) ? 1500 : false,
+      q.state.data &&
+      (['received', 'parsed'].includes(q.state.data.status) ||
+        q.state.data.extraction?.status === 'running')
+        ? 1500
+        : false,
   });
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['email', id] });
@@ -77,6 +82,11 @@ export function EmailDetailPage() {
       refresh();
     },
     onError: (e) => toast.error(errorMessage(e)),
+  });
+  const extract = useMutation({
+    mutationFn: () => api.post(`/api/emails/${id}/extract`),
+    onSuccess: refresh,
+    onError: (err) => toast.error(errorMessage(err)),
   });
   const reprocess = useMutation({
     mutationFn: () => api.post(`/api/emails/${id}/reprocess`),
@@ -134,6 +144,14 @@ export function EmailDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
+          {(e.extraction || e.extractions.length > 0) && (
+            <ExtractedOrders
+              extractions={e.extractions}
+              running={e.extraction?.status === 'running' || extract.isPending}
+              canReextract={canReview}
+              onReextract={() => extract.mutate()}
+            />
+          )}
           {docs.length > 0 && (
             <Card title={`Attachments (${docs.length})`}>
               <ul className="mb-4 flex flex-wrap gap-2">
@@ -242,11 +260,6 @@ export function EmailDetailPage() {
                   ))}
                 </select>
               </label>
-            )}
-            {e.classification?.label === 'new_order' && (
-              <p className="mt-4 rounded-md bg-slate-50 p-3 text-xs text-slate-500">
-                Order extraction and matching arrive in M4-M5.
-              </p>
             )}
           </Card>
 

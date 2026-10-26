@@ -1,0 +1,66 @@
+{
+  "name": "xlsx-plain",
+  "description": "Bare Excel table; PO number only in the email subject; no date or address.",
+  "tags": ["spreadsheet"],
+  "orders": [
+    {
+      "customerName": "Willow Cafe",
+      "accountNumber": null,
+      "poNumber": "PO-284235",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "GL1234",
+          "description": "ProClean Polythene Gloves Powder Free Black XS (Box 100)",
+          "quantity": 21,
+          "unit": null,
+          "unitPrice": 7.94,
+          "expectedSku": "GL1234"
+        },
+        {
+          "customerPartCode": "BG1074",
+          "description": "Sandwich Bag Medium Clear (Case 250)",
+          "quantity": 19,
+          "unit": null,
+          "unitPrice": 20.51,
+          "expectedSku": "BG1074"
+        },
+        {
+          "customerPartCode": "BL2187",
+          "description": "Caterpak Compactor Sack White 22x34x47\" Medium Duty (Case 500)",
+          "quantity": 5,
+          "unit": null,
+          "unitPrice": 23.25,
+          "expectedSku": "BL2187"
+        },
+        {
+          "customerPartCode": "BL1283",
+          "description": "ProClean Refuse Sack Blue 15x24x24\" Light Duty (Case 500)",
+          "quantity": 2,
+          "unit": null,
+          "unitPrice": 26.8,
+          "expectedSku": "BL1283"
+        },
+        {
+          "customerPartCode": "CT1053",
+          "description": "Wooden Teaspoon Black (Box 1000)",
+          "quantity": 16,
+          "unit": null,
+          "unitPrice": 26.36,
+          "expectedSku": "CT1053"
+        }
+      ]
+    }
+  ]
+}

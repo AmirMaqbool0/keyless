@@ -1,0 +1,85 @@
+{
+  "name": "csv-two-orders",
+  "description": "One CSV holding two POs, split by a PO Number column.",
+  "tags": ["csv", "multi-order"],
+  "orders": [
+    {
+      "customerName": "Market Care Home",
+      "accountNumber": null,
+      "poNumber": "PO-669560",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1072",
+          "description": "Caterpak Glass Cleaner 20L Original (Case 2)",
+          "quantity": 20,
+          "unit": null,
+          "unitPrice": 14.86,
+          "expectedSku": "CH1072"
+        },
+        {
+          "customerPartCode": "CH2122",
+          "description": "Caterpak Hand Soap 750ml Original (Case 2)",
+          "quantity": 21,
+          "unit": null,
+          "unitPrice": 15.53,
+          "expectedSku": "CH2122"
+        }
+      ]
+    },
+    {
+      "customerName": "Market Care Home",
+      "accountNumber": null,
+      "poNumber": "PO-944504",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "GL1527",
+          "description": "Hygenix Latex Gloves Powder Free Clear Large (Box 100)",
+          "quantity": 28,
+          "unit": null,
+          "unitPrice": 7.87,
+          "expectedSku": "GL1527"
+        },
+        {
+          "customerPartCode": "CH1166",
+          "description": "Brite Air Freshener 750ml Original (Case 2)",
+          "quantity": 9,
+          "unit": null,
+          "unitPrice": 17.32,
+          "expectedSku": "CH1166"
+        },
+        {
+          "customerPartCode": "CH1324",
+          "description": "Hygenix Air Freshener 750ml Lavender (Case 6)",
+          "quantity": 29,
+          "unit": null,
+          "unitPrice": 32.26,
+          "expectedSku": "CH1324"
+        }
+      ]
+    }
+  ]
+}

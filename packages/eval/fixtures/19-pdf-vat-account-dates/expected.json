@@ -1,0 +1,58 @@
+{
+  "name": "pdf-vat-account-dates",
+  "description": "Account number, \"required by\" long-form delivery date, subtotal/VAT/total.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Orchard Catering Ltd",
+      "accountNumber": "ORCH004",
+      "poNumber": "PO-214373",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": "2026-11-30",
+      "deliveryAddress": {
+        "line1": "15 Bridge Street",
+        "postcode": "M20 4BR"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 484.39,
+        "tax": 96.88,
+        "total": 581.27
+      },
+      "lines": [
+        {
+          "customerPartCode": "BL1856",
+          "description": "Caterpak Pedal Bin Liner Blue 11x17x18\" Heavy Duty (Case 200)",
+          "quantity": 9,
+          "unit": null,
+          "unitPrice": 18.55,
+          "expectedSku": "BL1856"
+        },
+        {
+          "customerPartCode": "CH1337",
+          "description": "Hygenix Thick Bleach 20L Lemon (Case 6)",
+          "quantity": 1,
+          "unit": null,
+          "unitPrice": 30.88,
+          "expectedSku": "CH1337"
+        },
+        {
+          "customerPartCode": "CH1698",
+          "description": "Brite Rinse Aid 1L Unfragranced (Case 2)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 17.12,
+          "expectedSku": "CH1698"
+        },
+        {
+          "customerPartCode": "GL1898",
+          "description": "Caterpak Latex Gloves Powder Free White XS (Box 100)",
+          "quantity": 24,
+          "unit": null,
+          "unitPrice": 7.66,
+          "expectedSku": "GL1898"
+        }
+      ]
+    }
+  ]
+}

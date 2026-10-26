@@ -84,7 +84,7 @@ export function NewImportPage() {
       <>
         <PageHeader
           title="Import data"
-          description="Upload CSV files exported from your current system. Recommended order: products, customers, prices, cross-references."
+          description="Upload CSV or Excel files exported from your current system. Recommended order: products, customers, prices, cross-references."
         />
         <div className="grid gap-4 sm:grid-cols-2">
           {IMPORT_TYPES.map((t, i) => (
@@ -139,7 +139,7 @@ export function NewImportPage() {
             </div>
           ) : (
             <>
-              <p className="text-sm font-medium text-slate-800">Drag a CSV file here</p>
+              <p className="text-sm font-medium text-slate-800">Drag a CSV or Excel file here</p>
               <p className="mt-1 text-xs text-slate-500">
                 Any column names - you will match them to Keyless fields next. Up to 100,000 rows.
               </p>
@@ -149,7 +149,7 @@ export function NewImportPage() {
               <input
                 ref={inputRef}
                 type="file"
-                accept=".csv,text/csv,.txt"
+                accept=".csv,text/csv,.txt,.xlsx"
                 className="hidden"
                 onChange={(e) => pick(e.target.files)}
               />
@@ -157,7 +157,7 @@ export function NewImportPage() {
           )}
         </div>
         <p className="mt-4 text-sm text-slate-500">
-          Excel file? Use <em>File &gt; Save As &gt; CSV UTF-8</em>. Or{' '}
+          Excel files: the first sheet is imported. Or{' '}
           <a
             className="text-brand-700 hover:underline"
             href={`/api/imports/templates/${type}`}

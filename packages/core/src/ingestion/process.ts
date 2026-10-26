@@ -6,6 +6,7 @@ import { storageKey, type Storage } from '../lib/storage';
 import type { LlmProvider } from '../llm/types';
 import { Attachment, attachmentKind } from '../models/Attachment';
 import { InboundEmail, type Classification } from '../models/InboundEmail';
+import { recordUsage } from '../models/UsageRecord';
 import { PermanentJobError, type JobQueue } from '../queue/types';
 import { HEURISTIC_CONFIDENT, classifyHeuristically } from './classify';
 
@@ -189,5 +190,25 @@ export async function classifyEmail(
   email.classificationHistory.push(result);
   email.status = 'classified';
   await email.save();
-  // TODO(M4): new_order -> queue extraction. TODO(M5): amendment/cancellation -> link to order.
+  if (result.usage?.inputTokens) {
+    await recordUsage(orgId, {
+      llmCalls: 1,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      costUsd: result.usage.costUsd,
+    });
+  }
+  if (result.label === 'new_order') await queueExtraction(deps.queue, data);
+  // TODO(M5): amendment/cancellation -> link to the existing order.
+}
+
+/** Queue (or re-run) extraction for an email. */
+export function queueExtraction(
+  queue: JobQueue,
+  data: { orgId: string; emailId: string },
+): Promise<void> {
+  return queue.add('extract-email', data, {
+    uniqueKey: `extract-email:${data.emailId}`,
+    reset: true,
+  });
 }

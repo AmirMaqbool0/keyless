@@ -7,6 +7,7 @@ import {
   reclassifySchema,
   type ClassificationDto,
   type EmailDetailDto,
+  type ExtractionDto,
   type EmailListItemDto,
   type Paginated,
   type ProcessingErrorDto,
@@ -27,6 +28,8 @@ import {
   type IInboundEmail,
 } from '@keyless/core/models/InboundEmail';
 import { Mailbox } from '@keyless/core/models/Mailbox';
+import { Extraction, type IExtraction } from '@keyless/core/models/Extraction';
+import { queueExtraction } from '@keyless/core/ingestion/process';
 import type { JobName } from '@keyless/core/queue/types';
 import { authed, requireRole } from '../../middleware/auth';
 import { objectId } from '../shared';
@@ -67,6 +70,32 @@ function listItem(e: IInboundEmail): EmailListItemDto {
     attachmentCount: e.attachmentIds.length,
     classification: classificationDto(e.classification),
     error: e.error ?? null,
+    extraction: e.extraction
+      ? {
+          status: e.extraction.status,
+          orderCount: e.extraction.orderCount,
+          lineCount: e.extraction.lineCount,
+          issueCount: e.extraction.issueCount,
+        }
+      : null,
+  };
+}
+
+function extractionDto(x: IExtraction): ExtractionDto {
+  return {
+    id: x._id.toString(),
+    source: x.source,
+    status: x.status,
+    provider: x.provider,
+    model: x.model ?? null,
+    promptVersion: x.promptVersion,
+    orders: x.orders,
+    documentNotes: x.documentNotes ?? null,
+    error: x.error ?? null,
+    usage: x.usage,
+    durationMs: x.durationMs,
+    attempts: x.attempts,
+    createdAt: x.createdAt.toISOString(),
   };
 }
 
@@ -125,11 +154,12 @@ export function emailsRouter(deps: IngestDeps): Router {
     const { orgId } = authed(req);
     const email = await InboundEmail.findOne({ _id: objectId(param(req, 'id')), orgId });
     if (!email) throw notFound('Email not found');
-    const [attachments, mailbox] = await Promise.all([
+    const [attachments, mailbox, extractions] = await Promise.all([
       Attachment.find({ orgId, emailId: email._id }).sort({ isInline: 1, createdAt: 1 }),
       email.mailboxId
         ? Mailbox.findOne({ _id: email.mailboxId, orgId }, { type: 1, address: 1 })
         : null,
+      Extraction.find({ orgId, emailId: email._id }).sort({ createdAt: 1 }),
     ]);
     const timeline: EmailDetailDto['timeline'] = [
       { at: email.createdAt.toISOString(), event: 'Received', detail: `via ${email.source}` },
@@ -149,6 +179,14 @@ export function emailsRouter(deps: IngestDeps): Router {
     }
     if (email.error)
       timeline.push({ at: email.updatedAt.toISOString(), event: 'Failed', detail: email.error });
+    if (email.extraction?.completedAt) {
+      const x = email.extraction;
+      timeline.push({
+        at: x.completedAt!.toISOString(),
+        event: 'Extracted',
+        detail: `${x.orderCount} order(s), ${x.lineCount} line(s)${x.issueCount ? `, ${x.issueCount} issue(s)` : ''}`,
+      });
+    }
 
     const body: EmailDetailDto = {
       ...listItem(email),
@@ -181,6 +219,7 @@ export function emailsRouter(deps: IngestDeps): Router {
         disposition: 'attachment',
       }),
       timeline: timeline.sort((a, b) => a.at.localeCompare(b.at)),
+      extractions: extractions.map(extractionDto),
     };
     res.json(body);
   });
@@ -258,7 +297,34 @@ export function emailsRouter(deps: IngestDeps): Router {
       summary: { before, after: label },
       req,
     });
-    // TODO(M4): reclassifying as new_order queues extraction.
+    // A reviewer saying "this is an order" is the "convert to order" action.
+    if (label === 'new_order' && before !== 'new_order' && email.status !== 'failed') {
+      await queueExtraction(deps.queue, { orgId: orgId.toString(), emailId: email._id.toString() });
+    }
+    res.json(listItem(email));
+  });
+
+  r.post('/:id/extract', requireRole('reviewer'), async (req, res) => {
+    const { orgId } = authed(req);
+    const email = await InboundEmail.findOne({ _id: objectId(param(req, 'id')), orgId });
+    if (!email) throw notFound('Email not found');
+    if (email.status !== 'classified')
+      throw badRequest('This email has not been read yet', 'NOT_READY');
+    email.extraction = {
+      status: 'running',
+      orderCount: 0,
+      lineCount: 0,
+      issueCount: 0,
+      costUsd: 0,
+    };
+    await email.save();
+    await queueExtraction(deps.queue, { orgId: orgId.toString(), emailId: email._id.toString() });
+    await audit({
+      orgId,
+      action: 'email.reextracted',
+      entity: { type: 'email', id: email._id.toString() },
+      req,
+    });
     res.json(listItem(email));
   });
 

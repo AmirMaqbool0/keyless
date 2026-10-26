@@ -60,7 +60,10 @@ export function InboxPage() {
     placeholderData: keepPreviousData,
     // Keep polling while anything is still being processed.
     refetchInterval: (query) =>
-      query.state.data?.items.some((e) => e.status === 'received' || e.status === 'parsed')
+      query.state.data?.items.some(
+        (e) =>
+          e.status === 'received' || e.status === 'parsed' || e.extraction?.status === 'running',
+      )
         ? 2000
         : 15000,
   });
@@ -190,6 +193,28 @@ export function InboxPage() {
               cell: (e) => (
                 <ClassificationBadge classification={e.classification} status={e.status} />
               ),
+            },
+            {
+              header: 'Read',
+              cell: (e) => {
+                const x = e.extraction;
+                if (!x) return null;
+                if (x.status === 'running')
+                  return <span className="text-xs text-slate-400">reading...</span>;
+                if (x.status === 'needs_llm')
+                  return <span className="text-xs text-slate-500">needs AI key</span>;
+                if (x.status === 'failed')
+                  return <span className="text-xs text-red-600">failed</span>;
+                return (
+                  <span className="whitespace-nowrap text-xs text-slate-600">
+                    {x.orderCount > 1 ? `${x.orderCount} orders, ` : ''}
+                    {x.lineCount} line{x.lineCount === 1 ? '' : 's'}
+                    {x.issueCount > 0 && (
+                      <span className="text-amber-700"> - {x.issueCount} to check</span>
+                    )}
+                  </span>
+                );
+              },
             },
             {
               header: 'Via',

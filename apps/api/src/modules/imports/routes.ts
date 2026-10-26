@@ -7,6 +7,7 @@ import { badRequest, conflict, notFound, param, validate } from '@keyless/core/l
 import type { Storage } from '@keyless/core/lib/storage';
 import { authed, requireRole } from '../../middleware/auth';
 import { ImportJob } from '@keyless/core/models/ImportJob';
+import { xlsxToCsv } from '@keyless/core/documents/prepare';
 import { objectId } from '../shared';
 import { checkMapping, createImportJob, runImport, templateCsv, toImportJobDto } from './service';
 
@@ -44,19 +45,33 @@ export function importsRouter({ storage }: { storage: Storage }): Router {
   r.post('/', upload.single('file'), async (req, res) => {
     const { orgId, user } = authed(req);
     const type = validate(importTypeSchema, req.body?.type);
-    if (!req.file) throw badRequest('Choose a CSV file to upload', 'NO_FILE');
-    if (!/\.(csv|txt)$/i.test(req.file.originalname)) {
+    if (!req.file) throw badRequest('Choose a CSV or Excel file to upload', 'NO_FILE');
+    const name = req.file.originalname;
+    if (/\.xls$/i.test(name)) {
       throw badRequest(
-        'Upload a .csv file (in Excel: File > Save As > CSV UTF-8)',
+        'Old .xls files are not supported: in Excel use File > Save As > .xlsx or CSV',
         'UNSUPPORTED_FILE',
       );
+    }
+    if (!/\.(csv|txt|xlsx)$/i.test(name))
+      throw badRequest('Upload a .csv or .xlsx file', 'UNSUPPORTED_FILE');
+    let buffer = req.file.buffer;
+    if (/\.xlsx$/i.test(name)) {
+      try {
+        buffer = await xlsxToCsv(buffer); // first sheet; the rest of the flow is the CSV flow
+      } catch (err) {
+        throw badRequest(
+          `Could not read the spreadsheet: ${err instanceof Error ? err.message : String(err)}`,
+          'INVALID_FILE',
+        );
+      }
     }
     const job = await createImportJob({
       orgId,
       userId: user._id,
       type,
-      filename: req.file.originalname,
-      buffer: req.file.buffer,
+      filename: name,
+      buffer,
       storage,
     });
     res.status(201).json({ job: toImportJobDto(job) });

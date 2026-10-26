@@ -1,0 +1,58 @@
+{
+  "name": "pdf-standard",
+  "description": "Clean ERP-style PDF: code, description, qty, price, total, subtotal.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Rose Bistro",
+      "accountNumber": null,
+      "poNumber": "PO-925409",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "146 Mill Road",
+        "postcode": "NR5 5LL"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 894.76,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CT1108",
+          "description": "Wooden Spoon Natural (Box 100)",
+          "quantity": 26,
+          "unit": null,
+          "unitPrice": 8.64,
+          "expectedSku": "CT1108"
+        },
+        {
+          "customerPartCode": "BL1457",
+          "description": "ProClean Clinical Waste Sack Clear 11x17x18\" Heavy Duty (Case 200)",
+          "quantity": 14,
+          "unit": null,
+          "unitPrice": 17.89,
+          "expectedSku": "BL1457"
+        },
+        {
+          "customerPartCode": "CH1534",
+          "description": "Hygenix Hand Soap 750ml Lemon (Case 6)",
+          "quantity": 12,
+          "unit": null,
+          "unitPrice": 29.82,
+          "expectedSku": "CH1534"
+        },
+        {
+          "customerPartCode": "CU1119",
+          "description": "Ripple Cup 12oz Black (Case 500)",
+          "quantity": 2,
+          "unit": null,
+          "unitPrice": 30.91,
+          "expectedSku": "CU1119"
+        }
+      ]
+    }
+  ]
+}

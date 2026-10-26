@@ -49,6 +49,7 @@ Make yourself platform super-admin: `pnpm --filter @keyless/api make-superadmin 
 | `pnpm lint`      | ESLint                                               |
 | `pnpm build`     | Production builds (`apps/api/dist`, `apps/web/dist`) |
 | `pnpm seed`      | Demo organisation, users and catalogue               |
+| `pnpm eval`      | Extraction accuracy on 20 fixtures + HTML report     |
 
 ## Layout
 
@@ -62,7 +63,9 @@ samples/         Example CSV exports for trying imports
 docs/            Setup guides (inbound-email.md: forwarding, Microsoft 365, Gmail)
 ```
 
-`packages/eval` (accuracy harness) arrives in M4.
+`packages/eval` holds the extraction accuracy harness: 20 synthetic purchase orders with ground
+truth. `pnpm eval --provider mock` runs offline; `pnpm eval --provider anthropic` measures Claude
+(costs a few cents per run). Reports land in `packages/eval/reports/`.
 
 Getting real email in: see [docs/inbound-email.md](docs/inbound-email.md). In development, use
 **Inbox > Send test email**, or drag `.eml` or PDF files onto the inbox.

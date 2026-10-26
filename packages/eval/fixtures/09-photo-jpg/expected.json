@@ -1,0 +1,50 @@
+{
+  "name": "photo-jpg",
+  "description": "Phone photo of a printed PO (JPEG, rotated, uneven background).",
+  "tags": ["image", "vision"],
+  "orders": [
+    {
+      "customerName": "Elm Deli",
+      "accountNumber": null,
+      "poNumber": "PO-228408",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "16 High Street",
+        "postcode": "NR8 8PT"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 453.42,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "BL1317",
+          "description": "Caterpak Swing Bin Liner Clear 11x17x18\" Light Duty (Case 200)",
+          "quantity": 10,
+          "unit": null,
+          "unitPrice": 14.54,
+          "expectedSku": "BL1317"
+        },
+        {
+          "customerPartCode": "FF1005",
+          "description": "Catering Foil 450mm 100m (Pack 6)",
+          "quantity": 1,
+          "unit": null,
+          "unitPrice": 29.28,
+          "expectedSku": "FF1005"
+        },
+        {
+          "customerPartCode": "CH1805",
+          "description": "Hygenix Hand Soap 1L Lemon (Case 6)",
+          "quantity": 11,
+          "unit": null,
+          "unitPrice": 25.34,
+          "expectedSku": "CH1805"
+        }
+      ]
+    }
+  ]
+}

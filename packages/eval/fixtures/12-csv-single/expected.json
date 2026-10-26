@@ -1,0 +1,58 @@
+{
+  "name": "csv-single",
+  "description": "CSV export of one order; PO in the subject.",
+  "tags": ["csv"],
+  "orders": [
+    {
+      "customerName": "Lantern Primary School",
+      "accountNumber": null,
+      "poNumber": "PO-586584",
+      "orderDate": null,
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": null,
+        "postcode": null
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1480",
+          "description": "ProClean Heavy Duty Degreaser 5L Original (Case 6)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 29.32,
+          "expectedSku": "CH1480"
+        },
+        {
+          "customerPartCode": "MC1063",
+          "description": "Socket Mop Head Green (Pack 10)",
+          "quantity": 28,
+          "unit": null,
+          "unitPrice": 10.2,
+          "expectedSku": "MC1063"
+        },
+        {
+          "customerPartCode": "GL1184",
+          "description": "ProClean Latex Gloves Powder Free Blue XS (Box 100)",
+          "quantity": 23,
+          "unit": null,
+          "unitPrice": 7.66,
+          "expectedSku": "GL1184"
+        },
+        {
+          "customerPartCode": "GL1137",
+          "description": "Hygenix Latex Gloves Powder Free White Small (Box 100)",
+          "quantity": 26,
+          "unit": null,
+          "unitPrice": 7.12,
+          "expectedSku": "GL1137"
+        }
+      ]
+    }
+  ]
+}

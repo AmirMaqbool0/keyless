@@ -16,3 +16,5 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      # Extraction accuracy gate (offline provider; fails if below packages/eval/baseline.json)
+      - run: pnpm eval --provider mock --ci

@@ -1,0 +1,74 @@
+{
+  "name": "xlsx-title-rows",
+  "description": "Excel PO with title rows (PO, date, address) above the item table.",
+  "tags": ["spreadsheet"],
+  "orders": [
+    {
+      "customerName": "Thistle Bakery",
+      "accountNumber": null,
+      "poNumber": "PO-275523",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "102 Market Place",
+        "postcode": "S19 5TD"
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "GL1212",
+          "description": "ProClean Vinyl Gloves Lightly Powdered White XL (Box 100)",
+          "quantity": 18,
+          "unit": null,
+          "unitPrice": 7.6,
+          "expectedSku": "GL1212"
+        },
+        {
+          "customerPartCode": "CH1460",
+          "description": "Brite Rinse Aid 5L Lemon (Case 2)",
+          "quantity": 13,
+          "unit": null,
+          "unitPrice": 13.25,
+          "expectedSku": "CH1460"
+        },
+        {
+          "customerPartCode": "CH2075",
+          "description": "Caterpak Dishwasher Detergent 1L Lemon (Case 2)",
+          "quantity": 15,
+          "unit": null,
+          "unitPrice": 19.3,
+          "expectedSku": "CH2075"
+        },
+        {
+          "customerPartCode": "CH1777",
+          "description": "Brite Multi-Surface Cleaner 750ml Unfragranced (Case 2)",
+          "quantity": 19,
+          "unit": null,
+          "unitPrice": 19.4,
+          "expectedSku": "CH1777"
+        },
+        {
+          "customerPartCode": "CH1557",
+          "description": "Caterpak Washroom Cleaner 1L Lavender (Case 2)",
+          "quantity": 10,
+          "unit": null,
+          "unitPrice": 16.72,
+          "expectedSku": "CH1557"
+        },
+        {
+          "customerPartCode": "NP1172",
+          "description": "2 Ply Napkin 33cm Burgundy 8 Fold (Case 2000)",
+          "quantity": 16,
+          "unit": null,
+          "unitPrice": 27.85,
+          "expectedSku": "NP1172"
+        }
+      ]
+    }
+  ]
+}

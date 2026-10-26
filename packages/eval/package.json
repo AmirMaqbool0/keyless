@@ -1,0 +1,29 @@
+{
+  "name": "@keyless/eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Extraction accuracy harness: fixtures with ground truth, scoring, HTML report, CI gate.",
+  "scripts": {
+    "eval": "tsx src/cli.ts",
+    "generate": "tsx src/generate.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@keyless/core": "workspace:*",
+    "@keyless/shared": "workspace:*",
+    "exceljs": "^4.4.0",
+    "mailparser": "~3.11.0",
+    "nodemailer": "~7.0.6",
+    "pdfkit": "~0.17.2",
+    "sharp": "~0.35.5"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.4.6",
+    "@types/nodemailer": "^7.0.0",
+    "@types/pdfkit": "^0.17.0",
+    "tsx": "^4.20.0",
+    "vitest": "^3.2.7"
+  }
+}

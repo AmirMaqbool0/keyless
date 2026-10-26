@@ -1,0 +1,23 @@
+From: Sam Buyer <orders@lanternprimaryschool.example>
+To: orders@distributor.example
+Subject: Order PO-248123
+Message-ID: <fx-21@fixtures.keyless.local>
+Date: Tue, 20 Oct 2026 09:14:00 +0000
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+
+Order:
+
+Code	Description	Qty
+CU1178	Double Wall Paper Cup 12oz Printed (Case 500)	27
+GL1133	Hygenix Polythene Gloves Powder Free Blue XS (Box 200)	5
+BG1114	Grip Seal Bag Medium White (Case 250)	30
+CH2340	Hygenix Thick Bleach 5L Original (Case 2)	6
+BL1997	Caterpak Refuse Sack Blue 18x29x39" Medium Duty (Case 500)	6
+
+Kind regards,
+Sam Buyer
+Lantern Primary School

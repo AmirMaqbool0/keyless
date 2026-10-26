@@ -1,0 +1,74 @@
+{
+  "name": "pdf-no-prices",
+  "description": "No prices on the PO, units column instead.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Riverside Hotel",
+      "accountNumber": null,
+      "poNumber": "PO-485097",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "186 Market Place",
+        "postcode": "BS8 7EB"
+      },
+      "currency": null,
+      "totals": {
+        "subtotal": null,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1011",
+          "description": "Caterpak Toilet Cleaner 5L Lavender (Case 2)",
+          "quantity": 7,
+          "unit": "Case",
+          "unitPrice": null,
+          "expectedSku": "CH1011"
+        },
+        {
+          "customerPartCode": "BL1980",
+          "description": "ProClean Clinical Waste Sack Clear 22x34x47\" Heavy Duty (Case 200)",
+          "quantity": 29,
+          "unit": "Case",
+          "unitPrice": null,
+          "expectedSku": "BL1980"
+        },
+        {
+          "customerPartCode": "BL2078",
+          "description": "Caterpak Refuse Sack Blue 11x17x18\" Medium Duty (Case 200)",
+          "quantity": 29,
+          "unit": "Case",
+          "unitPrice": null,
+          "expectedSku": "BL2078"
+        },
+        {
+          "customerPartCode": "BL2325",
+          "description": "Caterpak Swing Bin Liner Clear 15x24x24\" Heavy Duty (Case 200)",
+          "quantity": 7,
+          "unit": "Case",
+          "unitPrice": null,
+          "expectedSku": "BL2325"
+        },
+        {
+          "customerPartCode": "GL1735",
+          "description": "ProClean Nitrile Gloves Powder Free Black Large (Box 200)",
+          "quantity": 26,
+          "unit": "Box",
+          "unitPrice": null,
+          "expectedSku": "GL1735"
+        },
+        {
+          "customerPartCode": "BL2350",
+          "description": "ProClean Pedal Bin Liner Blue 11x17x18\" Light Duty (Case 500)",
+          "quantity": 1,
+          "unit": "Case",
+          "unitPrice": null,
+          "expectedSku": "BL2350"
+        }
+      ]
+    }
+  ]
+}

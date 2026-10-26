@@ -1,0 +1,101 @@
+{
+  "name": "pdf-two-orders",
+  "description": "Two separate POs (two delivery sites) in one PDF.",
+  "tags": ["pdf", "multi-order"],
+  "orders": [
+    {
+      "customerName": "Kings Care Home",
+      "accountNumber": null,
+      "poNumber": "PO-405282",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "8 Queen Street",
+        "postcode": "CH17 5AA"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 470.58,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH1775",
+          "description": "Caterpak Heavy Duty Degreaser 5L Lavender (Case 2)",
+          "quantity": 3,
+          "unit": null,
+          "unitPrice": 17.57,
+          "expectedSku": "CH1775"
+        },
+        {
+          "customerPartCode": "BL1009",
+          "description": "ProClean Swing Bin Liner Green 22x34x47\" Heavy Duty (Case 500)",
+          "quantity": 1,
+          "unit": null,
+          "unitPrice": 28.14,
+          "expectedSku": "BL1009"
+        },
+        {
+          "customerPartCode": "CH1433",
+          "description": "ProClean Multi-Surface Cleaner 5L Unfragranced (Case 6)",
+          "quantity": 11,
+          "unit": null,
+          "unitPrice": 35.43,
+          "expectedSku": "CH1433"
+        }
+      ]
+    },
+    {
+      "customerName": "Kings Care Home",
+      "accountNumber": null,
+      "poNumber": "PO-607642",
+      "orderDate": "2026-10-20",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "Unit 15, Station Road",
+        "postcode": "YO19 3NE"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 924.43,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "MC1052",
+          "description": "Stainless Steel Scourer Yellow (Pack 10)",
+          "quantity": 28,
+          "unit": null,
+          "unitPrice": 8.94,
+          "expectedSku": "MC1052"
+        },
+        {
+          "customerPartCode": "GL1204",
+          "description": "Caterpak Nitrile Gloves Powder Free Blue Medium (Box 200)",
+          "quantity": 3,
+          "unit": null,
+          "unitPrice": 10.75,
+          "expectedSku": "GL1204"
+        },
+        {
+          "customerPartCode": "CH1887",
+          "description": "Hygenix Toilet Cleaner 20L Original (Case 6)",
+          "quantity": 20,
+          "unit": null,
+          "unitPrice": 29.66,
+          "expectedSku": "CH1887"
+        },
+        {
+          "customerPartCode": "GL1630",
+          "description": "Hygenix Latex Gloves Powder Free Clear XL (Box 200)",
+          "quantity": 6,
+          "unit": null,
+          "unitPrice": 8.11,
+          "expectedSku": "GL1630"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+From: Sam Buyer <orders@marketcarehome.example>
+To: orders@distributor.example
+Subject: Orders this week
+Message-ID: <fx-21@fixtures.keyless.local>
+Date: Tue, 20 Oct 2026 09:14:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="--_NmP-cbbb8426d996071f-Part_1"
+
+----_NmP-cbbb8426d996071f-Part_1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Two orders in the attached file.
+
+Kind regards,
+Sam Buyer
+Market Care Home
+----_NmP-cbbb8426d996071f-Part_1
+Content-Type: text/csv; name=orders.csv
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=orders.csv
+
+IlBPIE51bWJlciIsIkl0ZW0gQ29kZSIsIkRlc2NyaXB0aW9uIiwiUXR5IiwiVW5pdCBQcmljZSIN
+CiJQTy02Njk1NjAiLCJDSDEwNzIiLCJDYXRlcnBhayBHbGFzcyBDbGVhbmVyIDIwTCBPcmlnaW5h
+bCAoQ2FzZSAyKSIsMjAsMTQuODYNCiJQTy02Njk1NjAiLCJDSDIxMjIiLCJDYXRlcnBhayBIYW5k
+IFNvYXAgNzUwbWwgT3JpZ2luYWwgKENhc2UgMikiLDIxLDE1LjUzDQoiUE8tOTQ0NTA0IiwiR0wx
+NTI3IiwiSHlnZW5peCBMYXRleCBHbG92ZXMgUG93ZGVyIEZyZWUgQ2xlYXIgTGFyZ2UgKEJveCAx
+MDApIiwyOCw3Ljg3DQoiUE8tOTQ0NTA0IiwiQ0gxMTY2IiwiQnJpdGUgQWlyIEZyZXNoZW5lciA3
+NTBtbCBPcmlnaW5hbCAoQ2FzZSAyKSIsOSwxNy4zMg0KIlBPLTk0NDUwNCIsIkNIMTMyNCIsIkh5
+Z2VuaXggQWlyIEZyZXNoZW5lciA3NTBtbCBMYXZlbmRlciAoQ2FzZSA2KSIsMjksMzIuMjY=
+----_NmP-cbbb8426d996071f-Part_1--
