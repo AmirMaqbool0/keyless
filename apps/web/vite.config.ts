@@ -7,6 +7,10 @@ export default defineConfig({
   server: {
     port: 5173,
     // Same-origin in dev, like production behind one reverse proxy: cookies and CSRF just work.
-    proxy: { '/api': 'http://localhost:4000', '/health': 'http://localhost:4000' },
+    proxy: {
+      '/api': 'http://localhost:4000',
+      '/health': 'http://localhost:4000',
+      '/webhooks': 'http://localhost:4000',
+    },
   },
 });

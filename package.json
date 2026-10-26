@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "concurrently -k -n db,api,web -c gray,blue,magenta \"pnpm dev:db\" \"pnpm --filter @keyless/api dev\" \"pnpm --filter @keyless/web dev\"",
+    "dev": "concurrently -k -n db,api,worker,web -c gray,blue,yellow,magenta \"pnpm dev:db\" \"pnpm --filter @keyless/api dev\" \"pnpm --filter @keyless/worker dev\" \"pnpm --filter @keyless/web dev\"",
     "dev:db": "node scripts/dev-db.mjs",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",

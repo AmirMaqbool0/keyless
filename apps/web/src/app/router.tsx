@@ -11,6 +11,10 @@ import { CustomersPage } from '../features/catalogue/CustomersPage';
 import { ProductsPage } from '../features/catalogue/ProductsPage';
 import { DevEmailsPage } from '../features/dev/DevEmailsPage';
 import { ImportJobPage, ImportsPage, NewImportPage } from '../features/imports/ImportWizard';
+import { EmailDetailPage } from '../features/inbox/EmailDetailPage';
+import { InboxPage } from '../features/inbox/InboxPage';
+import { MailboxesPage } from '../features/settings/MailboxesPage';
+import { ProcessingErrorsPage } from '../features/settings/ProcessingErrorsPage';
 import { IntegrationsPage } from '../features/settings/IntegrationsPage';
 import { ComingSoonPage, OverviewPage } from '../features/placeholder/pages';
 import { AuditPage } from '../features/settings/AuditPage';
@@ -80,12 +84,17 @@ export const router = createBrowserRouter([
       },
       {
         path: 'emails',
+        element: <Navigate to="/inbox?view=other" replace />,
+      },
+      { path: 'inbox', element: <InboxPage /> },
+      { path: 'inbox/:id', element: <EmailDetailPage /> },
+      { path: 'settings/mailboxes', element: <MailboxesPage /> },
+      {
+        path: 'settings/processing',
         element: (
-          <ComingSoonPage
-            title="Other emails"
-            milestone="M3"
-            description="Emails that were not purchase orders, with a convert-to-order action."
-          />
+          <RequireRole minimum="admin">
+            <ProcessingErrorsPage />
+          </RequireRole>
         ),
       },
       { path: 'customers', element: <CustomersPage /> },

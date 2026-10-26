@@ -7,3 +7,5 @@ allowBuilds:
   argon2: true
   esbuild: true
   mongodb-memory-server: true
+  # Optional native speed-up for BullMQ; the pure-JS fallback is fine.
+  msgpackr-extract: false

@@ -17,7 +17,7 @@ milestone status is in [PROGRESS.md](PROGRESS.md).
 ```bash
 pnpm install
 cp .env.example .env        # then set JWT_SECRET and ENCRYPTION_KEY (see the comment in the file)
-pnpm dev                    # MongoDB + API on :4000 + web on :5173
+pnpm dev                    # MongoDB + API on :4000 + worker + web on :5173
 ```
 
 Open http://localhost:5173 and sign up. Emails are not really sent in development. Open the
@@ -43,7 +43,7 @@ Make yourself platform super-admin: `pnpm --filter @keyless/api make-superadmin 
 
 | Command          | What it does                                         |
 | ---------------- | ---------------------------------------------------- |
-| `pnpm dev`       | DB + API (watch) + web (Vite)                        |
+| `pnpm dev`       | DB + API + worker (watch) + web (Vite)               |
 | `pnpm test`      | All tests (API tests use an in-memory MongoDB)       |
 | `pnpm typecheck` | TypeScript across all packages                       |
 | `pnpm lint`      | ESLint                                               |
@@ -53,24 +53,32 @@ Make yourself platform super-admin: `pnpm --filter @keyless/api make-superadmin 
 ## Layout
 
 ```
-apps/api         Express API (auth, users, orgs, audit, catalogue, imports, connectors)
-samples/         Example CSV exports for trying imports (regenerate: pnpm --filter @keyless/api samples)
+apps/api         Express API: routes, auth middleware, webhooks
+apps/worker      Background jobs: email parsing/classification, mailbox sync
 apps/web         React + Vite + Tailwind frontend
-packages/shared  Zod schemas and types shared by API and web
+packages/core    Server code shared by API and worker: config, models, queue, storage, ingestion
+packages/shared  Zod schemas and types shared by everything
+samples/         Example CSV exports for trying imports
+docs/            Setup guides (inbound-email.md: forwarding, Microsoft 365, Gmail)
 ```
 
-`apps/worker` (BullMQ jobs) arrives in M3 and `packages/eval` (accuracy harness) in M4.
+`packages/eval` (accuracy harness) arrives in M4.
+
+Getting real email in: see [docs/inbound-email.md](docs/inbound-email.md). In development, use
+**Inbox > Send test email**, or drag `.eml` or PDF files onto the inbox.
 
 ## Free hosted options (when you deploy)
 
 - MongoDB Atlas M0 (free, choose an EU/UK region): set `MONGO_URI`.
-- Upstash Redis free tier (from M3): set `REDIS_URL`.
-- Cloudflare R2 (10 GB free) for files (from M3): set the `S3_*` variables.
+- Background jobs run on MongoDB by default. For BullMQ, Upstash Redis free tier:
+  `QUEUE_DRIVER=bullmq`, `REDIS_URL`.
+- Cloudflare R2 (10 GB free) for files: `STORAGE_DRIVER=s3` and the `S3_*` variables.
+- Cloudflare Email Routing + an Email Worker (free) for the forwarding address; see the docs.
 - Anthropic API key for extraction (M4). Until then `LLM_PROVIDER=mock` runs offline.
 
 ## Security notes
 
-- Tenant isolation is enforced in the data layer (`apps/api/src/db/tenant.ts`): any query on a
+- Tenant isolation is enforced in the data layer (`packages/core/src/db/tenant.ts`): any query on a
   tenant collection without `orgId` throws. Cross-tenant system lookups must opt in with
   `{ skipTenant: true }`. Tests in `apps/api/test/tenancy.test.ts` prove it.
 - Passwords: argon2id. Sessions: 15-minute JWT access cookie plus a rotating refresh cookie with

@@ -20,9 +20,22 @@ import { usersRouter } from './modules/users/routes';
 import { catalogueRouter } from './modules/catalogue/routes';
 import { connectorsRouter } from './modules/connectors/routes';
 import { importsRouter } from './modules/imports/routes';
+import { devTestEmailRouter } from './modules/dev/testEmail';
+import { emailsRouter, processingErrorsRouter } from './modules/inbound/emails';
+import { filesRouter } from './modules/inbound/files';
+import { mailboxesRouter } from './modules/inbound/mailboxes';
+import { inboundWebhookRouter } from './modules/inbound/webhook';
 import type { Storage } from '@keyless/core/lib/storage';
+import type { FetchLike } from '@keyless/core/mailboxes/oauth';
+import type { JobQueue } from '@keyless/core/queue/types';
 
-export type AppDeps = { mailer: Mailer; storage: Storage };
+export type AppDeps = {
+  mailer: Mailer;
+  storage: Storage;
+  queue: JobQueue;
+  /** Injected in tests to fake Microsoft/Google HTTP calls. */
+  fetch?: FetchLike;
+};
 
 export function createApp(deps: AppDeps): Express {
   const app = express();
@@ -54,7 +67,8 @@ export function createApp(deps: AppDeps): Express {
     res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'not_ready', db: ready });
   });
 
-  // Provider webhooks (inbound email, Stripe) will be mounted here, before CSRF and JSON parsing.
+  // Provider webhooks: before CSRF and JSON parsing; they authenticate with their own secret.
+  app.use('/webhooks/inbound', inboundWebhookRouter(deps));
 
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
@@ -64,6 +78,8 @@ export function createApp(deps: AppDeps): Express {
     app.use('/api/dev', devRouter({ mailer: deps.mailer }));
   }
   app.use('/api/auth', authRouter(deps));
+  // Signed, expiring links: the signature is the authorisation.
+  app.use('/api/files', filesRouter(deps));
 
   // Everything below needs a signed-in, verified user.
   app.use('/api', requireAuth, requireVerified);
@@ -72,6 +88,10 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/audit', auditRouter());
   app.use('/api/imports', importsRouter(deps));
   app.use('/api/connectors', connectorsRouter());
+  app.use('/api/emails', emailsRouter(deps));
+  app.use('/api/mailboxes', mailboxesRouter(deps));
+  app.use('/api/processing-errors', processingErrorsRouter(deps));
+  if (!isProd) app.use('/api/dev', devTestEmailRouter(deps));
   app.use('/api', catalogueRouter());
 
   app.use(notFoundHandler);

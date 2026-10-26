@@ -8,17 +8,34 @@ import { CSRF_HEADER, type Role } from '@keyless/shared';
 import { createApp } from '../src/app';
 import { ConsoleMailer } from '@keyless/core/lib/mailer';
 import { LocalStorage } from '@keyless/core/lib/storage';
+import { createJobHandlers } from '@keyless/core/ingestion/handlers';
+import { MockLlmProvider } from '@keyless/core/llm/mock';
+import type { FetchLike } from '@keyless/core/mailboxes/oauth';
+import { MongoQueue, MongoWorker } from '@keyless/core/queue/mongo';
 import { Organization } from '@keyless/core/models/Organization';
 import { User } from '@keyless/core/models/User';
 import { hashPassword } from '../src/modules/auth/service';
 
 export const PASSWORD = 'correct-horse-battery';
 
-/** Each test file gets its own database on the shared in-memory server. */
-export function useTestApp() {
+/**
+ * Each test file gets its own database on the shared in-memory server. Jobs queue in MongoDB
+ * and only run when a test calls `drainJobs()`, so tests control timing. `fakeFetch` stands in
+ * for Microsoft/Google HTTP calls.
+ */
+export function useTestApp(opts: { fakeFetch?: FetchLike } = {}) {
   const mailer = new ConsoleMailer();
   const storage = new LocalStorage(path.join(os.tmpdir(), `keyless-test-${crypto.randomUUID()}`));
-  const app = createApp({ mailer, storage });
+  const queue = new MongoQueue();
+  const fetch: FetchLike = (url, init) => {
+    if (!opts.fakeFetch) throw new Error(`Unexpected outbound request in test: ${url}`);
+    return opts.fakeFetch(url, init);
+  };
+  const app = createApp({ mailer, storage, queue, fetch });
+  const worker = new MongoWorker(
+    createJobHandlers({ storage, queue, llm: new MockLlmProvider(), fetch }),
+  );
+  const drainJobs = () => worker.drain();
 
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI!, { dbName: `test_${crypto.randomUUID()}` });
@@ -49,10 +66,11 @@ export function useTestApp() {
         url: string,
         fields: Record<string, string>,
         file: { name: string; content: string | Buffer },
+        fieldName = 'file',
       ) => {
         let req = agent.post(url).set(CSRF_HEADER, csrf);
         for (const [k, v] of Object.entries(fields)) req = req.field(k, v);
-        return req.attach('file', Buffer.from(file.content), file.name);
+        return req.attach(fieldName, Buffer.from(file.content), file.name);
       },
     };
   }
@@ -89,5 +107,15 @@ export function useTestApp() {
     return decodeURIComponent(match[1]);
   }
 
-  return { app, mailer, client, createUser, loginAs, tokenFromLastEmail };
+  return {
+    app,
+    mailer,
+    storage,
+    queue,
+    drainJobs,
+    client,
+    createUser,
+    loginAs,
+    tokenFromLastEmail,
+  };
 }

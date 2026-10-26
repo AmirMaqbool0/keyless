@@ -128,8 +128,102 @@ Or sign up a fresh org and import `samples/products.csv`, then `customers.csv`, 
   review screen in M6, where corrections create them.
 - The mock connector does not sync cross-references (real ERPs don't hold them either).
 
-## Next: M3 - Ingestion
+## M3 - Ingestion ✅ (2026-10-26)
 
-Forwarding-address inbound webhook + manual upload (drag-and-drop PDFs/emails) first, then
-Microsoft Graph and Gmail OAuth. Storage, dedupe and classification. Brings in Redis + BullMQ (the
-worker app) and the S3-compatible storage driver.
+**Done when:** emails sent to the forwarding address appear classified in the app. Verified three
+ways:
+
+1. A raw PO email POSTed to `/webhooks/inbound` on the running dev stack was classified
+   `new_order` (92%) by the worker within 4 s.
+2. In the browser, "Send test email" for body order / amendment / quote / out-of-office each
+   landed with the right label, and the PO PDF previews inline.
+3. The test suite covers webhook → parse → classify for all 8 sample scenarios.
+
+### Built
+
+- **packages/core** (refactor, separate commit): config, models, storage, connectors and now the
+  queue and ingestion pipeline are shared by the API and the new **apps/worker** process.
+- **Queue:** a `JobQueue` interface with two drivers.
+  - **MongoDB** (default, no install): unique keys, exponential backoff (5 s → 10 min, 5
+    attempts), lease-based recovery when a worker dies, completed jobs expire after 7 days.
+  - **BullMQ** (`QUEUE_DRIVER=bullmq` + Redis).
+  - Both drivers record jobs that fail for good in `ErrorLog`, shown under **Settings →
+    Processing errors** with Retry / Dismiss.
+- **Storage:** an S3-compatible driver (AWS S3 / R2 / MinIO, presigned URLs) next to local disk.
+  Local files are served through **signed, expiring links** (`/api/files/<token>`, HMAC, 5-30
+  min). Non-PDF/image files are served under a sandbox CSP.
+- **Data model:** Mailbox, InboundEmail (unique per org on a dedupe key, classification plus
+  history), Attachment (kind, inline flag, sha256), Job, ErrorLog.
+- **Ingestion pipeline:**
+  - **Receive:** store the raw MIME and dedupe it, Message-ID first, so the same email arriving
+    by two routes is stored once.
+  - **process-email:** parse with mailparser; attachments go to storage; tiny inline images
+    (signatures/logos) are flagged; re-runs replace earlier records.
+  - **classify-email:** heuristics first (auto-replies, bounces, newsletters, order files and
+    lines, amend/cancel/quote/delivery wording); below 80% confidence the `LlmProvider` gives a
+    second opinion. A reviewer's manual choice is never overwritten.
+- **Ways in:**
+  - **Forwarding webhook**, provider-agnostic: raw MIME, Postmark-style JSON or SendGrid-style
+    multipart. Shared-secret or Basic auth. Routing by the `orders-<slug>-<random>@` alias;
+    unknown recipients get 202 and are dropped. A paused address doesn't import.
+  - **Manual upload** (reviewer+): `.eml` files or documents (PDF/Excel/CSV/images/Word). A
+    document is wrapped in a synthetic email so it takes the same path. The same file twice is
+    one email. `.msg` gets a helpful message.
+  - **Microsoft 365 and Gmail OAuth** (admin): authorization code + PKCE (verifier in an httpOnly
+    cookie, never in the URL), encrypted tokens, refresh on expiry/401, rotated refresh tokens
+    kept. Graph delta sync (saves the delta link every page; an expired token restarts the 2-day
+    lookback). Gmail history sync (a 404 triggers a full resync). A revoked grant sets the
+    mailbox to "reconnect needed". The worker queues due syncs every 30 s.
+- **LLM:** `LlmProvider` interface plus `MockLlmProvider` (offline). The Anthropic provider is M4.
+- **Web:**
+  - **Inbox:** tabs All / Orders / Other emails / Failed with counts, search, drag-and-drop
+    upload, live refresh while processing, dev "Send test email".
+  - **Email detail:** attachment preview (PDF/image), text or sandboxed HTML body (no scripts,
+    no remote images), classification reasons, a correct-it dropdown, activity timeline,
+    .eml download, reprocess.
+  - **Settings:** Mailboxes (forwarding address with copy, per-provider setup steps, connect /
+    sync / pause / folder / disconnect) and Processing errors.
+- **Docs:** [docs/inbound-email.md](docs/inbound-email.md), covering the webhook formats, a free
+  Cloudflare Email Routing setup ([worker script](docs/cloudflare-email-worker.js)) and Microsoft /
+  Google app registration steps.
+
+### Bug fixed from M1
+
+After 15 idle minutes the browser drops the access cookie (it expires with its token). The API
+then answered "not signed in" rather than "token expired", so the web client never tried its
+30-day refresh cookie and sent users back to the login page. The client now tries one refresh on
+any 401 from a non-auth endpoint. Verified in the browser.
+
+### Tests (84 total: 82 API + 2 shared, all passing)
+
+- `classify.test.ts`: 14 heuristic cases.
+- `ingestion.test.ts`: the done-when flow end to end, all 8 scenarios, dedupe, cross-org
+  routing, envelope recipients, JSON/multipart/Basic auth, bad secret, paused address,
+  uploads + roles + duplicate files, manual reclassify survives reprocess, unreadable email →
+  failed + processing error, tenant isolation, dev test email.
+- `queue.test.ts`: backoff and permanent failure → ErrorLog, no retry on permanent errors,
+  unique keys and reset, dead-worker lease recovery, retry endpoint and roles.
+- `mailboxes.test.ts` (Microsoft/Google faked at the HTTP layer): forwarding address, OAuth start
+  (PKCE, scopes, redirect URI), state check, code exchange and encrypted tokens; Graph delta
+  pages → deltaLink → incremental run; token refresh with rotation; revoked grant; Gmail
+  lookback → history → dedupe → 404 resync.
+
+### Not verified / known gaps
+
+- **Not run against real services:** Microsoft Graph, Gmail, Cloudflare/Postmark/SendGrid, S3
+  and BullMQ+Redis are untested here because no accounts or Redis are available on this machine.
+  The HTTP shapes follow the official docs and are covered by faked-HTTP tests. Two
+  `TODO(verify-api)` notes mark the least certain spots: Graph's `changeType` + `$filter`
+  combination, and Postmark's JSON field names.
+- **Still to come:** amendments/cancellations are only labelled; linking them to orders is M5.
+  "Convert to order" in Other emails becomes useful in M4/M5 (reclassifying already works).
+- **Formats:** Outlook `.msg` uploads are not supported. Emails _manually_ forwarded by staff
+  show the staff member as sender; customer detection inside forwarded content is M5.
+- **Scale:** the Mongo queue suits one worker or a few. Use BullMQ for more.
+- **No web unit tests yet;** the UI was checked by hand in the browser.
+
+## Next: M4 - Extraction + eval harness
+
+LLM provider (Anthropic) with structured JSON + vision, extraction for PDF/scan/Excel/CSV/body,
+schema validation and deterministic checks, usage/cost tracking, and `pnpm eval` over 20
+synthetic fixtures (built on `sampleEmails.ts`).

@@ -14,8 +14,8 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
   {
     items: [
       { to: '/', label: 'Overview' },
+      { to: '/inbox', label: 'Inbox' },
       { to: '/orders', label: 'Orders', soon: 'M5' },
-      { to: '/emails', label: 'Other emails', soon: 'M3' },
     ],
   },
   {
@@ -39,7 +39,9 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
     items: [
       { to: '/settings/organization', label: 'Organisation' },
       { to: '/settings/team', label: 'Team' },
+      { to: '/settings/mailboxes', label: 'Mailboxes' },
       { to: '/settings/integrations', label: 'Integrations' },
+      { to: '/settings/processing', label: 'Processing errors', minRole: 'admin' },
       { to: '/settings/security', label: 'Security' },
       { to: '/settings/audit', label: 'Audit log', minRole: 'admin' },
     ],

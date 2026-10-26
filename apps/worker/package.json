@@ -1,0 +1,21 @@
+{
+  "name": "@keyless/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@keyless/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0",
+    "vitest": "^3.2.7"
+  }
+}

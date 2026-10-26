@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { CONNECTOR_TYPES, type ConnectorDto } from '@keyless/shared';
-import { AVAILABLE_CONNECTORS, SYNC_ENTITIES, createConnector, runSync } from '@keyless/core/connectors/index';
+import {
+  AVAILABLE_CONNECTORS,
+  SYNC_ENTITIES,
+  createConnector,
+  runSync,
+} from '@keyless/core/connectors/index';
 import { MAX_DEMO_PRODUCTS } from '@keyless/core/demo/generator';
 import { audit } from '@keyless/core/lib/audit';
 import { badRequest, notFound, param, validate } from '@keyless/core/lib/http';

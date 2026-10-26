@@ -18,6 +18,9 @@ function readCookie(name: string): string | undefined {
     ?.slice(name.length + 1);
 }
 
+/** Auth calls whose 401 means "wrong credentials", not "session needs refreshing". */
+const NO_REFRESH = /^\/api\/auth\/(refresh|login|logout|signup|reset-password|accept-invite)/;
+
 let csrfToken: string | undefined;
 let refreshing: Promise<boolean> | undefined;
 
@@ -65,9 +68,11 @@ export async function request<T>(method: string, path: string, body?: unknown): 
   if (method !== 'GET' && !readCookie(CSRF_COOKIE) && !csrfToken) await send('GET', '/api/auth/me');
 
   let res = await send(method, path, body);
-  if (res.status === 401 && !path.startsWith('/api/auth/refresh')) {
+  // The access cookie expires with its token, so after 15 idle minutes the API sees no token at
+  // all (UNAUTHORIZED, not TOKEN_EXPIRED). Either way, try the long-lived refresh cookie once.
+  if (res.status === 401 && !NO_REFRESH.test(path)) {
     const err = await toError(res.clone());
-    if (err.code === 'TOKEN_EXPIRED' && (await refreshSession())) {
+    if (['TOKEN_EXPIRED', 'UNAUTHORIZED'].includes(err.code) && (await refreshSession())) {
       res = await send(method, path, body);
     }
   }

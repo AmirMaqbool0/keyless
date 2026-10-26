@@ -4,3 +4,4 @@ export * from './users';
 export * from './api';
 export * from './imports';
 export * from './catalogue';
+export * from './inbound';
