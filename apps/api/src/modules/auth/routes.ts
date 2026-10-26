@@ -13,13 +13,13 @@ import {
   type LoginResponse,
   type MeResponse,
 } from '@keyless/shared';
-import { audit } from '../../lib/audit';
-import { badRequest, notFound, param, unauthorized, validate } from '../../lib/http';
-import type { Mailer } from '../../lib/mailer';
+import { audit } from '@keyless/core/lib/audit';
+import { badRequest, notFound, param, unauthorized, validate } from '@keyless/core/lib/http';
+import type { Mailer } from '@keyless/core/lib/mailer';
 import { authed, requireAuth } from '../../middleware/auth';
 import { authLimiter } from '../../middleware/rateLimit';
-import { Organization } from '../../models/Organization';
-import { User, type UserDoc } from '../../models/User';
+import { Organization } from '@keyless/core/models/Organization';
+import { User, type UserDoc } from '@keyless/core/models/User';
 import { toOrgDto, toUserDto } from '../dto';
 import { createAuthService } from './service';
 import {

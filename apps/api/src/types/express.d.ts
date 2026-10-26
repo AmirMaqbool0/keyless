@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
-import type { OrganizationDoc } from '../models/Organization';
-import type { UserDoc } from '../models/User';
+import type { OrganizationDoc } from '@keyless/core/models/Organization';
+import type { UserDoc } from '@keyless/core/models/User';
 
 declare global {
   namespace Express {

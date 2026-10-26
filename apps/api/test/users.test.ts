@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AuditLog } from '../src/models/AuditLog';
+import { AuditLog } from '@keyless/core/models/AuditLog';
 import { PASSWORD, useTestApp } from './helpers';
 
 const t = useTestApp();

@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
-import { generateDemoData } from '../demo/generator';
+import { generateDemoData } from '@keyless/core/demo/generator';
 
 const outDir = path.resolve(process.cwd(), '../../samples');
 fs.mkdirSync(outDir, { recursive: true });

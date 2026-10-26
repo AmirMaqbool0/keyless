@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { updateOrganizationSchema } from '@keyless/shared';
-import { audit } from '../../lib/audit';
-import { validate } from '../../lib/http';
+import { audit } from '@keyless/core/lib/audit';
+import { validate } from '@keyless/core/lib/http';
 import { authed, requireRole } from '../../middleware/auth';
 import { toOrgDto } from '../dto';
 

@@ -1,7 +1,7 @@
 import type { InviteDto, OrganizationDto, UserDto } from '@keyless/shared';
-import type { IInvite } from '../models/Invite';
-import type { IOrganization } from '../models/Organization';
-import type { IUser } from '../models/User';
+import type { IInvite } from '@keyless/core/models/Invite';
+import type { IOrganization } from '@keyless/core/models/Organization';
+import type { IUser } from '@keyless/core/models/User';
 
 export function toUserDto(user: IUser): UserDto {
   return {

@@ -1,8 +1,8 @@
 import type { CrossReferenceDto, CustomerDto, CustomerPriceDto, ProductDto } from '@keyless/shared';
-import type { ICrossReference } from '../../models/CrossReference';
-import type { ICustomer } from '../../models/Customer';
-import type { ICustomerPrice } from '../../models/CustomerPrice';
-import type { IProduct } from '../../models/Product';
+import type { ICrossReference } from '@keyless/core/models/CrossReference';
+import type { ICustomer } from '@keyless/core/models/Customer';
+import type { ICustomerPrice } from '@keyless/core/models/CustomerPrice';
+import type { IProduct } from '@keyless/core/models/Product';
 
 export function toProductDto(p: IProduct): ProductDto {
   return {

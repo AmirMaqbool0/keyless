@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { CONNECTOR_TYPES, type ConnectorDto } from '@keyless/shared';
-import { AVAILABLE_CONNECTORS, SYNC_ENTITIES, createConnector, runSync } from '../../connectors';
-import { MAX_DEMO_PRODUCTS } from '../../demo/generator';
-import { audit } from '../../lib/audit';
-import { badRequest, notFound, param, validate } from '../../lib/http';
+import { AVAILABLE_CONNECTORS, SYNC_ENTITIES, createConnector, runSync } from '@keyless/core/connectors/index';
+import { MAX_DEMO_PRODUCTS } from '@keyless/core/demo/generator';
+import { audit } from '@keyless/core/lib/audit';
+import { badRequest, notFound, param, validate } from '@keyless/core/lib/http';
 import { authed, requireRole } from '../../middleware/auth';
-import { Connector, type IConnector } from '../../models/Connector';
+import { Connector, type IConnector } from '@keyless/core/models/Connector';
 import { objectId } from '../shared';
 
 const LABELS: Record<IConnector['type'], string> = {

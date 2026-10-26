@@ -1,7 +1,7 @@
 /** Usage: pnpm --filter @keyless/api make-superadmin you@example.com */
-import { env } from '../config/env';
-import { connectDb, disconnectDb } from '../db/connect';
-import { User } from '../models/User';
+import { env } from '@keyless/core/config/env';
+import { connectDb, disconnectDb } from '@keyless/core/db/connect';
+import { User } from '@keyless/core/models/User';
 
 async function main(): Promise<void> {
   const email = process.argv[2]?.trim().toLowerCase();

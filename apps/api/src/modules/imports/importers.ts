@@ -1,9 +1,9 @@
 import type { Types } from 'mongoose';
 import { z } from 'zod';
 import type { ImportRowError, ImportType } from '@keyless/shared';
-import { accountKey, skuKey } from '../../lib/normalise';
-import { Customer } from '../../models/Customer';
-import { Product } from '../../models/Product';
+import { accountKey, skuKey } from '@keyless/core/lib/normalise';
+import { Customer } from '@keyless/core/models/Customer';
+import { Product } from '@keyless/core/models/Product';
 import {
   upsertCrossReferences,
   upsertCustomers,
@@ -14,7 +14,7 @@ import {
   type PriceRecord,
   type ProductRecord,
   type UpsertCounts,
-} from '../catalogue/upsert';
+} from '@keyless/core/catalogue/upsert';
 
 /** Values for one row after mapping + type coercion, keyed by target field. */
 export type RowValues = Record<string, unknown>;

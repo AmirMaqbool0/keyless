@@ -1,9 +1,9 @@
 import { createApp } from './app';
-import { env } from './config/env';
-import { connectDb, disconnectDb } from './db/connect';
-import { logger } from './lib/logger';
-import { ConsoleMailer } from './lib/mailer';
-import { createStorage } from './lib/storage';
+import { env } from '@keyless/core/config/env';
+import { connectDb, disconnectDb } from '@keyless/core/db/connect';
+import { logger } from '@keyless/core/lib/logger';
+import { ConsoleMailer } from '@keyless/core/lib/mailer';
+import { createStorage } from '@keyless/core/lib/storage';
 
 async function main(): Promise<void> {
   await connectDb(env.MONGO_URI);

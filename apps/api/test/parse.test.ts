@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { suggestMapping } from '@keyless/shared';
-import { descriptionKey, partCodeKey, skuKey } from '../src/lib/normalise';
+import { descriptionKey, partCodeKey, skuKey } from '@keyless/core/lib/normalise';
 import { coerce, decodeCsv, parseCsv, parseDate } from '../src/modules/imports/parse';
 
 describe('CSV parsing', () => {

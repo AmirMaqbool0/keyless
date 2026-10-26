@@ -1,9 +1,9 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { hasRole, type Role } from '@keyless/shared';
-import { forbidden, unauthorized } from '../lib/http';
-import { Organization } from '../models/Organization';
-import { User } from '../models/User';
+import { forbidden, unauthorized } from '@keyless/core/lib/http';
+import { Organization } from '@keyless/core/models/Organization';
+import { User } from '@keyless/core/models/User';
 import { ACCESS_COOKIE, verifyAccessToken } from '../modules/auth/tokens';
 
 /**

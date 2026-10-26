@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import rateLimit from 'express-rate-limit';
-import { env } from '../config/env';
+import { env } from '@keyless/core/config/env';
 
 // In-memory store for now; switch to a Redis store when the API runs more than one instance (M3+).
 const passthrough: RequestHandler = (_req, _res, next) => next();

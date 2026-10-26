@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { TenantScopeError } from '../src/db/tenant';
-import { AuditLog } from '../src/models/AuditLog';
-import { Invite } from '../src/models/Invite';
-import { User } from '../src/models/User';
+import { TenantScopeError } from '@keyless/core/db/tenant';
+import { AuditLog } from '@keyless/core/models/AuditLog';
+import { Invite } from '@keyless/core/models/Invite';
+import { User } from '@keyless/core/models/User';
 import { useTestApp } from './helpers';
 
 const t = useTestApp();

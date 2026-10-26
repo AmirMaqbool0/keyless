@@ -1,10 +1,10 @@
 import type { Types } from 'mongoose';
 import type { Address } from '@keyless/shared';
-import { accountKey, descriptionKey, partCodeKey, searchText, skuKey } from '../../lib/normalise';
-import { CrossReference, type ICrossReference } from '../../models/CrossReference';
-import { Customer, type ICustomer } from '../../models/Customer';
-import { CustomerPrice, type ICustomerPrice } from '../../models/CustomerPrice';
-import { Product, type IProduct } from '../../models/Product';
+import { accountKey, descriptionKey, partCodeKey, searchText, skuKey } from '../lib/normalise';
+import { CrossReference, type ICrossReference } from '../models/CrossReference';
+import { Customer, type ICustomer } from '../models/Customer';
+import { CustomerPrice, type ICustomerPrice } from '../models/CustomerPrice';
+import { Product, type IProduct } from '../models/Product';
 
 /*
  * Idempotent bulk upserts shared by CSV imports and connector syncs.

@@ -5,15 +5,15 @@ import {
   updateUserRoleSchema,
   type Role,
 } from '@keyless/shared';
-import { env } from '../../config/env';
-import { audit } from '../../lib/audit';
-import { inviteMail } from '../../lib/emailTemplates';
-import { conflict, forbidden, notFound, param, validate } from '../../lib/http';
-import type { Mailer } from '../../lib/mailer';
-import { hashToken, randomToken } from '../../lib/tokens';
+import { env } from '@keyless/core/config/env';
+import { audit } from '@keyless/core/lib/audit';
+import { inviteMail } from '@keyless/core/lib/emailTemplates';
+import { conflict, forbidden, notFound, param, validate } from '@keyless/core/lib/http';
+import type { Mailer } from '@keyless/core/lib/mailer';
+import { hashToken, randomToken } from '@keyless/core/lib/tokens';
 import { authed, requireRole } from '../../middleware/auth';
-import { Invite } from '../../models/Invite';
-import { User, type UserDoc } from '../../models/User';
+import { Invite } from '@keyless/core/models/Invite';
+import { User, type UserDoc } from '@keyless/core/models/User';
 import { revokeAllSessions } from '../auth/tokens';
 import { activeUserByEmail } from '../auth/service';
 import { toInviteDto, toUserDto } from '../dto';

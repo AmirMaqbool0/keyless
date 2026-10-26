@@ -4,16 +4,16 @@
  * All demo users share SEED_PASSWORD (default below) - for local development only.
  */
 import type { Role } from '@keyless/shared';
-import { env } from '../config/env';
-import { runSync } from '../connectors';
-import { connectDb, disconnectDb } from '../db/connect';
-import { generateDemoData } from '../demo/generator';
-import { accountKey } from '../lib/normalise';
-import { Connector } from '../models/Connector';
-import { Customer } from '../models/Customer';
-import { Organization } from '../models/Organization';
-import { upsertCrossReferences } from '../modules/catalogue/upsert';
-import { User } from '../models/User';
+import { env } from '@keyless/core/config/env';
+import { runSync } from '@keyless/core/connectors/index';
+import { connectDb, disconnectDb } from '@keyless/core/db/connect';
+import { generateDemoData } from '@keyless/core/demo/generator';
+import { accountKey } from '@keyless/core/lib/normalise';
+import { Connector } from '@keyless/core/models/Connector';
+import { Customer } from '@keyless/core/models/Customer';
+import { Organization } from '@keyless/core/models/Organization';
+import { upsertCrossReferences } from '@keyless/core/catalogue/upsert';
+import { User } from '@keyless/core/models/User';
 import { hashPassword } from '../modules/auth/service';
 
 const DEMO_PASSWORD = process.env.SEED_PASSWORD ?? 'keyless-demo-1234';

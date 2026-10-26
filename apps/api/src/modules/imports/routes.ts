@@ -2,11 +2,11 @@ import { Router, type Request } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { importMappingSchema, importTypeSchema } from '@keyless/shared';
-import { audit } from '../../lib/audit';
-import { badRequest, conflict, notFound, param, validate } from '../../lib/http';
-import type { Storage } from '../../lib/storage';
+import { audit } from '@keyless/core/lib/audit';
+import { badRequest, conflict, notFound, param, validate } from '@keyless/core/lib/http';
+import type { Storage } from '@keyless/core/lib/storage';
 import { authed, requireRole } from '../../middleware/auth';
-import { ImportJob } from '../../models/ImportJob';
+import { ImportJob } from '@keyless/core/models/ImportJob';
 import { objectId } from '../shared';
 import { checkMapping, createImportJob, runImport, templateCsv, toImportJobDto } from './service';
 

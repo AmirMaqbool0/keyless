@@ -4,10 +4,10 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import { env, isProd } from './config/env';
-import { dbReady } from './db/connect';
-import { logger } from './lib/logger';
-import { ConsoleMailer, type Mailer } from './lib/mailer';
+import { env, isProd } from '@keyless/core/config/env';
+import { dbReady } from '@keyless/core/db/connect';
+import { logger } from '@keyless/core/lib/logger';
+import { ConsoleMailer, type Mailer } from '@keyless/core/lib/mailer';
 import { authenticate, requireAuth, requireVerified } from './middleware/auth';
 import { csrf } from './middleware/csrf';
 import { errorHandler, notFoundHandler } from './middleware/errors';
@@ -20,7 +20,7 @@ import { usersRouter } from './modules/users/routes';
 import { catalogueRouter } from './modules/catalogue/routes';
 import { connectorsRouter } from './modules/connectors/routes';
 import { importsRouter } from './modules/imports/routes';
-import type { Storage } from './lib/storage';
+import type { Storage } from '@keyless/core/lib/storage';
 
 export type AppDeps = { mailer: Mailer; storage: Storage };
 

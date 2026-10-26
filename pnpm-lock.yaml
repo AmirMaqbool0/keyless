@@ -199,6 +199,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@keyless/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@keyless/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -342,6 +345,31 @@ importers:
       vite:
         specifier: ^7.1.0
         version: 7.3.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.15)
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)(supports-color@8.1.1)(tsx@4.23.15)
+
+  packages/core:
+    dependencies:
+      '@keyless/shared':
+        specifier: workspace:*
+        version: link:../shared
+      mongoose:
+        specifier: ^8.19.0
+        version: 8.24.7(supports-color@8.1.1)
+      pino:
+        specifier: ^9.9.0
+        version: 9.14.0
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.7
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.3
+        version: 5.0.6
+      pino-pretty:
+        specifier: ^13.0.0
+        version: 13.2.0
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)(supports-color@8.1.1)(tsx@4.23.15)

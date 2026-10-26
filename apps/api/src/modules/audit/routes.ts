@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { validate } from '../../lib/http';
+import { validate } from '@keyless/core/lib/http';
 import { authed, requireRole } from '../../middleware/auth';
-import { AuditLog } from '../../models/AuditLog';
+import { AuditLog } from '@keyless/core/models/AuditLog';
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),

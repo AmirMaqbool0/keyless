@@ -1,8 +1,8 @@
 import Papa from 'papaparse';
 import { describe, expect, it } from 'vitest';
-import { generateDemoData } from '../src/demo/generator';
-import { Customer } from '../src/models/Customer';
-import { Product } from '../src/models/Product';
+import { generateDemoData } from '@keyless/core/demo/generator';
+import { Customer } from '@keyless/core/models/Customer';
+import { Product } from '@keyless/core/models/Product';
 import { useTestApp } from './helpers';
 
 const t = useTestApp();

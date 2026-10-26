@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { ConsoleMailer } from '../../lib/mailer';
+import type { ConsoleMailer } from '@keyless/core/lib/mailer';
 
 /** Development-only helpers. Never mounted in production. */
 export function devRouter({ mailer }: { mailer: ConsoleMailer }): Router {

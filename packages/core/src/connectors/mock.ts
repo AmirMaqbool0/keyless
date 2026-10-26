@@ -9,7 +9,7 @@ import {
   upsertPrices,
   upsertProducts,
   type PriceRecord,
-} from '../modules/catalogue/upsert';
+} from '../catalogue/upsert';
 import type {
   ConnectorContext,
   ExternalOrderRef,

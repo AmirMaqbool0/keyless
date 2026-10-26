@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
-import { decrypt, encrypt } from '../../lib/crypto';
-import { badRequest } from '../../lib/http';
-import { hashToken } from '../../lib/tokens';
-import type { UserDoc } from '../../models/User';
+import { decrypt, encrypt } from '@keyless/core/lib/crypto';
+import { badRequest } from '@keyless/core/lib/http';
+import { hashToken } from '@keyless/core/lib/tokens';
+import type { UserDoc } from '@keyless/core/models/User';
 
 // Accept the previous/next 30s step to tolerate clock drift.
 authenticator.options = { window: 1 };

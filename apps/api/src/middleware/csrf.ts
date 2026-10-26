@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import type { RequestHandler } from 'express';
 import { CSRF_COOKIE, CSRF_HEADER } from '@keyless/shared';
-import { isProd } from '../config/env';
-import { forbidden } from '../lib/http';
+import { isProd } from '@keyless/core/config/env';
+import { forbidden } from '@keyless/core/lib/http';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 

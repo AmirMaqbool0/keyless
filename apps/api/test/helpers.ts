@@ -6,10 +6,10 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { CSRF_HEADER, type Role } from '@keyless/shared';
 import { createApp } from '../src/app';
-import { ConsoleMailer } from '../src/lib/mailer';
-import { LocalStorage } from '../src/lib/storage';
-import { Organization } from '../src/models/Organization';
-import { User } from '../src/models/User';
+import { ConsoleMailer } from '@keyless/core/lib/mailer';
+import { LocalStorage } from '@keyless/core/lib/storage';
+import { Organization } from '@keyless/core/models/Organization';
+import { User } from '@keyless/core/models/User';
 import { hashPassword } from '../src/modules/auth/service';
 
 export const PASSWORD = 'correct-horse-battery';

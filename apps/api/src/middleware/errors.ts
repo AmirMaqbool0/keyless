@@ -1,8 +1,8 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { MulterError } from 'multer';
 import type { ApiErrorBody } from '@keyless/shared';
-import { AppError } from '../lib/http';
-import { logger } from '../lib/logger';
+import { AppError } from '@keyless/core/lib/http';
+import { logger } from '@keyless/core/lib/logger';
 
 export const notFoundHandler: RequestHandler = (_req, res) => {
   const body: ApiErrorBody = { error: { code: 'NOT_FOUND', message: 'Route not found' } };

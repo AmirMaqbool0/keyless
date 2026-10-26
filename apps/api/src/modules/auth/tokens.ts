@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { env, isProd } from '../../config/env';
-import { hashToken, randomToken } from '../../lib/tokens';
-import { Session } from '../../models/Session';
-import type { UserDoc } from '../../models/User';
+import { env, isProd } from '@keyless/core/config/env';
+import { hashToken, randomToken } from '@keyless/core/lib/tokens';
+import { Session } from '@keyless/core/models/Session';
+import type { UserDoc } from '@keyless/core/models/User';
 
 export const ACCESS_COOKIE = 'keyless_at';
 export const REFRESH_COOKIE = 'keyless_rt';

@@ -2,9 +2,9 @@ import { authenticator } from 'otplib';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { CSRF_COOKIE, CSRF_HEADER } from '@keyless/shared';
-import { Session } from '../src/models/Session';
+import { Session } from '@keyless/core/models/Session';
 import { REFRESH_COOKIE } from '../src/modules/auth/tokens';
-import { User } from '../src/models/User';
+import { User } from '@keyless/core/models/User';
 import { PASSWORD, useTestApp } from './helpers';
 
 const t = useTestApp();

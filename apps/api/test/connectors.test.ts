@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MockConnector } from '../src/connectors/mock';
-import { Connector } from '../src/models/Connector';
-import { CustomerPrice } from '../src/models/CustomerPrice';
-import { MockErpOrder } from '../src/models/MockErpOrder';
-import { Organization } from '../src/models/Organization';
-import { Product } from '../src/models/Product';
+import { MockConnector } from '@keyless/core/connectors/mock';
+import { Connector } from '@keyless/core/models/Connector';
+import { CustomerPrice } from '@keyless/core/models/CustomerPrice';
+import { MockErpOrder } from '@keyless/core/models/MockErpOrder';
+import { Organization } from '@keyless/core/models/Organization';
+import { Product } from '@keyless/core/models/Product';
 import { useTestApp } from './helpers';
 
 const t = useTestApp();

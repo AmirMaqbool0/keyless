@@ -1,4 +1,3 @@
-import type { Request } from 'express';
 import type { Types } from 'mongoose';
 import { AuditLog } from '../models/AuditLog';
 import { logger } from './logger';
@@ -14,7 +13,13 @@ type AuditInput = {
     email?: string;
     type: 'user' | 'system' | 'superadmin';
   };
-  req?: Request;
+  /** An API request (actor + IP are taken from it). Structural so core needs no Express augmentation. */
+  req?: AuditRequest;
+};
+
+type AuditRequest = {
+  ip?: string;
+  auth?: { user: { _id: Types.ObjectId; email: string } };
 };
 
 /** Write an audit entry. Never throws: a failed audit write is logged, not fatal to the request. */
