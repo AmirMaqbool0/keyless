@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { Types } from 'mongoose';
 import {
   assignableRoles,
   inviteUserSchema,
@@ -18,13 +17,9 @@ import { User, type UserDoc } from '../../models/User';
 import { revokeAllSessions } from '../auth/tokens';
 import { activeUserByEmail } from '../auth/service';
 import { toInviteDto, toUserDto } from '../dto';
+import { objectId } from '../shared';
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function objectId(id: string): Types.ObjectId {
-  if (!Types.ObjectId.isValid(id)) throw notFound();
-  return new Types.ObjectId(id);
-}
 
 /** Rules for an actor changing or removing another member. */
 function assertCanManage(actor: UserDoc, target: UserDoc, newRole?: Role): void {

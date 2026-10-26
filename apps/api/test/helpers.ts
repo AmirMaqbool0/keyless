@@ -1,10 +1,13 @@
 import crypto from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { CSRF_HEADER, type Role } from '@keyless/shared';
 import { createApp } from '../src/app';
 import { ConsoleMailer } from '../src/lib/mailer';
+import { LocalStorage } from '../src/lib/storage';
 import { Organization } from '../src/models/Organization';
 import { User } from '../src/models/User';
 import { hashPassword } from '../src/modules/auth/service';
@@ -14,7 +17,8 @@ export const PASSWORD = 'correct-horse-battery';
 /** Each test file gets its own database on the shared in-memory server. */
 export function useTestApp() {
   const mailer = new ConsoleMailer();
-  const app = createApp({ mailer });
+  const storage = new LocalStorage(path.join(os.tmpdir(), `keyless-test-${crypto.randomUUID()}`));
+  const app = createApp({ mailer, storage });
 
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI!, { dbName: `test_${crypto.randomUUID()}` });
@@ -41,6 +45,15 @@ export function useTestApp() {
       post: (url: string, body?: object) => agent.post(url).set(CSRF_HEADER, csrf).send(body),
       patch: (url: string, body?: object) => agent.patch(url).set(CSRF_HEADER, csrf).send(body),
       delete: (url: string) => agent.delete(url).set(CSRF_HEADER, csrf),
+      upload: (
+        url: string,
+        fields: Record<string, string>,
+        file: { name: string; content: string | Buffer },
+      ) => {
+        let req = agent.post(url).set(CSRF_HEADER, csrf);
+        for (const [k, v] of Object.entries(fields)) req = req.field(k, v);
+        return req.attach('file', Buffer.from(file.content), file.name);
+      },
     };
   }
 

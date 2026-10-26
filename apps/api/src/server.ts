@@ -3,10 +3,11 @@ import { env } from './config/env';
 import { connectDb, disconnectDb } from './db/connect';
 import { logger } from './lib/logger';
 import { ConsoleMailer } from './lib/mailer';
+import { createStorage } from './lib/storage';
 
 async function main(): Promise<void> {
   await connectDb(env.MONGO_URI);
-  const app = createApp({ mailer: new ConsoleMailer() });
+  const app = createApp({ mailer: new ConsoleMailer(), storage: createStorage() });
   const server = app.listen(env.PORT, () => {
     logger.info(`API listening on ${env.API_URL}`);
   });

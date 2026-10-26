@@ -17,8 +17,12 @@ import { authRouter } from './modules/auth/routes';
 import { devRouter } from './modules/dev/routes';
 import { orgRouter } from './modules/org/routes';
 import { usersRouter } from './modules/users/routes';
+import { catalogueRouter } from './modules/catalogue/routes';
+import { connectorsRouter } from './modules/connectors/routes';
+import { importsRouter } from './modules/imports/routes';
+import type { Storage } from './lib/storage';
 
-export type AppDeps = { mailer: Mailer };
+export type AppDeps = { mailer: Mailer; storage: Storage };
 
 export function createApp(deps: AppDeps): Express {
   const app = express();
@@ -56,14 +60,19 @@ export function createApp(deps: AppDeps): Express {
   app.use(cookieParser());
   app.use('/api', apiLimiter, csrf, authenticate);
 
-  app.use('/api/auth', authRouter(deps));
-  app.use('/api/users', requireAuth, requireVerified, usersRouter(deps));
-  app.use('/api/org', requireAuth, requireVerified, orgRouter());
-  app.use('/api/audit', requireAuth, requireVerified, auditRouter());
-
   if (!isProd && deps.mailer instanceof ConsoleMailer) {
     app.use('/api/dev', devRouter({ mailer: deps.mailer }));
   }
+  app.use('/api/auth', authRouter(deps));
+
+  // Everything below needs a signed-in, verified user.
+  app.use('/api', requireAuth, requireVerified);
+  app.use('/api/users', usersRouter(deps));
+  app.use('/api/org', orgRouter());
+  app.use('/api/audit', auditRouter());
+  app.use('/api/imports', importsRouter(deps));
+  app.use('/api/connectors', connectorsRouter());
+  app.use('/api', catalogueRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);

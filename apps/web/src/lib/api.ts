@@ -34,7 +34,9 @@ function refreshSession(): Promise<boolean> {
 
 async function send(method: string, path: string, body?: unknown): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = body instanceof FormData;
+  // FormData sets its own multipart Content-Type with the boundary.
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   const token = readCookie(CSRF_COOKIE) ?? csrfToken;
   if (token) headers[CSRF_HEADER] = token;
 
@@ -42,7 +44,7 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
     method,
     headers,
     credentials: 'same-origin',
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   });
   csrfToken = res.headers.get(CSRF_HEADER) ?? csrfToken;
   return res;
@@ -79,7 +81,17 @@ export const api = {
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {}),
   patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
   delete: <T = void>(path: string) => request<T>('DELETE', path),
+  upload: <T>(path: string, form: FormData) => request<T>('POST', path, form),
 };
+
+/** Build a query string, skipping empty values. */
+export function qs(params: Record<string, string | number | undefined | null>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params))
+    if (v !== undefined && v !== null && v !== '') sp.set(k, String(v));
+  const s = sp.toString();
+  return s ? `?${s}` : '';
+}
 
 /** Field-level messages from a VALIDATION_ERROR response, keyed by field name. */
 export function fieldErrors(err: unknown): Record<string, string> {

@@ -23,7 +23,8 @@ pnpm dev                    # MongoDB + API on :4000 + web on :5173
 Open http://localhost:5173 and sign up. Emails are not really sent in development. Open the
 **Dev mailbox** at http://localhost:5173/dev/emails to click verification, invite and reset links.
 
-Optional demo data (one org, one user per role, all with the password `keyless-demo-1234`):
+Optional demo data: one org with a user per role (password `keyless-demo-1234`), plus a
+5,000-product catalogue, 60 customers, prices and cross-references:
 
 ```bash
 pnpm seed
@@ -47,12 +48,13 @@ Make yourself platform super-admin: `pnpm --filter @keyless/api make-superadmin 
 | `pnpm typecheck` | TypeScript across all packages                       |
 | `pnpm lint`      | ESLint                                               |
 | `pnpm build`     | Production builds (`apps/api/dist`, `apps/web/dist`) |
-| `pnpm seed`      | Demo organisation and users                          |
+| `pnpm seed`      | Demo organisation, users and catalogue               |
 
 ## Layout
 
 ```
-apps/api         Express API (auth, users, orgs, audit; more per milestone)
+apps/api         Express API (auth, users, orgs, audit, catalogue, imports, connectors)
+samples/         Example CSV exports for trying imports (regenerate: pnpm --filter @keyless/api samples)
 apps/web         React + Vite + Tailwind frontend
 packages/shared  Zod schemas and types shared by API and web
 ```

@@ -2,22 +2,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 
-/** Load the nearest .env walking up from cwd (the repo root holds one shared .env). */
-function loadDotEnv(): void {
+/** Directory of the nearest .env walking up from cwd (the repo root holds one shared .env). */
+function findEnvDir(): string | undefined {
   let dir = process.cwd();
   for (;;) {
-    const file = path.join(dir, '.env');
-    if (fs.existsSync(file)) {
-      process.loadEnvFile(file);
-      return;
-    }
+    if (fs.existsSync(path.join(dir, '.env'))) return dir;
     const parent = path.dirname(dir);
-    if (parent === dir) return;
+    if (parent === dir) return undefined;
     dir = parent;
   }
 }
 
-if (process.env.NODE_ENV !== 'test') loadDotEnv();
+const envDir = findEnvDir();
+if (process.env.NODE_ENV !== 'test' && envDir) process.loadEnvFile(path.join(envDir, '.env'));
+/** Repo root in development (where .env lives); cwd otherwise. */
+const rootDir = envDir ?? process.cwd();
 
 const base64Key32 = z
   .string()
@@ -31,6 +30,11 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   ENCRYPTION_KEY: base64Key32,
+  STORAGE_DRIVER: z.enum(['local']).default('local'),
+  STORAGE_LOCAL_DIR: z
+    .string()
+    .default('.data/files')
+    .transform((p) => path.resolve(rootDir, p)),
   EMAIL_PROVIDER: z.enum(['console']).default('console'),
   EMAIL_FROM: z.string().default('Keyless <no-reply@keyless.local>'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

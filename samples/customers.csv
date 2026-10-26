@@ -1,0 +1,78 @@
+Account Code,Customer Name,Order Email,Email Domain,Price List,On Stop,Address 1,Address 2,Town,Postcode,Country
+THIS001,Thistle Hotel,orders@thistlehotel.example; purchasing@thistlehotel.example,thistlehotel.example,A,N,213 Mill Road,,Norwich,NR15 2TG,GB
+ORCH001,Orchard Pub & Dining,orders@orchardpubanddining.example; purchasing@orchardpubanddining.example,orchardpubanddining.example,,N,141 High Street,,Bath,BA10 5JX,GB
+ABBE001,Abbey Cafe,orders@abbeycafe.example; purchasing@abbeycafe.example,abbeycafe.example,A,N,205 Station Road,,York,YO12 2YQ,GB
+ABBE001,Abbey Cafe,orders@abbeycafe.example; purchasing@abbeycafe.example,abbeycafe.example,A,N,"Unit 8, Church Lane",,Brighton,BN7 4RE,GB
+MILL001,Mill Leisure Centre,orders@millleisurecentre.example; purchasing@millleisurecentre.example,millleisurecentre.example,A,N,102 Bridge Street,,Cardiff,CF20 2QP,GB
+MEAD001,Meadow Deli,orders@meadowdeli.example; purchasing@meadowdeli.example,meadowdeli.example,,N,177 Bridge Street,,Chester,CH18 6DH,GB
+KING001,Kings Catering Ltd,orders@kingscateringltd.example; purchasing@kingscateringltd.example,kingscateringltd.example,B,N,154 Market Place,,Bath,BA13 8HY,GB
+ROSE001,Rose Hotel,orders@rosehotel.example,rosehotel.example,A,N,11 Queen Street,,Brighton,BN5 4LT,GB
+ROSE001,Rose Hotel,orders@rosehotel.example,rosehotel.example,A,N,"Unit 17, Market Place",,Cardiff,CF10 3AL,GB
+HARB001,Harbour Cafe,orders@harbourcafe.example; purchasing@harbourcafe.example,harbourcafe.example,,Y,190 Bridge Street,,Bristol,BS3 4UG,GB
+LANT001,Lantern Primary School,orders@lanternprimaryschool.example; purchasing@lanternprimaryschool.example,lanternprimaryschool.example,A,N,115 High Street,,Manchester,M7 3LY,GB
+ABBE002,Abbey Bistro,orders@abbeybistro.example,abbeybistro.example,C,N,153 Market Place,,Brighton,BN5 9GQ,GB
+GRAN001,Granary Cafe,orders@granarycafe.example,granarycafe.example,C,N,38 Kings Road,,Bristol,BS20 4JT,GB
+BEAN001,Bean Hotel,orders@beanhotel.example; purchasing@beanhotel.example,beanhotel.example,B,N,131 Victoria Street,,Leeds,LS12 6TR,GB
+CAST001,Castle Leisure Centre,orders@castleleisurecentre.example; purchasing@castleleisurecentre.example,castleleisurecentre.example,B,N,136 Bridge Street,,Manchester,M14 9AU,GB
+BREW001,Brew Kitchen,orders@brewkitchen.example,brewkitchen.example,,N,10 High Street,,Cardiff,CF18 6XB,GB
+BREW001,Brew Kitchen,orders@brewkitchen.example,brewkitchen.example,,N,"Unit 26, Market Place",,Bristol,BS19 2QA,GB
+KING002,Kings Care Home,orders@kingscarehome.example,kingscarehome.example,,N,8 Queen Street,,Chester,CH17 5AA,GB
+KING002,Kings Care Home,orders@kingscarehome.example,kingscarehome.example,,N,"Unit 15, Station Road",,York,YO19 3NE,GB
+ROSE002,Rose Bistro,orders@rosebistro.example,rosebistro.example,C,N,146 Mill Road,,Norwich,NR5 5LL,GB
+ELM001,Elm Pub & Dining,orders@elmpubanddining.example; purchasing@elmpubanddining.example,elmpubanddining.example,A,N,182 Church Lane,,Exeter,EX8 4UX,GB
+WILL001,Willow Cafe,orders@willowcafe.example,willowcafe.example,B,N,135 High Street,,Cardiff,CF1 3NP,GB
+WILL001,Willow Cafe,orders@willowcafe.example,willowcafe.example,B,N,"Unit 31, High Street",,Sheffield,S12 2HD,GB
+WILL002,Willow Pub & Dining,orders@willowpubanddining.example; purchasing@willowpubanddining.example,willowpubanddining.example,A,N,197 High Street,,Leeds,LS2 6AY,GB
+RIVE001,Riverside Hotel,orders@riversidehotel.example; purchasing@riversidehotel.example,riversidehotel.example,C,N,186 Market Place,,Bristol,BS8 7EB,GB
+RIVE001,Riverside Hotel,orders@riversidehotel.example; purchasing@riversidehotel.example,riversidehotel.example,C,N,"Unit 12, Mill Road",,Nottingham,NG6 1EP,GB
+OAK001,Oak Bistro,orders@oakbistro.example; purchasing@oakbistro.example,oakbistro.example,A,N,126 Church Lane,,Leeds,LS13 4AE,GB
+MEAD002,Meadow Bakery,orders@meadowbakery.example,meadowbakery.example,C,N,5 Station Road,,Bristol,BS20 9BH,GB
+ORCH002,Orchard Care Home,orders@orchardcarehome.example; purchasing@orchardcarehome.example,orchardcarehome.example,B,N,196 Church Lane,,Nottingham,NG17 9TS,GB
+BRID001,Bridge Hotel,orders@bridgehotel.example,bridgehotel.example,C,N,123 Queen Street,,Norwich,NR9 9QG,GB
+BRID001,Bridge Hotel,orders@bridgehotel.example,bridgehotel.example,C,N,"Unit 40, Market Place",,Manchester,M12 4ER,GB
+KING003,Kings Primary School,orders@kingsprimaryschool.example,kingsprimaryschool.example,C,N,33 Queen Street,,Norwich,NR17 5SZ,GB
+KING003,Kings Primary School,orders@kingsprimaryschool.example,kingsprimaryschool.example,C,N,"Unit 32, Church Lane",,Exeter,EX8 9QA,GB
+STAT001,Station Catering Ltd,orders@stationcateringltd.example; purchasing@stationcateringltd.example,stationcateringltd.example,B,N,27 High Street,,Cardiff,CF7 5FG,GB
+STAT001,Station Catering Ltd,orders@stationcateringltd.example; purchasing@stationcateringltd.example,stationcateringltd.example,B,N,"Unit 12, Kings Road",,Norwich,NR11 5SW,GB
+STAT002,Station Leisure Centre,orders@stationleisurecentre.example,stationleisurecentre.example,A,N,91 Market Place,,Bath,BA17 7LN,GB
+ORCH003,Orchard Cafe,orders@orchardcafe.example; purchasing@orchardcafe.example,orchardcafe.example,C,N,140 Kings Road,,Nottingham,NG16 6TG,GB
+MEAD003,Meadow Catering Ltd,orders@meadowcateringltd.example; purchasing@meadowcateringltd.example,meadowcateringltd.example,A,N,196 Victoria Street,,Bristol,BS5 9TQ,GB
+WILL003,Willow Cleaning Services,orders@willowcleaningservices.example; purchasing@willowcleaningservices.example,willowcleaningservices.example,A,N,59 Park Avenue,,Nottingham,NG5 9BL,GB
+ELM002,Elm Primary School,orders@elmprimaryschool.example,elmprimaryschool.example,B,N,191 High Street,,Brighton,BN17 8GP,GB
+ELM002,Elm Primary School,orders@elmprimaryschool.example,elmprimaryschool.example,B,N,"Unit 3, Victoria Street",,Bath,BA15 8XA,GB
+ELM003,Elm Hotel,orders@elmhotel.example,elmhotel.example,B,N,166 Station Road,,York,YO18 2BG,GB
+ELM003,Elm Hotel,orders@elmhotel.example,elmhotel.example,B,N,"Unit 27, Kings Road",,Exeter,EX5 1EP,GB
+ORCH004,Orchard Catering Ltd,orders@orchardcateringltd.example,orchardcateringltd.example,,N,15 Bridge Street,,Manchester,M20 4BR,GB
+COPP001,Copper Hotel,orders@copperhotel.example,copperhotel.example,C,N,21 Bridge Street,,York,YO7 9GJ,GB
+COPP001,Copper Hotel,orders@copperhotel.example,copperhotel.example,C,N,"Unit 35, Park Avenue",,Bristol,BS10 3DS,GB
+STAT003,Station Primary School,orders@stationprimaryschool.example,stationprimaryschool.example,C,N,105 Queen Street,,Norwich,NR12 3ST,GB
+ELM004,Elm Deli,orders@elmdeli.example; purchasing@elmdeli.example,elmdeli.example,A,N,16 High Street,,Norwich,NR8 8PT,GB
+MEAD004,Meadow Care Home,orders@meadowcarehome.example,meadowcarehome.example,,Y,166 Victoria Street,,Nottingham,NG10 2NL,GB
+OAK002,Oak Cafe,orders@oakcafe.example,oakcafe.example,,N,100 High Street,,Chester,CH13 8FR,GB
+MILL002,Mill Hotel,orders@millhotel.example,millhotel.example,B,N,215 High Street,,Exeter,EX6 6ES,GB
+FOUN001,Foundry Catering Ltd,orders@foundrycateringltd.example; purchasing@foundrycateringltd.example,foundrycateringltd.example,C,N,115 Market Place,,Chester,CH4 5ZY,GB
+RIVE002,Riverside Deli,orders@riversidedeli.example; purchasing@riversidedeli.example,riversidedeli.example,B,N,45 Bridge Street,,York,YO18 6XD,GB
+BREW002,Brew Pub & Dining,orders@brewpubanddining.example,brewpubanddining.example,,N,189 Mill Road,,Nottingham,NG19 1DE,GB
+BRID002,Bridge Deli,orders@bridgedeli.example; purchasing@bridgedeli.example,bridgedeli.example,,N,182 Station Road,,Bath,BA11 5HH,GB
+COPP002,Copper Leisure Centre,orders@copperleisurecentre.example; purchasing@copperleisurecentre.example,copperleisurecentre.example,,N,82 Market Place,,Bath,BA14 3PG,GB
+ABBE003,Abbey Leisure Centre,orders@abbeyleisurecentre.example,abbeyleisurecentre.example,C,N,158 Church Lane,,Nottingham,NG7 5JQ,GB
+CAST002,Castle Hotel,orders@castlehotel.example; purchasing@castlehotel.example,castlehotel.example,B,N,119 Victoria Street,,Cardiff,CF17 9NH,GB
+OAK003,Oak Care Home,orders@oakcarehome.example,oakcarehome.example,B,N,38 Church Lane,,York,YO12 8EF,GB
+BREW003,Brew Hotel,orders@brewhotel.example; purchasing@brewhotel.example,brewhotel.example,A,N,218 Church Lane,,Bristol,BS8 5QJ,GB
+BREW003,Brew Hotel,orders@brewhotel.example; purchasing@brewhotel.example,brewhotel.example,A,N,"Unit 19, Bridge Street",,Chester,CH9 9YF,GB
+MARK001,Market Kitchen,orders@marketkitchen.example,marketkitchen.example,C,N,159 Bridge Street,,Sheffield,S7 6QW,GB
+BREW004,Brew Primary School,orders@brewprimaryschool.example,brewprimaryschool.example,,N,74 Market Place,,Bath,BA9 2WL,GB
+MARK002,Market Care Home,orders@marketcarehome.example,marketcarehome.example,C,N,200 Park Avenue,,Manchester,M10 3XW,GB
+WILL004,Willow Catering Ltd,orders@willowcateringltd.example; purchasing@willowcateringltd.example,willowcateringltd.example,C,N,35 High Street,,York,YO13 4UW,GB
+WILL004,Willow Catering Ltd,orders@willowcateringltd.example; purchasing@willowcateringltd.example,willowcateringltd.example,C,N,"Unit 38, Mill Road",,Nottingham,NG6 1PS,GB
+HARB002,Harbour Care Home,orders@harbourcarehome.example,harbourcarehome.example,,N,66 Station Road,,Manchester,M12 1YW,GB
+BRID003,Bridge Primary School,orders@bridgeprimaryschool.example,bridgeprimaryschool.example,C,N,214 Park Avenue,,Chester,CH2 1UD,GB
+BRID003,Bridge Primary School,orders@bridgeprimaryschool.example,bridgeprimaryschool.example,C,N,"Unit 19, Church Lane",,Bath,BA9 4PX,GB
+MARK003,Market Primary School,orders@marketprimaryschool.example; purchasing@marketprimaryschool.example,marketprimaryschool.example,A,N,137 Park Avenue,,Nottingham,NG14 6WW,GB
+MARK003,Market Primary School,orders@marketprimaryschool.example; purchasing@marketprimaryschool.example,marketprimaryschool.example,A,N,"Unit 23, Victoria Street",,Exeter,EX2 8SD,GB
+THIS002,Thistle Catering Ltd,orders@thistlecateringltd.example; purchasing@thistlecateringltd.example,thistlecateringltd.example,,N,16 Bridge Street,,Exeter,EX12 3GL,GB
+MARK004,Market Cafe,orders@marketcafe.example,marketcafe.example,,N,194 Queen Street,,Bristol,BS13 9BG,GB
+MARK004,Market Cafe,orders@marketcafe.example,marketcafe.example,,N,"Unit 3, Kings Road",,Leeds,LS7 4DQ,GB
+COPP003,Copper Deli,orders@copperdeli.example,copperdeli.example,,N,212 Church Lane,,Leeds,LS18 4LG,GB
+THIS003,Thistle Bakery,orders@thistlebakery.example,thistlebakery.example,B,N,102 Market Place,,Sheffield,S19 5TD,GB
+ABBE004,Abbey Care Home,orders@abbeycarehome.example; purchasing@abbeycarehome.example,abbeycarehome.example,,N,117 Park Avenue,,Bath,BA13 7DG,GB

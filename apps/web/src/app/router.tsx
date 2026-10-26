@@ -5,7 +5,13 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { ForgotPasswordPage, ResetPasswordPage } from '../features/auth/PasswordPages';
 import { SignupPage } from '../features/auth/SignupPage';
 import { VerifyEmailPage } from '../features/auth/VerifyEmailPage';
+import { CrossReferencesPage } from '../features/catalogue/CrossReferencesPage';
+import { CustomerDetailPage } from '../features/catalogue/CustomerDetailPage';
+import { CustomersPage } from '../features/catalogue/CustomersPage';
+import { ProductsPage } from '../features/catalogue/ProductsPage';
 import { DevEmailsPage } from '../features/dev/DevEmailsPage';
+import { ImportJobPage, ImportsPage, NewImportPage } from '../features/imports/ImportWizard';
+import { IntegrationsPage } from '../features/settings/IntegrationsPage';
 import { ComingSoonPage, OverviewPage } from '../features/placeholder/pages';
 import { AuditPage } from '../features/settings/AuditPage';
 import { OrganizationPage } from '../features/settings/OrganizationPage';
@@ -82,36 +88,35 @@ export const router = createBrowserRouter([
           />
         ),
       },
+      { path: 'customers', element: <CustomersPage /> },
+      { path: 'customers/:id', element: <CustomerDetailPage /> },
+      { path: 'products', element: <ProductsPage /> },
+      { path: 'cross-references', element: <CrossReferencesPage /> },
       {
-        path: 'customers',
+        path: 'imports',
         element: (
-          <ComingSoonPage
-            title="Customers"
-            milestone="M2"
-            description="Import customers, sender addresses, delivery addresses and price lists."
-          />
+          <RequireRole minimum="admin">
+            <ImportsPage />
+          </RequireRole>
         ),
       },
       {
-        path: 'products',
+        path: 'imports/new',
         element: (
-          <ComingSoonPage
-            title="Products"
-            milestone="M2"
-            description="Import and search your catalogue."
-          />
+          <RequireRole minimum="admin">
+            <NewImportPage />
+          </RequireRole>
         ),
       },
       {
-        path: 'cross-references',
+        path: 'imports/:id',
         element: (
-          <ComingSoonPage
-            title="Cross-references"
-            milestone="M2"
-            description="Customer part codes mapped to your SKUs - learned from every correction."
-          />
+          <RequireRole minimum="admin">
+            <ImportJobPage />
+          </RequireRole>
         ),
       },
+      { path: 'settings/integrations', element: <IntegrationsPage /> },
       {
         path: 'rules',
         element: (

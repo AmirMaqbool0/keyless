@@ -21,9 +21,10 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
   {
     heading: 'Data',
     items: [
-      { to: '/customers', label: 'Customers', soon: 'M2' },
-      { to: '/products', label: 'Products', soon: 'M2' },
-      { to: '/cross-references', label: 'Cross-references', soon: 'M2' },
+      { to: '/customers', label: 'Customers' },
+      { to: '/products', label: 'Products' },
+      { to: '/cross-references', label: 'Cross-references' },
+      { to: '/imports', label: 'Imports', minRole: 'admin' },
     ],
   },
   {
@@ -38,6 +39,7 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
     items: [
       { to: '/settings/organization', label: 'Organisation' },
       { to: '/settings/team', label: 'Team' },
+      { to: '/settings/integrations', label: 'Integrations' },
       { to: '/settings/security', label: 'Security' },
       { to: '/settings/audit', label: 'Audit log', minRole: 'admin' },
     ],

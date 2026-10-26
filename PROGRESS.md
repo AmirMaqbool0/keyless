@@ -59,7 +59,77 @@ pnpm test           # 23 tests
 - The super-admin flag exists (script); the panel itself is M10.
 - One user belongs to one org (MVP decision).
 
-## Next: M2 - Catalogue and customers
+## M2 - Catalogue and customers ✅ (2026-10-26)
 
-CSV imports with column mapping (products, customers, prices, cross-references), list/search pages,
-MockConnector with sync. Done when a 5,000-product catalogue imports and searches quickly.
+**Done when:** I can import a 5,000-product catalogue and search it quickly. Measured in the test
+suite: **5,000 products import in ~1.5 s, search returns in ~60-70 ms.** Also done by hand in the
+browser: upload `samples/products.csv` → auto-mapped → check → import 5,000 → search.
+
+### Built
+
+- **Data model:** Product, Customer (senders, domains, delivery addresses, price list, credit hold,
+  trusted flag, extraction hints), CustomerPrice (contract or price-list, qty breaks, validity
+  dates), CrossReference (customer code and/or description → SKU, unit conversion factor, source,
+  usage counters), ImportJob, Connector, MockErpOrder. All tenant-scoped, with indexes on the
+  lookup keys that matching will use in M5.
+- **CSV imports (admin):** upload → automatic column mapping (recognises typical ERP headers such as
+  "Stock Code", "Pack Qty", "EAN", "On Stop") → dry-run check with a row-by-row problem report →
+  import. Re-imports update in place, and blank cells never wipe existing data. Rows with problems
+  are skipped and reported. Handles Excel's UTF-8 BOM, Windows-1252 files (£ signs), "£1,234.50",
+  yes/no/Y/1 and UK dates. One-row-per-address customer exports are merged. Blank templates can be
+  downloaded. Up to 100,000 rows / 25 MB.
+- **Matching-friendly keys:** customer part codes are compared ignoring case and separators
+  (`ab-12.3` = `AB123`), so a code typed differently updates the same cross-reference.
+- **Lists and search:** products (by SKU, description words or barcode; an exact SKU/barcode hit is
+  always first), customers (by name, account code, sender email or domain), cross-references
+  (search, filter by source, delete, **CSV export that re-imports cleanly**), prices.
+- **Customer page:** order controls (credit hold, trusted for auto-approve), sender addresses and
+  domains (editable), delivery addresses, and cross-reference and price tabs.
+- **Connectors:** the `OrderConnector` interface from the spec, plus a **MockConnector** (a demo ERP
+  with 5,000 products, 60 customers and ~4,900 prices) with sync for customers → products →
+  prices → stock. Products that disappear from the ERP are deactivated, not deleted.
+  `createSalesOrder` is idempotent (ready for M7). An Integrations page has sync buttons and
+  per-entity results.
+- **Demo data:** a deterministic generator (catering/janitorial wholesaler). `pnpm seed` now loads
+  the full catalogue, customers, prices and cross-references into the demo org. `samples/` holds
+  realistic CSV exports to try the import with.
+- **Storage:** `Storage` interface with a local-disk driver (`.data/files`); S3/R2 comes in M3.
+
+### How to try it
+
+```bash
+pnpm dev
+pnpm seed                        # demo org with everything loaded (admin@demo.keyless.local)
+```
+
+Or sign up a fresh org and import `samples/products.csv`, then `customers.csv`, `prices.csv` and
+`cross-references.csv` from **Data > Imports**. Or connect the Demo ERP under
+**Settings > Integrations**.
+
+### Tests (40 total, all passing)
+
+- `parse.test.ts`: encodings, headers, number/boolean/date/list coercion, normalised keys.
+- `imports.test.ts`: mapping suggestions, row errors, dry run, re-import without blanking, mapping
+  validation, file/role checks, **5,000-row import + search timing**, customers/prices/xrefs with
+  lookups, export → re-import round trip, customer edits, cross-org isolation.
+- `connectors.test.ts`: full sync, idempotent re-sync, deactivation, idempotent `createSalesOrder`,
+  role checks.
+
+### Known gaps / decisions
+
+- Imports run inside the request (5,000 rows ≈ 1.5 s). They move to a BullMQ job when the worker
+  arrives in M3, which large (100k-row) files will need.
+- CSV only. Excel (.xlsx) upload comes with the extraction work in M4, which needs `exceljs`
+  anyway. Until then users save as CSV, and the upload page says how.
+- Search is substring matching on a normalised text field. That's fine at 5k-50k products. Fuzzy
+  matching that tolerates typos (`ProductSearch` with trigram scoring) is M5 work, where line
+  matching needs it.
+- Cross-references can be imported, viewed, exported and deleted. Manual add/edit arrives with the
+  review screen in M6, where corrections create them.
+- The mock connector does not sync cross-references (real ERPs don't hold them either).
+
+## Next: M3 - Ingestion
+
+Forwarding-address inbound webhook + manual upload (drag-and-drop PDFs/emails) first, then
+Microsoft Graph and Gmail OAuth. Storage, dedupe and classification. Brings in Redis + BullMQ (the
+worker app) and the S3-compatible storage driver.

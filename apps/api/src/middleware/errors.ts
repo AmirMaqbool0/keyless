@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
+import { MulterError } from 'multer';
 import type { ApiErrorBody } from '@keyless/shared';
 import { AppError } from '../lib/http';
 import { logger } from '../lib/logger';
@@ -19,6 +20,13 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   // Malformed JSON from express.json()
   if (err instanceof SyntaxError && 'status' in err && err.status === 400) {
     res.status(400).json({ error: { code: 'BAD_JSON', message: 'Malformed JSON body' } });
+    return;
+  }
+  // Upload limits (file too big, too many files)
+  if (err instanceof MulterError) {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE' ? 'That file is too large (25 MB max)' : err.message;
+    res.status(400).json({ error: { code: 'UPLOAD_ERROR', message } });
     return;
   }
   // Mongo duplicate key
