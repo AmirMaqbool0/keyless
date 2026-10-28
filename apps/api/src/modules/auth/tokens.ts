@@ -54,7 +54,7 @@ export function verifyChallengeToken(token: string): string | null {
 
 async function createSessionRecord(user: UserDoc, req: Request, familyId: string): Promise<string> {
   const token = randomToken();
-  await Session.create({
+  const doc = {
     orgId: user.orgId,
     userId: user._id,
     familyId,
@@ -62,7 +62,17 @@ async function createSessionRecord(user: UserDoc, req: Request, familyId: string
     expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
     userAgent: req.get('user-agent')?.slice(0, 300),
     ip: req.ip,
-  });
+  };
+  try {
+    await Session.create(doc);
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'code' in err && err.code === 11000) {
+      await Session.deleteMany({ userId: user._id }).setOptions({ skipTenant: true });
+      await Session.create(doc);
+    } else {
+      throw err;
+    }
+  }
   return token;
 }
 

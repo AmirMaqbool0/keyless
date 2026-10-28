@@ -165,7 +165,10 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
 
     async recordLogin(user: UserDoc, req: Request): Promise<void> {
       user.lastLoginAt = new Date();
-      await user.save();
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { lastLoginAt: user.lastLoginAt } },
+      ).setOptions({ skipTenant: true });
       await audit({
         orgId: user.orgId,
         action: 'user.login',

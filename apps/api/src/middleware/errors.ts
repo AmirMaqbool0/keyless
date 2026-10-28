@@ -31,7 +31,15 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   }
   // Mongo duplicate key
   if (typeof err === 'object' && err !== null && 'code' in err && err.code === 11000) {
-    res.status(409).json({ error: { code: 'DUPLICATE', message: 'That record already exists' } });
+    const keyPattern = (err as { keyPattern?: Record<string, number> }).keyPattern ?? {};
+    let message = 'That record already exists';
+    if ('email' in keyPattern) {
+      message = 'An account with this email already exists';
+    } else if ('slug' in keyPattern) {
+      message = 'An organisation with this name already exists';
+    }
+    logger.warn({ err, reqId: req.id, keyPattern }, 'Handled duplicate key conflict');
+    res.status(409).json({ error: { code: 'DUPLICATE', message } });
     return;
   }
   logger.error({ err, reqId: req.id }, 'Unhandled error');
