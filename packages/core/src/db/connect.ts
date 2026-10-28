@@ -6,8 +6,12 @@ mongoose.set('strictQuery', true);
 export async function connectDb(uri: string): Promise<typeof mongoose> {
   const cleanUri = uri.trim().replace(/^["']|["']$/g, '');
   const conn = await mongoose.connect(cleanUri, { serverSelectionTimeoutMS: 10_000 });
-  // Build indexes declared on schemas (fine for MVP scale; use migrations for big collections).
-  await Promise.all(Object.values(conn.models).map((m) => m.syncIndexes()));
+  // Ensure declared indexes exist without concurrently dropping old ones or crashing on race conditions
+  try {
+    await Promise.allSettled(Object.values(conn.models).map((m) => m.createIndexes()));
+  } catch (err) {
+    logger.warn({ err }, 'Non-fatal error creating schema indexes');
+  }
   logger.info('MongoDB connected');
   return conn;
 }
