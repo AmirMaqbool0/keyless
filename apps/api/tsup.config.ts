@@ -7,6 +7,9 @@ export default defineConfig({
   platform: 'node',
   sourcemap: true,
   clean: true,
-  // Workspace packages are TypeScript source, so bundle them into the output.
+  skipNodeModulesBundle: true,
   noExternal: [/^@keyless\//],
+  banner: {
+    js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
+  },
 });

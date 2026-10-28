@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import MailComposer from 'nodemailer/lib/mail-composer';
+import MailComposer from 'nodemailer/lib/mail-composer/index.js';
 import type { Types } from 'mongoose';
 import type { EmailSource } from '@keyless/shared';
 import { env } from '../config/env';

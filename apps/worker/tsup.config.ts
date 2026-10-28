@@ -7,5 +7,9 @@ export default defineConfig({
   platform: 'node',
   sourcemap: true,
   clean: true,
+  skipNodeModulesBundle: true,
   noExternal: [/^@keyless\//],
+  banner: {
+    js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
+  },
 });

@@ -11,7 +11,23 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@keyless/core": "workspace:*"
+    "@anthropic-ai/sdk": "~0.135.0",
+    "@aws-sdk/client-s3": "~3.999.0",
+    "@aws-sdk/s3-request-presigner": "~3.999.0",
+    "@keyless/core": "workspace:*",
+    "@keyless/shared": "workspace:*",
+    "argon2": "^0.44.0",
+    "bullmq": "~5.79.4",
+    "exceljs": "^4.4.0",
+    "mailparser": "~3.11.0",
+    "mongoose": "^8.19.0",
+    "nodemailer": "~7.0.13",
+    "papaparse": "^5.7.0",
+    "pdfjs-dist": "~6.4.299",
+    "pdfkit": "~0.17.2",
+    "pino": "^9.9.0",
+    "sharp": "~0.35.5",
+    "zod": "^4.1.0"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import MailComposer from 'nodemailer/lib/mail-composer';
+import MailComposer from 'nodemailer/lib/mail-composer/index.js';
 import type Mail from 'nodemailer/lib/mailer';
 import PDFDocument from 'pdfkit';
 import sharp from 'sharp';
