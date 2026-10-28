@@ -33,7 +33,19 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   APP_URL: z.url().default('http://localhost:5173'),
   API_URL: z.url().default('http://localhost:4000'),
-  MONGO_URI: z.string().min(1),
+  MONGO_URI: z
+    .string()
+    .optional()
+    .transform(
+      (v) =>
+        (v || process.env.MONGODB_URI || process.env.DATABASE_URL || '')
+          .trim()
+          .replace(/^["']|["']$/g, ''),
+    )
+    .refine(
+      (v) => v.startsWith('mongodb://') || v.startsWith('mongodb+srv://'),
+      'MONGO_URI must be provided and start with "mongodb://" or "mongodb+srv://"',
+    ),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   ENCRYPTION_KEY: base64Key32,
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
