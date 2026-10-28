@@ -58,6 +58,7 @@ export type SearchHit = { product: CatProduct; score: number };
 /** The `ProductSearch` interface from the spec: anything that ranks products for a text. */
 export interface ProductSearch {
   search(query: string, limit?: number): SearchHit[];
+  scoreProduct?(query: string, product: CatProduct): number;
 }
 
 const STOPWORDS = new Set([
@@ -180,9 +181,28 @@ export class TokenProductSearch implements ProductSearch {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
   }
+
+  scoreProduct(query: string, product: CatProduct): number {
+    const qTokens = [...new Set(searchTokens(query))];
+    if (!qTokens.length) return 0;
+    const doc = this.docs.find(
+      (d) => d.product.id === product.id || d.product.sku === product.sku,
+    );
+    if (!doc) return 0;
+    const maxIdf = Math.log(1 + Math.max(this.docs.length, 1));
+    const w = (t: string) => this.idf.get(t) ?? maxIdf;
+    const qWeight = qTokens.reduce((s, t) => s + w(t), 0);
+    let sharedWeight = 0;
+    for (const t of qTokens) {
+      if (doc.tokens.has(t)) sharedWeight += w(t);
+    }
+    const dice = (2 * sharedWeight) / (qWeight + doc.weight || 1);
+    const qGrams = trigrams(qTokens.join(' '));
+    return Math.round((0.75 * dice + 0.25 * jaccard(qGrams, doc.grams)) * 1000) / 1000;
+  }
 }
 
-const PUBLIC_DOMAINS = new Set([
+export const PUBLIC_DOMAINS = new Set([
   'gmail.com',
   'googlemail.com',
   'outlook.com',

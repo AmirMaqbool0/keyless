@@ -1,0 +1,59 @@
+{
+  "name": "pdf-thistle-catering",
+  "description": "Forwarded PO from Thistle Catering Ltd with omission of tax and line metadata.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Thistle Catering Ltd",
+      "accountNumber": null,
+      "poNumber": "PO-933214",
+      "orderDate": "2026-10-27",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "16 Bridge Street",
+        "city": "Exeter",
+        "postcode": "EX12 3GL"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 761.33,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "CH2282",
+          "description": "Caterpak Multi-Surface Cleaner 5L Unfragranced (Case 2)",
+          "quantity": 3,
+          "unit": null,
+          "unitPrice": 18.30,
+          "expectedSku": "CH2282"
+        },
+        {
+          "customerPartCode": "BL2016",
+          "description": "ProClean Refuse Sack Black 11x17x18\" Medium Duty (Case 500)",
+          "quantity": 9,
+          "unit": null,
+          "unitPrice": 28.83,
+          "expectedSku": "BL2016"
+        },
+        {
+          "customerPartCode": "PP1144",
+          "description": "Kitchen Roll 1 Ply Blue (Pack 12)",
+          "quantity": 10,
+          "unit": null,
+          "unitPrice": 42.45,
+          "expectedSku": "PP1144"
+        },
+        {
+          "customerPartCode": "GL1018",
+          "description": "ProClean Polythene Gloves Powder Free Black Medium (Box 200)",
+          "quantity": 2,
+          "unit": null,
+          "unitPrice": 11.23,
+          "expectedSku": "GL1018"
+        }
+      ]
+    }
+  ]
+}

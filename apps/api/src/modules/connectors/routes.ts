@@ -6,9 +6,10 @@ import {
   SYNC_ENTITIES,
   createConnector,
   runSync,
+  type ConnectorDeps,
 } from '@keyless/core/connectors/index';
-import { MAX_DEMO_PRODUCTS } from '@keyless/core/demo/generator';
 import { audit } from '@keyless/core/lib/audit';
+import { encrypt } from '@keyless/core/lib/crypto';
 import { badRequest, notFound, param, validate } from '@keyless/core/lib/http';
 import { authed, requireRole } from '../../middleware/auth';
 import { Connector, type IConnector } from '@keyless/core/models/Connector';
@@ -25,13 +26,14 @@ const LABELS: Record<IConnector['type'], string> = {
 const createSchema = z.object({
   type: z.enum(CONNECTOR_TYPES),
   name: z.string().trim().min(1).max(80).optional(),
-  settings: z
-    .object({ productCount: z.number().int().min(10).max(MAX_DEMO_PRODUCTS).optional() })
-    .optional(),
+  credentials: z.record(z.string(), z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 });
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
   isDefault: z.literal(true).optional(),
+  credentials: z.record(z.string(), z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 });
 const syncSchema = z.object({
   entities: z
@@ -55,7 +57,7 @@ function toDto(c: IConnector): ConnectorDto {
 }
 
 /** Mounted behind requireAuth + requireVerified. */
-export function connectorsRouter(): Router {
+export function connectorsRouter(deps?: ConnectorDeps): Router {
   const r = Router();
 
   r.get('/', async (req, res) => {
@@ -71,14 +73,20 @@ export function connectorsRouter(): Router {
       throw badRequest(`${LABELS[input.type]} is not available yet`, 'CONNECTOR_UNAVAILABLE');
     }
     const isFirst = !(await Connector.exists({ orgId }));
-    const connector = await Connector.create({
+    const connector = new Connector({
       orgId,
       type: input.type,
       name: input.name ?? LABELS[input.type],
       isDefault: isFirst,
       settings: input.settings ?? {},
+      status: 'connected',
     });
-    const check = await createConnector(connector).testConnection();
+    if (input.credentials && Object.keys(input.credentials).length > 0) {
+      connector.credentialsEnc = encrypt(JSON.stringify(input.credentials));
+    }
+    await connector.save();
+
+    const check = await createConnector(connector, deps).testConnection();
     connector.status = check.ok ? 'connected' : 'error';
     connector.lastError = check.ok ? undefined : check.message;
     await connector.save();
@@ -105,7 +113,7 @@ export function connectorsRouter(): Router {
 
   r.post('/:id/test', requireRole('admin'), async (req, res) => {
     const connector = await load(req);
-    const result = await createConnector(connector).testConnection();
+    const result = await createConnector(connector, deps).testConnection();
     connector.status = result.ok ? 'connected' : 'error';
     connector.lastError = result.ok ? undefined : result.message;
     await connector.save();
@@ -116,7 +124,7 @@ export function connectorsRouter(): Router {
     const { orgId } = authed(req);
     const connector = await load(req);
     const { entities } = validate(syncSchema, req.body);
-    const results = await runSync(connector, entities);
+    const results = await runSync(connector, entities, deps);
     await audit({
       orgId,
       action: 'connector.synced',
@@ -132,6 +140,12 @@ export function connectorsRouter(): Router {
     const connector = await load(req);
     const input = validate(updateSchema, req.body);
     if (input.name) connector.name = input.name;
+    if (input.credentials && Object.keys(input.credentials).length > 0) {
+      connector.credentialsEnc = encrypt(JSON.stringify(input.credentials));
+    }
+    if (input.settings) {
+      connector.settings = { ...connector.settings, ...input.settings };
+    }
     if (input.isDefault) {
       await Connector.updateMany({ orgId, _id: { $ne: connector._id } }, { isDefault: false });
       connector.isDefault = true;

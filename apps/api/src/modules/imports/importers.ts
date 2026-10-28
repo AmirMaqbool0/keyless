@@ -2,6 +2,7 @@ import type { Types } from 'mongoose';
 import { z } from 'zod';
 import type { ImportRowError, ImportType } from '@keyless/shared';
 import { accountKey, skuKey } from '@keyless/core/lib/normalise';
+import { isPublicDomain } from '@keyless/core/matching/catalogue';
 import { Customer } from '@keyless/core/models/Customer';
 import { Product } from '@keyless/core/models/Product';
 import {
@@ -93,6 +94,12 @@ function customerImporter(): Importer<CustomerRecord> {
       const badDomain = domains.find((d) => !domainRe.test(d));
       if (badDomain)
         errors.push({ field: 'emailDomains', message: `"${badDomain}" is not a domain` });
+      const publicDomain = domains.find((d) => isPublicDomain(d));
+      if (publicDomain)
+        errors.push({
+          field: 'emailDomains',
+          message: `"${publicDomain}" is a public webmail domain and cannot be linked to a customer`,
+        });
       if (errors.length) return { errors };
 
       const line1 = str(v.addressLine1);

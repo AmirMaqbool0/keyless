@@ -298,6 +298,56 @@ describe('manual upload, reclassify, reprocess', () => {
       }),
     ]);
   });
+
+  it('P1-6: Inbox Failed tab count agrees with rows and includes extraction failures', async () => {
+    const owner = await t.createUser({ role: 'owner' });
+    const c = await t.loginAs(owner.email);
+    const addr = await forwardingAddress(c);
+
+    // 1. Clean order
+    await postRaw(await sampleEmail('pdf_po', ctx(addr)));
+    await t.drainJobs();
+
+    // 2. Email with failed extraction
+    await postRaw(await sampleEmail('pdf_po', { ...ctx(addr), poNumber: 'PO-FAIL-EXTRACT' }));
+    await t.drainJobs();
+    const failedEmail = await InboundEmail.findOne({ orgId: owner.orgId, subject: /PO-FAIL-EXTRACT/ });
+    expect(failedEmail).not.toBeNull();
+    // Simulate extraction failure (like Thistle / Willow)
+    failedEmail!.extraction = {
+      status: 'failed',
+      orderCount: 0,
+      lineCount: 0,
+      issueCount: 0,
+      costUsd: 0,
+      completedAt: new Date(),
+    };
+    await failedEmail!.save();
+
+    // Verify /api/emails/counts
+    const countsRes = await c.get('/api/emails/counts');
+    expect(countsRes.status).toBe(200);
+    expect(countsRes.body.failed).toBe(1);
+    expect(countsRes.body.byLabel.new_order).toBe(1); // Only the clean order
+
+    // Verify /api/emails?view=failed returns the failed email with status: 'failed'
+    const failedList = await c.get('/api/emails?view=failed');
+    expect(failedList.status).toBe(200);
+    expect(failedList.body.total).toBe(1);
+    expect(failedList.body.items[0].id).toBe(failedEmail!._id.toString());
+    expect(failedList.body.items[0].status).toBe('failed');
+
+    // Verify /api/emails?view=orders excludes the failed email
+    const ordersList = await c.get('/api/emails?view=orders');
+    expect(ordersList.status).toBe(200);
+    expect(ordersList.body.total).toBe(1);
+    expect(ordersList.body.items[0].id).not.toBe(failedEmail!._id.toString());
+
+    // Verify reviewer can re-extract the failed email
+    const reExtractRes = await c.post(`/api/emails/${failedEmail!._id}/extract`);
+    expect(reExtractRes.status).toBe(200);
+    expect(reExtractRes.body.extraction.status).toBe('running');
+  });
 });
 
 describe('email tenant isolation', () => {

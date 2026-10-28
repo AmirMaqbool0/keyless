@@ -73,7 +73,7 @@ export function CustomerDetailPage() {
             />
             <Toggle
               label="Trusted for auto-approve"
-              help="Allows auto-approve rules (M8) to push this customer's green orders."
+              help="Allows auto-approve rules to automatically push this customer's clean orders."
               checked={c.trustedForAutoApprove}
               disabled={!isAdmin || update.isPending}
               onChange={(v) => update.mutate({ trustedForAutoApprove: v })}

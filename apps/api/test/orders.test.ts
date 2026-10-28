@@ -245,6 +245,12 @@ describe('PO email -> coloured order (the M5 "done when")', () => {
     await t.drainJobs();
     const [after] = await orders(c);
     expect(after).toMatchObject({ colour: 'green', status: 'ready' });
+    // P0-7: Update in place (same _id, version+1)
+    expect(after!.id).toBe(before!.id);
+    const getOldId = await c.get(`/api/orders/${before!.id}`);
+    expect(getOldId.status).toBe(200);
+    expect(getOldId.body.colour).toBe('green');
+    expect(getOldId.body.version).toBeGreaterThanOrEqual(1);
 
     await Order.updateOne(
       { orgId: owner.orgId, _id: after!.id },
@@ -265,5 +271,113 @@ describe('PO email -> coloured order (the M5 "done when")', () => {
     expect((await other.get(`/api/orders/${item!.id}`)).status).toBe(404);
     expect((await other.get('/api/orders?view=all')).body.total).toBe(0);
     expect((await other.post(`/api/orders/${item!.id}/rematch`)).status).toBe(404);
+  });
+
+  it('P1-2: re-evaluates validation issues, pricing, and routing after edits', async () => {
+    const { c, to, owner } = await setup();
+
+    await upsertCustomers(
+      owner.orgId,
+      [
+        {
+          accountCode: 'ABBEY01',
+          name: 'Abbey Cafe',
+          emailDomains: ['abbey.example'],
+          senderAddresses: ['manager@abbey.example'],
+          deliveryAddresses: [{ line1: '10 Abbey Road', city: 'Leeds', postcode: 'LS2 9JT' }],
+        },
+      ],
+      'manual',
+    );
+    await upsertProducts(
+      owner.orgId,
+      [
+        {
+          sku: 'GL1459',
+          description: 'Caterpak Nitrile Gloves Blue Medium',
+          uom: 'BOX',
+          packSize: 100,
+          defaultPrice: 6.8,
+          stockQty: 50,
+        },
+        {
+          sku: 'GL1001',
+          description: 'Nitrile Gloves Powder Free Blue Medium',
+          uom: 'BOX',
+          defaultPrice: 10.75,
+          stockQty: 100,
+        },
+      ],
+      'manual',
+    );
+
+    await send(
+      'pdf_po',
+      ctx(to, {
+        customerName: 'Unknown Sender Cafe',
+        senderAddress: 'unknown@stranger.example',
+        deliveryAddress: ['10 Abbey Road', 'Leeds', 'LS2 9JT'],
+        lines: [
+          { code: 'GL1001', description: 'Nitrile Gloves Blue Medium', quantity: 10, unitPrice: 4.5 },
+        ],
+      }),
+    );
+
+    const [orderBefore] = await orders(c);
+    let detail = (await c.get(`/api/orders/${orderBefore!.id}`)).body;
+
+    expect(detail.issues.find((i: { code: string }) => i.code === 'customer_unknown')).toBeDefined();
+    const initialPriceIssue = detail.issues.find((i: { code: string }) => i.code === 'price_mismatch');
+    expect(initialPriceIssue).toBeDefined();
+    expect(initialPriceIssue.message).toContain('10.75');
+
+    const custRes = await c.get('/api/customers?q=Abbey');
+    const abbeyId = custRes.body.items[0].id;
+    const prodRes = await c.get('/api/products?q=GL1459');
+    const gl1459Id = prodRes.body.items[0].id;
+
+    const line1Id = detail.lines[0].id;
+    const saveRes = await c.patch(`/api/orders/${orderBefore!.id}`, {
+      customerId: abbeyId,
+      lines: [
+        {
+          id: line1Id,
+          sku: 'GL1459',
+          productId: gl1459Id,
+          quantity: 10,
+          unitPrice: 4.5,
+        },
+      ],
+    });
+    expect(saveRes.status).toBe(200);
+
+    detail = (await c.get(`/api/orders/${orderBefore!.id}`)).body;
+
+    const activeCustUnknown = detail.issues.find(
+      (i: { code: string; resolved: boolean }) => i.code === 'customer_unknown' && !i.resolved,
+    );
+    expect(activeCustUnknown).toBeUndefined();
+
+    const updatedPriceIssue = detail.issues.find((i: { code: string }) => i.code === 'price_mismatch');
+    expect(updatedPriceIssue).toBeDefined();
+    expect(updatedPriceIssue.message).toContain('6.80');
+    expect(updatedPriceIssue.message).not.toContain('10.75');
+
+    const dismissRes = await c.post(`/api/orders/${orderBefore!.id}/issues/${updatedPriceIssue.id}/dismiss`);
+    expect(dismissRes.status).toBe(200);
+
+    detail = (await c.get(`/api/orders/${orderBefore!.id}`)).body;
+    expect(detail.colour).toBe('green');
+    expect(detail.status).toBe('ready');
+
+    await c.patch(`/api/orders/${orderBefore!.id}`, {
+      notes: 'Preserve dismissal test',
+    });
+    detail = (await c.get(`/api/orders/${orderBefore!.id}`)).body;
+    const dismissedIssue = detail.issues.find((i: { code: string }) => i.code === 'price_mismatch');
+    expect(dismissedIssue).toBeDefined();
+    expect(dismissedIssue.resolved).toBe(true);
+    expect(dismissedIssue.dismissedBy).toBeDefined();
+    expect(detail.status).toBe('ready');
   });
 });

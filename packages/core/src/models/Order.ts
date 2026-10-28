@@ -24,6 +24,8 @@ export type OrderIssue = {
   message: string;
   lineNo?: number;
   resolved: boolean;
+  dismissedBy?: Types.ObjectId;
+  dismissedAt?: Date;
 };
 
 export type MatchCandidate = {
@@ -87,11 +89,14 @@ export interface IOrder {
   notes?: string;
   currency: string;
   documentTotals: { subtotal?: number; tax?: number; total?: number };
-  /** Our value of the order: converted quantities x expected prices (or document prices). */
+  /** Order value = sum of PO line totals (or qty * PO unit price), fallback to expected price (estimated). */
   value?: number;
+  valueEstimated?: boolean;
+  expectedValue?: number;
   status: OrderStatus;
   colour: RouteColour;
   confidence: number;
+  confidenceHint?: string;
   /** The extractor's own confidence for this order, kept for re-routing. */
   extractionConfidence: number;
   lines: OrderLine[];
@@ -109,6 +114,11 @@ export interface IOrder {
   approvedBy?: Types.ObjectId;
   pushedAt?: Date;
   erpReference?: string;
+  rejectionReason?: string;
+  lastPushError?: string;
+  autoApproved?: boolean;
+  autoApprovedRuleId?: Types.ObjectId;
+  autoApprovedRuleName?: string;
   /** orgId + customerId + poNumber + version (spec section 10). */
   idempotencyKey?: string;
   version: number;
@@ -123,6 +133,8 @@ const issueSchema = new Schema<OrderIssue>({
   message: { type: String, required: true },
   lineNo: Number,
   resolved: { type: Boolean, default: false },
+  dismissedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  dismissedAt: Date,
 });
 
 const lineSchema = new Schema<OrderLine>({
@@ -179,7 +191,16 @@ const orderSchema = new Schema<IOrder>(
       accountCode: String,
       method: {
         type: String,
-        enum: ['sender', 'domain', 'account_number', 'name', 'forwarded_sender', 'manual', 'none'],
+        enum: [
+          'sender',
+          'domain',
+          'account_number',
+          'name',
+          'delivery_address',
+          'forwarded_sender',
+          'manual',
+          'none',
+        ],
         default: 'none',
       },
       confidence: { type: Number, default: 0 },
@@ -211,9 +232,12 @@ const orderSchema = new Schema<IOrder>(
     currency: { type: String, default: 'GBP' },
     documentTotals: { subtotal: Number, tax: Number, total: Number },
     value: Number,
+    valueEstimated: { type: Boolean, default: false },
+    expectedValue: Number,
     status: { type: String, enum: ORDER_STATUSES, required: true },
     colour: { type: String, enum: ['green', 'amber', 'red'], required: true },
     confidence: { type: Number, default: 0 },
+    confidenceHint: String,
     extractionConfidence: { type: Number, default: 0 },
     lines: { type: [lineSchema], default: [] },
     issues: { type: [issueSchema], default: [] },
@@ -228,6 +252,11 @@ const orderSchema = new Schema<IOrder>(
     approvedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     pushedAt: Date,
     erpReference: String,
+    rejectionReason: String,
+    lastPushError: String,
+    autoApproved: { type: Boolean, default: false },
+    autoApprovedRuleId: { type: Schema.Types.ObjectId, ref: 'Rule' },
+    autoApprovedRuleName: String,
     idempotencyKey: String,
     version: { type: Number, default: 1 },
   },

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: keyless-sales-orders
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: QUEUE_DRIVER
+        value: mongo
+      - key: STORAGE_DRIVER
+        value: local
+      - key: LLM_PROVIDER
+        value: mock
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: keyless-sales-orders
+          property: host
+      - key: API_URL
+        fromService:
+          type: web
+          name: keyless-sales-orders
+          property: host

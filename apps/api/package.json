@@ -11,7 +11,9 @@
     "test": "vitest run",
     "seed": "tsx src/scripts/seed.ts",
     "make-superadmin": "tsx src/scripts/make-superadmin.ts",
-    "samples": "tsx src/scripts/samples.ts"
+    "samples": "tsx src/scripts/samples.ts",
+    "cleanup": "tsx scripts/fix-bad-uom-xrefs.ts",
+    "fix-bad-uom-xrefs": "tsx scripts/fix-bad-uom-xrefs.ts"
   },
   "dependencies": {
     "@keyless/core": "workspace:*",

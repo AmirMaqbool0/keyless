@@ -2,20 +2,20 @@ import clsx from 'clsx';
 import { ORDER_STATUS_LABELS, type OrderStatus, type RouteColour } from '@keyless/shared';
 
 const DOT: Record<RouteColour, string> = {
-  green: 'bg-emerald-500',
-  amber: 'bg-amber-400',
-  red: 'bg-red-500',
+  green: 'bg-emerald-500 ring-2 ring-emerald-200/60',
+  amber: 'bg-amber-500 ring-2 ring-amber-200/60',
+  red: 'bg-rose-500 ring-2 ring-rose-200/60',
 };
 const LABEL: Record<RouteColour, string> = {
-  green: 'Ready to approve',
-  amber: 'Needs review',
-  red: 'Blocked',
+  green: 'Ready to approve (100% matched)',
+  amber: 'Needs review (Check item/price)',
+  red: 'Blocked (Credit hold/Duplicate)',
 };
 
 export function ColourDot({ colour, className }: { colour: RouteColour; className?: string }) {
   return (
     <span
-      className={clsx('inline-block size-2.5 shrink-0 rounded-full', DOT[colour], className)}
+      className={clsx('inline-block size-2 shrink-0 rounded-full', DOT[colour], className)}
       title={LABEL[colour]}
       aria-label={LABEL[colour]}
     />
@@ -24,14 +24,14 @@ export function ColourDot({ colour, className }: { colour: RouteColour; classNam
 
 export function StatusPill({ status, colour }: { status: OrderStatus; colour: RouteColour }) {
   const tone = {
-    green: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-    amber: 'bg-amber-50 text-amber-900 ring-amber-200',
-    red: 'bg-red-50 text-red-800 ring-red-200',
+    green: 'bg-emerald-50 text-emerald-700 ring-emerald-200/80',
+    amber: 'bg-amber-50 text-amber-800 ring-amber-200/80',
+    red: 'bg-rose-50 text-rose-700 ring-rose-200/80',
   }[colour];
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1',
         tone,
       )}
     >

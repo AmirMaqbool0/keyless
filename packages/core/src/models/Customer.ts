@@ -1,6 +1,7 @@
 import { Schema, model, type HydratedDocument, type Types } from 'mongoose';
 import type { Address } from '@keyless/shared';
 import { tenantScoped } from '../db/tenant';
+import { isPublicDomain } from '../matching/catalogue';
 
 export interface ICustomer {
   _id: Types.ObjectId;
@@ -44,7 +45,14 @@ const customerSchema = new Schema<ICustomer>(
     accountKey: { type: String, required: true },
     name: { type: String, required: true, trim: true },
     erpCustomerId: String,
-    emailDomains: { type: [String], default: [] },
+    emailDomains: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (domains: string[]) => !domains.some((d) => isPublicDomain(d)),
+        message: 'Public webmail domains (e.g. gmail.com) cannot be added to customer emailDomains',
+      },
+    },
     senderAddresses: { type: [String], default: [] },
     deliveryAddresses: { type: [addressSchema], default: [] },
     priceListCode: String,
@@ -57,6 +65,16 @@ const customerSchema = new Schema<ICustomer>(
   },
   { timestamps: true },
 );
+
+customerSchema.pre('save', function (next) {
+  if (this.emailDomains) {
+    this.emailDomains = this.emailDomains
+      .map((d) => d.toLowerCase().trim().replace(/^@/, ''))
+      .filter((d) => d.length > 0 && !isPublicDomain(d));
+  }
+  next();
+});
+
 customerSchema.plugin(tenantScoped);
 customerSchema.index({ orgId: 1, accountKey: 1 }, { unique: true });
 customerSchema.index({ orgId: 1, senderAddresses: 1 });

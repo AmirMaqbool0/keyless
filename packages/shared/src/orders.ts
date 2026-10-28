@@ -30,9 +30,9 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 /** Queue tabs (spec 11.3). */
 export const ORDER_VIEWS = {
   needs_review: ['needs_review'],
-  ready: ['ready'],
+  ready: ['ready', 'approved', 'pushing'],
   on_hold: ['on_hold', 'duplicate'],
-  pushed: ['approved', 'pushing', 'pushed'],
+  pushed: ['pushed'],
   failed: ['push_failed'],
   all: [...ORDER_STATUSES],
 } as const satisfies Record<string, readonly OrderStatus[]>;
@@ -49,6 +49,8 @@ export type OrderIssueDto = {
   message: string;
   lineNo: number | null;
   resolved: boolean;
+  dismissedBy?: string | null;
+  dismissedAt?: string | null;
 };
 
 export type MatchMethod =
@@ -94,7 +96,15 @@ export type CustomerMatchDto = {
   customerId: string | null;
   name: string | null;
   accountCode: string | null;
-  method: 'sender' | 'domain' | 'account_number' | 'name' | 'forwarded_sender' | 'manual' | 'none';
+  method:
+    | 'sender'
+    | 'domain'
+    | 'account_number'
+    | 'name'
+    | 'delivery_address'
+    | 'forwarded_sender'
+    | 'manual'
+    | 'none';
   confidence: number;
   candidates: { customerId: string; name: string; accountCode: string; score: number }[];
 };
@@ -104,10 +114,13 @@ export type OrderListItemDto = {
   status: OrderStatus;
   colour: RouteColour;
   confidence: number;
+  confidenceHint?: string | null;
   poNumber: string | null;
   customer: { id: string | null; name: string | null; accountCode: string | null };
   lineCount: number;
   value: number | null;
+  valueEstimated?: boolean | null;
+  expectedValue?: number | null;
   currency: string;
   receivedAt: string;
   emailId: string;
@@ -146,7 +159,25 @@ export type OrderDetailDto = OrderListItemDto & {
     approvedAt: string | null;
     pushedAt: string | null;
   };
+  approvedBy: { id: string; name: string } | null;
+  rejectionReason: string | null;
+  erpReference: string | null;
+  lastPushError: string | null;
+  autoApproved?: boolean | null;
+  autoApprovedRuleName?: string | null;
   version: number;
+};
+
+export type CorrectionDto = {
+  id: string;
+  orderId: string;
+  lineId: string | null;
+  field: string;
+  before: unknown;
+  after: unknown;
+  userId: string;
+  userName?: string;
+  createdAt: string;
 };
 
 export type OrderCounts = Record<OrderView, number> & { byColour: Record<RouteColour, number> };
@@ -159,3 +190,110 @@ export const orderListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
 });
+
+export const updateOrderLineSchema = z.object({
+  id: z.string(),
+  lineNo: z.number().int().optional(),
+  customerPartCode: z.string().trim().max(100).nullable().optional(),
+  description: z.string().trim().max(500).nullable().optional(),
+  quantity: z.number().positive().nullable().optional(),
+  unit: z.string().trim().max(50).nullable().optional(),
+  unitPrice: z.number().nonnegative().nullable().optional(),
+  productId: z.string().nullable().optional(),
+  sku: z.string().trim().max(100).nullable().optional(),
+  conversionFactor: z.number().positive().optional(),
+});
+
+export const updateOrderSchema = z.object({
+  poNumber: z.string().trim().max(100).nullable().optional(),
+  orderDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  requestedDeliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  deliveryAddress: z
+    .object({
+      line1: z.string().trim().max(200).nullable().optional(),
+      line2: z.string().trim().max(200).nullable().optional(),
+      city: z.string().trim().max(100).nullable().optional(),
+      postcode: z.string().trim().max(20).nullable().optional(),
+      country: z.string().trim().max(100).nullable().optional(),
+    })
+    .optional(),
+  notes: z.string().trim().max(2000).nullable().optional(),
+  currency: z.string().trim().length(3).optional(),
+  customerId: z.string().nullable().optional(),
+  rememberSender: z.boolean().optional(),
+  lines: z.array(updateOrderLineSchema).optional(),
+});
+export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
+
+export const rejectOrderSchema = z.object({
+  reason: z.string().trim().min(2, 'A rejection reason is required').max(500),
+});
+export type RejectOrderInput = z.infer<typeof rejectOrderSchema>;
+
+export interface LineForValueCalculation {
+  quantity?: number | null;
+  unitPrice?: number | null;
+  lineTotal?: number | null;
+  convertedQuantity?: number | null;
+  expectedPrice?: number | null;
+}
+
+export interface CalculatedOrderValue {
+  value: number | null;
+  isEstimated: boolean;
+  expectedValue: number | null;
+}
+
+/**
+ * P1-1: Order value calculation used universally across queue, detail screen, analytics, and rules.
+ * Order value = sum of PO line totals (or qty * PO unit price).
+ * If any PO price is missing, uses our expected price for that line and marks the value as estimated.
+ * Expected (our list/contract) value is also computed for comparison.
+ */
+export function computeOrderValue(lines: LineForValueCalculation[]): CalculatedOrderValue {
+  if (!lines || lines.length === 0) {
+    return { value: null, isEstimated: false, expectedValue: null };
+  }
+
+  let poSum: number | null = null;
+  let expectedSum: number | null = null;
+  let hasEstimatedLine = false;
+
+  for (const line of lines) {
+    // 1. PO price for this line: lineTotal or (quantity * unitPrice)
+    const poLineValue =
+      line.lineTotal != null && !isNaN(line.lineTotal)
+        ? line.lineTotal
+        : line.quantity != null && line.unitPrice != null
+          ? line.quantity * line.unitPrice
+          : null;
+
+    // 2. Expected (our list/contract price) for this line:
+    // convertedQuantity * expectedPrice (or quantity * expectedPrice)
+    const expectedLineValue =
+      line.expectedPrice != null && !isNaN(line.expectedPrice)
+        ? (line.convertedQuantity ?? line.quantity ?? 1) * line.expectedPrice
+        : null;
+
+    if (expectedLineValue != null) {
+      expectedSum = (expectedSum ?? 0) + expectedLineValue;
+    }
+
+    if (poLineValue != null) {
+      poSum = (poSum ?? 0) + poLineValue;
+    } else if (expectedLineValue != null) {
+      // Missing PO price: fallback to expected price and mark as estimated
+      poSum = (poSum ?? 0) + expectedLineValue;
+      hasEstimatedLine = true;
+    } else {
+      // Completely unpriced line
+      hasEstimatedLine = true;
+    }
+  }
+
+  return {
+    value: poSum != null ? Math.round(poSum * 100) / 100 : null,
+    isEstimated: hasEstimatedLine,
+    expectedValue: expectedSum != null ? Math.round(expectedSum * 100) / 100 : null,
+  };
+}

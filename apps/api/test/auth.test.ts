@@ -3,8 +3,10 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { CSRF_COOKIE, CSRF_HEADER } from '@keyless/shared';
 import { Session } from '@keyless/core/models/Session';
-import { REFRESH_COOKIE } from '../src/modules/auth/tokens';
+import { Mailbox } from '@keyless/core/models/Mailbox';
+import { Organization } from '@keyless/core/models/Organization';
 import { User } from '@keyless/core/models/User';
+import { REFRESH_COOKIE } from '../src/modules/auth/tokens';
 import { PASSWORD, useTestApp } from './helpers';
 
 const t = useTestApp();
@@ -31,6 +33,14 @@ describe('sign-up and email verification', () => {
       slug: 'acme-supplies-ltd',
       currency: 'GBP',
     });
+
+    // P0-5: Inbound forwarding address mailbox must be automatically provisioned
+    const mailbox = await Mailbox.findOne({
+      orgId: res.body.organization.id,
+      type: 'forwarding',
+    });
+    expect(mailbox).not.toBeNull();
+    expect(mailbox?.address).toContain('@');
 
     const me = await c.get('/api/auth/me');
     expect(me.status).toBe(200);
@@ -65,6 +75,62 @@ describe('sign-up and email verification', () => {
     ).post('/api/auth/signup', { ...signupBody, email: 'x@y.com', password: 'short' });
     expect(weak.status).toBe(400);
     expect(weak.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('P0-5: sign-up succeeds with 201 even if verification mailer throws an error', async () => {
+    const c = await t.client();
+    const origSend = t.mailer.send;
+    // Simulate failing outbound mailer (e.g. Resend free tier rejecting unverified domain)
+    t.mailer.send = async () => {
+      throw new Error('Resend 403: You can only send testing emails to your own email address');
+    };
+
+    try {
+      const res = await c.post('/api/auth/signup', {
+        name: 'Resend Test User',
+        email: 'resend-test@example.com',
+        password: PASSWORD,
+        organizationName: 'Resend Test Corp',
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.user.email).toBe('resend-test@example.com');
+      expect(res.body.user.role).toBe('owner');
+      expect(res.body.organization.name).toBe('Resend Test Corp');
+
+      // Forwarding mailbox should exist
+      const mb = await Mailbox.findOne({ orgId: res.body.organization.id, type: 'forwarding' });
+      expect(mb).not.toBeNull();
+    } finally {
+      t.mailer.send = origSend;
+    }
+  });
+
+  it('P0-5: atomic rollback cleans up org and user if an internal error occurs', async () => {
+    const c = await t.client();
+    const origCreate = User.create;
+    // Simulate failure during User.create
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (User as any).create = async () => {
+      throw new Error('Simulated database write failure');
+    };
+
+    try {
+      const res = await c.post('/api/auth/signup', {
+        name: 'Atomic Rollback User',
+        email: 'rollback-test@example.com',
+        password: PASSWORD,
+        organizationName: 'Rollback Org Ltd',
+      });
+
+      expect(res.status).toBe(500);
+
+      // Verify no orphaned organization exists in database
+      const orphanedOrg = await Organization.findOne({ name: 'Rollback Org Ltd' });
+      expect(orphanedOrg).toBeNull();
+    } finally {
+      User.create = origCreate;
+    }
   });
 });
 

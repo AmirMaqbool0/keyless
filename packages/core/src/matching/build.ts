@@ -1,4 +1,10 @@
-import type { ExtractedOrderDto, IssueSeverity, MatchMethod, RouteColour } from '@keyless/shared';
+import {
+  computeOrderValue,
+  type ExtractedOrderDto,
+  type IssueSeverity,
+  type MatchMethod,
+  type RouteColour,
+} from '@keyless/shared';
 import type { CatalogueIndex } from './catalogue';
 import { matchLine, type CustomerMatch } from './match';
 import { routeOrder, type RoutingSettings } from './route';
@@ -46,9 +52,12 @@ export type OrderDraft = {
   lines: LineDraft[];
   issues: IssueDraft[];
   value?: number;
+  valueEstimated?: boolean;
+  expectedValue?: number;
   colour: RouteColour;
   status: ReturnType<typeof routeOrder>['status'];
   confidence: number;
+  confidenceHint?: string | null;
 };
 
 const money = (n: number) => `£${n.toFixed(2)}`;
@@ -86,7 +95,7 @@ export function buildOrderDraft(
     });
 
   // Issues found while reading the document.
-  for (const i of extracted.issues) {
+  for (const i of extracted.issues ?? []) {
     if (SUPERSEDED.has(i.code)) continue;
     add(i.code, i.severity, i.message, { lineNo: i.lineNo, blocking: i.code === 'no_lines' });
   }
@@ -127,7 +136,9 @@ export function buildOrderDraft(
 
   // Lines.
   const lines: LineDraft[] = extracted.lines.map((l) => {
-    const m = matchLine(index, customer, l);
+    const m = matchLine(index, customer, l, {
+      mismatchThreshold: settings.codeDescriptionMismatchThreshold,
+    });
     const p = m.product;
     if (!p) {
       const what = [l.customerPartCode, l.description].filter(Boolean).join(' ');
@@ -140,7 +151,12 @@ export function buildOrderDraft(
         `Matched to ${p.sku} with ${Math.round(m.confidence * 100)}% confidence`,
         { lineNo: l.lineNo },
       );
-    for (const n of m.notes) add(n.code, 'warning', n.message, { lineNo: l.lineNo });
+    for (const n of m.notes) {
+      add(n.code, n.severity ?? 'warning', n.message, {
+        lineNo: l.lineNo,
+        blocking: n.blocking ?? false,
+      });
+    }
 
     let expected: ReturnType<CatalogueIndex['expectedPrice']> = null;
     if (p) {
@@ -234,19 +250,12 @@ export function buildOrderDraft(
     }
   }
 
-  // Value of the order at our prices (or the document's where ours are unknown).
-  let value: number | undefined;
-  for (const l of lines) {
-    const v =
-      l.convertedQuantity !== undefined && l.expectedPrice !== undefined
-        ? l.convertedQuantity * l.expectedPrice
-        : (l.lineTotal ??
-          (l.quantity !== undefined && l.unitPrice !== undefined
-            ? l.quantity * l.unitPrice
-            : undefined));
-    if (v !== undefined) value = (value ?? 0) + v;
-  }
-  if (value !== undefined) value = Math.round(value * 100) / 100;
+  // Value of the order (P1-1: PO line values first, fallback to expected price)
+  const valResult = computeOrderValue(lines);
+  const value = valResult.value ?? undefined;
+  const valueEstimated = valResult.isEstimated;
+  const expectedValue = valResult.expectedValue ?? undefined;
+
   if (
     value !== undefined &&
     settings.highValueThreshold !== null &&
@@ -276,8 +285,11 @@ export function buildOrderDraft(
     lines,
     issues,
     value,
+    valueEstimated,
+    expectedValue,
     colour: routed.colour,
     status: routed.status,
     confidence: routed.confidence,
+    confidenceHint: routed.confidenceHint,
   };
 }

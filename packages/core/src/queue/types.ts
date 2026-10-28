@@ -14,6 +14,8 @@ export type JobPayloads = {
   'build-orders': { orgId: string; emailId: string };
   /** Pull new messages from a connected Graph/Gmail mailbox. */
   'mailbox-sync': { orgId: string; mailboxId: string };
+  /** Push an approved sales order to the configured ERP / system connector. */
+  'push-order': { orgId: string; orderId: string };
 };
 export type JobName = keyof JobPayloads;
 
@@ -61,6 +63,8 @@ const ENTITY_BY_JOB: Record<
     typeof d.emailId === 'string' ? { type: 'email', id: d.emailId } : undefined,
   'mailbox-sync': (d) =>
     typeof d.mailboxId === 'string' ? { type: 'mailbox', id: d.mailboxId } : undefined,
+  'push-order': (d) =>
+    typeof d.orderId === 'string' ? { type: 'order', id: d.orderId } : undefined,
 };
 
 /** Record a job that has failed for good so admins can see and retry it. */

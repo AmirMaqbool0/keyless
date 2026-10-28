@@ -23,17 +23,26 @@ export function SearchInput({
   className?: string;
 }) {
   return (
-    <input
-      type="search"
-      aria-label={placeholder}
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={clsx(
-        'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 sm:max-w-sm',
-        className,
-      )}
-    />
+    <div className={clsx('relative w-full sm:max-w-xs', className)}>
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+      <input
+        type="search"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-xs transition hover:border-slate-300 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/15"
+      />
+    </div>
   );
 }
 
@@ -60,8 +69,9 @@ export function DataTable<T>({
 }) {
   if (loading && !rows) {
     return (
-      <div className="flex justify-center py-12 text-brand-600">
-        <Spinner />
+      <div className="flex flex-col items-center justify-center py-16 text-brand-600 gap-3">
+        <Spinner className="size-8" />
+        <span className="text-xs font-medium text-slate-400">Loading data...</span>
       </div>
     );
   }
@@ -69,36 +79,41 @@ export function DataTable<T>({
   return (
     <div
       className={clsx(
-        'overflow-x-auto rounded-lg border border-slate-200 bg-white',
+        'overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03),0_4px_12px_rgba(0,0,0,0.02)]',
         loading && 'opacity-60',
       )}
     >
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-          <tr>
-            {columns.map((c) => (
-              <th key={c.header} className={clsx('px-4 py-2.5 font-medium', c.className)}>
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rows.map((row) => (
-            <tr
-              key={rowKey(row)}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              className={clsx(onRowClick && 'cursor-pointer hover:bg-slate-50')}
-            >
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <tr>
               {columns.map((c) => (
-                <td key={c.header} className={clsx('px-4 py-2.5 align-top', c.className)}>
-                  {c.cell(row)}
-                </td>
+                <th key={c.header} className={clsx('px-5 py-3 font-semibold', c.className)}>
+                  {c.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100/90">
+            {rows.map((row) => (
+              <tr
+                key={rowKey(row)}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={clsx(
+                  'transition-colors duration-150',
+                  onRowClick && 'cursor-pointer hover:bg-slate-50/90 active:bg-slate-100/60',
+                )}
+              >
+                {columns.map((c) => (
+                  <td key={c.header} className={clsx('px-5 py-3.5 align-middle', c.className)}>
+                    {c.cell(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -119,15 +134,16 @@ export function Pagination({
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
   return (
-    <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+    <div className="mt-4 flex items-center justify-between text-xs text-slate-500 font-medium">
       <span>
-        {from.toLocaleString()}-{to.toLocaleString()} of {total.toLocaleString()}
+        Showing <strong className="text-slate-800">{from.toLocaleString()}-{to.toLocaleString()}</strong> of{' '}
+        <strong className="text-slate-800">{total.toLocaleString()}</strong> results
       </span>
       <div className="flex gap-2">
-        <Button variant="secondary" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+        <Button variant="secondary" disabled={page <= 1} onClick={() => onPage(page - 1)} className="px-3 py-1.5 text-xs">
           Previous
         </Button>
-        <Button variant="secondary" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+        <Button variant="secondary" disabled={page >= pages} onClick={() => onPage(page + 1)} className="px-3 py-1.5 text-xs">
           Next
         </Button>
       </div>

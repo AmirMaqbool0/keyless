@@ -6,10 +6,13 @@ import { env } from '@keyless/core/config/env';
 import { audit } from '@keyless/core/lib/audit';
 import { resetPasswordMail, verifyEmailMail } from '@keyless/core/lib/emailTemplates';
 import { badRequest, conflict, unauthorized } from '@keyless/core/lib/http';
+import { logger } from '@keyless/core/lib/logger';
 import type { Mailer } from '@keyless/core/lib/mailer';
 import { hashToken, randomToken } from '@keyless/core/lib/tokens';
+import { ensureForwardingMailbox } from '@keyless/core/ingestion/receive';
 import { AuthToken } from '@keyless/core/models/AuthToken';
 import { Invite } from '@keyless/core/models/Invite';
+import { Mailbox } from '@keyless/core/models/Mailbox';
 import { Organization } from '@keyless/core/models/Organization';
 import { User, type UserDoc } from '@keyless/core/models/User';
 import { revokeAllSessions } from './tokens';
@@ -78,34 +81,53 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
     sendVerification,
 
     async signup(input: SignupInput, req: Request): Promise<UserDoc> {
-      if (await activeUserByEmail(input.email)) {
+      const email = input.email.toLowerCase().trim();
+      if (await activeUserByEmail(email)) {
         throw conflict('An account with this email already exists', 'EMAIL_TAKEN');
       }
       const org = await Organization.create({
-        name: input.organizationName,
+        name: input.organizationName.trim(),
         slug: await uniqueSlug(input.organizationName),
       });
       let user: UserDoc;
       try {
         user = await User.create({
           orgId: org._id,
-          name: input.name,
-          email: input.email,
+          name: input.name.trim(),
+          email,
           passwordHash: await hashPassword(input.password),
           role: 'owner',
         });
+
+        // Automatically provision the tenant's inbound email forwarding address
+        await ensureForwardingMailbox(org);
+
+        await audit({
+          orgId: org._id,
+          action: 'org.created',
+          entity: { type: 'organization', id: org._id.toString() },
+          actor: { userId: user._id, email: user.email, type: 'user' },
+          req,
+        });
       } catch (err) {
+        // Atomic cleanup: do not leave orphaned org, mailbox, or user
+        await AuthToken.deleteMany({ orgId: org._id });
+        await Mailbox.deleteMany({ orgId: org._id });
+        await User.deleteMany({ orgId: org._id });
         await Organization.deleteOne({ _id: org._id });
         throw err;
       }
-      await audit({
-        orgId: org._id,
-        action: 'org.created',
-        entity: { type: 'organization', id: org._id.toString() },
-        actor: { userId: user._id, email: user.email, type: 'user' },
-        req,
-      });
-      await sendVerification(user);
+
+      // Outbound email failure must not abort sign-up; log warning and allow user to resend
+      try {
+        await sendVerification(user);
+      } catch (mailErr) {
+        logger.warn(
+          { err: mailErr, userId: user._id, email: user.email },
+          'Failed to send verification email on signup; user can request a resend later',
+        );
+      }
+
       return user;
     },
 

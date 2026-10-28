@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ExtractedOrder } from '@keyless/shared';
+import { Types } from 'mongoose';
+import {
+  extractionOutputSchema,
+  normalizeExtractionOutput,
+  salvageOrders,
+  type ExtractedOrder,
+} from '@keyless/shared';
 import { purchaseOrderPdf, sampleEmail, type SampleContext } from '@keyless/core/demo/sampleEmails';
 import { checkOrder } from '@keyless/core/extraction/checks';
 import { extractEmail } from '@keyless/core/extraction/extract';
@@ -7,6 +13,7 @@ import { MockLlmProvider } from '@keyless/core/llm/mock';
 import { parseDocDate } from '@keyless/core/llm/ruleExtractor';
 import { LlmRefusalError, type LlmProvider } from '@keyless/core/llm/types';
 import { Extraction } from '@keyless/core/models/Extraction';
+import { Order } from '@keyless/core/models/Order';
 import { UsageRecord } from '@keyless/core/models/UsageRecord';
 import { useTestApp } from './helpers';
 import request from 'supertest';
@@ -280,5 +287,178 @@ describe('extraction in the app', () => {
     expect((await c.post(`/api/emails/${item.id}/extract`)).body.extraction.status).toBe('running');
     await t.drainJobs();
     expect(await Extraction.countDocuments({ orgId: owner.orgId, emailId: item.id })).toBe(1);
+  });
+});
+
+describe('P0-3: Resilient extraction, schema tolerance, salvaging, and re-extract', () => {
+  it('parses model response with omitted tax, lineNo, and confidence, auto-filling line numbers and defaults', () => {
+    const rawOmittedResponse = {
+      orders: [
+        {
+          poNumber: 'PO-933214',
+          orderDate: '2026-10-27',
+          documentTotals: {
+            subtotal: 761.33,
+            // tax omitted
+          },
+          // fieldConfidence omitted
+          lines: [
+            {
+              // lineNo omitted
+              // customerPartCode omitted
+              description: 'Caterpak Multi-Surface Cleaner 5L',
+              quantity: 3,
+              unitPrice: 18.3,
+              // confidence omitted
+            },
+            {
+              description: 'Kitchen Roll 1 Ply Blue',
+              quantity: 10,
+              unitPrice: 42.45,
+            },
+          ],
+        },
+      ],
+    };
+
+    const normalized = normalizeExtractionOutput(rawOmittedResponse);
+    const parsed = extractionOutputSchema.safeParse(normalized);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+
+    expect(parsed.data!.orders![0]!.lines![0]!.lineNo).toBe(1);
+    expect(parsed.data!.orders![0]!.lines![1]!.lineNo).toBe(2);
+    expect(parsed.data!.orders![0]!.documentTotals!.tax).toBeNull();
+    expect(parsed.data!.orders![0]!.documentTotals!.subtotal).toBe(761.33);
+    expect(parsed.data!.orders![0]!.lines![0]!.confidence!.description).toBe(0.5);
+  });
+
+  it('salvages 3 valid lines when 1 line has invalid quantity and emits partial_extraction warning', async () => {
+    const faultyModelOutput = {
+      orders: [
+        {
+          poNumber: 'PO-PARTIAL-1',
+          lines: [
+            { description: 'Item 1', quantity: 10, unitPrice: 5 },
+            { description: 'Item 2', quantity: 20, unitPrice: 15 },
+            { description: 'Item 3', quantity: 5, unitPrice: 2 },
+            { description: 'Item 4', quantity: 'invalid-qty-string', unitPrice: 10 },
+          ],
+        },
+      ],
+    };
+
+    const salvaged = salvageOrders(faultyModelOutput);
+    expect(salvaged.isPartial).toBe(true);
+    expect(salvaged.orders[0]!.lines).toHaveLength(3);
+    expect(salvaged.orders[0]!.lines.map((l) => l.lineNo)).toEqual([1, 2, 3]);
+
+    const fakeLlm: LlmProvider = {
+      name: 'fake',
+      supportsVision: false,
+      classifyEmail: async () => {
+        throw new Error('unused');
+      },
+      extractOrder: async () => ({
+        output: faultyModelOutput,
+        model: 'fake-model',
+        usage: { inputTokens: 10, outputTokens: 10, costUsd: 0 },
+      }),
+    };
+
+    const results = await extractEmail(fakeLlm, {
+      email: {
+        subject: 'PO partial test',
+        receivedAt: NOW,
+        text: 'hello',
+      },
+      files: [],
+      now: NOW,
+    });
+
+    expect(results[0]!.status).toBe('completed');
+    expect(results[0]!.orders[0]!.lines).toHaveLength(3);
+    expect(results[0]!.orders[0]!.issues.some((i) => i.code === 'partial_extraction')).toBe(true);
+    expect(results[0]!.orders[0]!.confidence).toBeLessThanOrEqual(0.6);
+  });
+
+  it('fails with unreadable_document and user-friendly error when zero valid lines are present', async () => {
+    const emptyModelOutput = {
+      orders: [
+        {
+          poNumber: 'PO-EMPTY',
+          lines: [
+            { description: 'Invalid line without qty', quantity: null },
+            { description: '', customerPartCode: '', quantity: 10 },
+          ],
+        },
+      ],
+    };
+
+    const salvaged = salvageOrders(emptyModelOutput);
+    expect(salvaged.orders).toHaveLength(0);
+
+    const fakeLlm: LlmProvider = {
+      name: 'fake',
+      supportsVision: false,
+      classifyEmail: async () => {
+        throw new Error('unused');
+      },
+      extractOrder: async () => ({
+        output: emptyModelOutput,
+        model: 'fake-model',
+        usage: { inputTokens: 10, outputTokens: 10, costUsd: 0 },
+      }),
+    };
+
+    const results = await extractEmail(fakeLlm, {
+      email: {
+        subject: 'Empty order',
+        receivedAt: NOW,
+        text: 'hello',
+      },
+      files: [],
+      now: NOW,
+    });
+
+    expect(results[0]!.status).toBe('failed');
+    expect(results[0]!.orders).toHaveLength(0);
+    // User-facing error is clean and friendly
+    expect(results[0]!.error).toBe("We couldn't read this document fully. Please check the lines against the original.");
+    // Raw model/zod error is preserved separately in technicalError
+    expect(results[0]!.technicalError).toContain("The model's answer did not match the expected format twice");
+  });
+
+  it('allows reviewer to trigger POST /api/orders/:id/re-extract and preserves existing order _id in place', async () => {
+    const owner = await t.createUser({ role: 'owner' });
+    const c = await t.loginAs(owner.email);
+    const emailId = new Types.ObjectId();
+    const orderDoc = await Order.create({
+      orgId: owner.orgId,
+      sourceLabel: 'test.pdf',
+      emailId,
+      status: 'on_hold',
+      colour: 'red',
+      confidence: 0,
+      receivedAt: NOW,
+      currency: 'GBP',
+      customerMatch: { method: 'none', confidence: 0, candidates: [] },
+      lines: [],
+      issues: [
+        {
+          code: 'unreadable_document',
+          severity: 'error',
+          blocking: true,
+          message: "We couldn't read this document fully. Please check the lines against the original.",
+        },
+      ],
+    });
+
+    const res = await c.post(`/api/orders/${orderDoc._id}/re-extract`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      queued: true,
+      emailId: orderDoc.emailId.toString(),
+    });
   });
 });

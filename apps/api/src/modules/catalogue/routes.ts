@@ -4,9 +4,10 @@ import Papa from 'papaparse';
 import { z } from 'zod';
 import { listQuerySchema, updateCustomerSchema, type Paginated } from '@keyless/shared';
 import { audit } from '@keyless/core/lib/audit';
-import { notFound, param, validate } from '@keyless/core/lib/http';
+import { badRequest, notFound, param, validate } from '@keyless/core/lib/http';
 import { escapeRegex, searchText, skuKey, tokenFilter } from '@keyless/core/lib/normalise';
 import { authed, requireRole } from '../../middleware/auth';
+import { isPublicDomain } from '@keyless/core/matching/catalogue';
 import { CrossReference, type ICrossReference } from '@keyless/core/models/CrossReference';
 import { Customer } from '@keyless/core/models/Customer';
 import { CustomerPrice } from '@keyless/core/models/CustomerPrice';
@@ -151,6 +152,15 @@ export function catalogueRouter(): Router {
   r.patch('/customers/:id', requireRole('admin'), async (req, res) => {
     const { orgId } = authed(req);
     const input = validate(updateCustomerSchema, req.body);
+    if (input.emailDomains) {
+      const publicDomain = input.emailDomains.find((d) => isPublicDomain(d));
+      if (publicDomain) {
+        throw badRequest(
+          `"${publicDomain}" is a public webmail domain and cannot be linked to a customer`,
+          'INVALID_DOMAIN',
+        );
+      }
+    }
     const customer = await Customer.findOne({ _id: objectId(param(req, 'id')), orgId });
     if (!customer) throw notFound('Customer not found');
     const before = toCustomerDto(customer);

@@ -23,6 +23,18 @@ export const updateOrganizationSchema = z
     country: z.string().trim().length(2).toUpperCase(),
     timezone: z.string().trim().min(1).max(64),
     currency: z.string().trim().length(3).toUpperCase(),
+    settings: z
+      .object({
+        autoApproveEnabled: z.boolean().optional(),
+        greenConfidenceThreshold: z.number().min(0).max(1).optional(),
+        amberConfidenceThreshold: z.number().min(0).max(1).optional(),
+        priceTolerancePct: z.number().min(0).optional(),
+        highValueThreshold: z.number().nullable().optional(),
+        codeDescriptionMismatchThreshold: z.number().min(0).max(1).optional(),
+        retentionDays: z.number().int().min(1).optional(),
+      })
+      .partial()
+      .optional(),
   })
   .partial();
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;

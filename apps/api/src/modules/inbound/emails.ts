@@ -60,11 +60,24 @@ function classificationDto(c: Classification | undefined): ClassificationDto | n
   };
 }
 
+export const isEmailFailed = (e: Pick<IInboundEmail, 'status' | 'extraction'>): boolean =>
+  e.status === 'failed' || e.extraction?.status === 'failed';
+
+export const FAILED_EMAIL_FILTER = {
+  $or: [{ status: 'failed' }, { 'extraction.status': 'failed' }],
+};
+
+export const NOT_FAILED_EMAIL_FILTER = {
+  status: { $ne: 'failed' },
+  'extraction.status': { $ne: 'failed' },
+};
+
 function listItem(e: IInboundEmail): EmailListItemDto {
+  const failed = isEmailFailed(e);
   return {
     id: e._id.toString(),
     source: e.source,
-    status: e.status,
+    status: failed ? 'failed' : e.status,
     from: { name: e.from?.name ?? null, address: e.from?.address ?? null },
     subject: e.subject || (e.status === 'received' ? '(processing...)' : '(no subject)'),
     snippet: e.text.replace(/\s+/g, ' ').trim().slice(0, 160),
@@ -94,6 +107,7 @@ function extractionDto(x: IExtraction): ExtractionDto {
     orders: x.orders,
     documentNotes: x.documentNotes ?? null,
     error: x.error ?? null,
+    technicalError: x.technicalError ?? null,
     usage: x.usage,
     durationMs: x.durationMs,
     attempts: x.attempts,
@@ -110,9 +124,9 @@ export function emailsRouter(deps: IngestDeps): Router {
     const q = validate(listQuery, req.query);
     const viewFilter = {
       all: {},
-      orders: { 'classification.label': 'new_order' },
-      other: { 'classification.label': { $exists: true, $ne: 'new_order' } },
-      failed: { status: 'failed' },
+      orders: { 'classification.label': 'new_order', ...NOT_FAILED_EMAIL_FILTER },
+      other: { 'classification.label': { $exists: true, $ne: 'new_order' }, ...NOT_FAILED_EMAIL_FILTER },
+      failed: FAILED_EMAIL_FILTER,
     }[q.view];
     const search = q.q ? new RegExp(escapeRegex(q.q), 'i') : null;
     const filter = {
@@ -142,10 +156,10 @@ export function emailsRouter(deps: IngestDeps): Router {
   r.get('/counts', async (req, res) => {
     const { orgId } = authed(req);
     const rows = await InboundEmail.aggregate<{ _id: string | null; n: number }>([
-      { $match: { orgId } },
+      { $match: { orgId, ...NOT_FAILED_EMAIL_FILTER } },
       { $group: { _id: '$classification.label', n: { $sum: 1 } } },
     ]);
-    const failed = await InboundEmail.countDocuments({ orgId, status: 'failed' });
+    const failed = await InboundEmail.countDocuments({ orgId, ...FAILED_EMAIL_FILTER });
     res.json({
       byLabel: Object.fromEntries(rows.map((r) => [r._id ?? 'unclassified', r.n])),
       failed,
@@ -326,8 +340,10 @@ export function emailsRouter(deps: IngestDeps): Router {
     const { orgId } = authed(req);
     const email = await InboundEmail.findOne({ _id: objectId(param(req, 'id')), orgId });
     if (!email) throw notFound('Email not found');
-    if (email.status !== 'classified')
+    if (email.status !== 'classified' && email.status !== 'failed' && email.extraction?.status !== 'failed')
       throw badRequest('This email has not been read yet', 'NOT_READY');
+    email.status = 'classified';
+    email.error = undefined;
     email.extraction = {
       status: 'running',
       orderCount: 0,

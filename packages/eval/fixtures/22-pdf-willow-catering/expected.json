@@ -1,0 +1,59 @@
+{
+  "name": "pdf-willow-catering",
+  "description": "Forwarded PO from Willow Catering Ltd with omission of tax and line metadata.",
+  "tags": ["pdf"],
+  "orders": [
+    {
+      "customerName": "Willow Catering Ltd",
+      "accountNumber": null,
+      "poNumber": "PO-903517",
+      "orderDate": "2026-10-27",
+      "requestedDeliveryDate": null,
+      "deliveryAddress": {
+        "line1": "35 High Street",
+        "city": "York",
+        "postcode": "YO13 4UW"
+      },
+      "currency": "GBP",
+      "totals": {
+        "subtotal": 1464.22,
+        "tax": null,
+        "total": null
+      },
+      "lines": [
+        {
+          "customerPartCode": "BL1883",
+          "description": "Caterpak Swing Bin Liner White 18x29x39\" Light Duty (Case 200)",
+          "quantity": 8,
+          "unit": null,
+          "unitPrice": 16.74,
+          "expectedSku": "BL1883"
+        },
+        {
+          "customerPartCode": "PP1103",
+          "description": "Mini Jumbo Toilet Roll 2 Ply Blue (Pack 24)",
+          "quantity": 11,
+          "unit": null,
+          "unitPrice": 74.04,
+          "expectedSku": "PP1103"
+        },
+        {
+          "customerPartCode": "PP1147",
+          "description": "C-Fold Hand Towel 3 Ply Blue (Pack 6)",
+          "quantity": 10,
+          "unit": null,
+          "unitPrice": 38.86,
+          "expectedSku": "PP1147"
+        },
+        {
+          "customerPartCode": "CH2310",
+          "description": "Caterpak Hand Soap 750ml Lavender (Case 2)",
+          "quantity": 7,
+          "unit": null,
+          "unitPrice": 18.18,
+          "expectedSku": "CH2310"
+        }
+      ]
+    }
+  ]
+}

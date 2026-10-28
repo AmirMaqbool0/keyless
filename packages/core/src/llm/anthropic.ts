@@ -41,9 +41,10 @@ export class AnthropicProvider implements LlmProvider {
   constructor(
     apiKey: string | undefined,
     private readonly models: { extraction?: string; classify?: string } = {},
+    baseURL?: string,
   ) {
     // SDK retries 408/409/429/5xx itself; our job queue adds slower retries on top.
-    this.client = new Anthropic({ apiKey, maxRetries: 3, timeout: 5 * 60_000 });
+    this.client = new Anthropic({ apiKey, baseURL, maxRetries: 3, timeout: 5 * 60_000 });
     for (const m of [this.extractionModel, this.classifyModel]) {
       if (!knownModel(m))
         logger.warn(`No price on file for model ${m}; its cost will be recorded as 0`);

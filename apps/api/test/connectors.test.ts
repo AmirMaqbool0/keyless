@@ -48,7 +48,7 @@ describe('MockConnector', () => {
 
     const list = await c.get('/api/connectors');
     expect(list.body.items).toHaveLength(1);
-    expect(list.body.available).toEqual(['mock']);
+    expect(list.body.available).toContain('mock');
   });
 
   it('deactivates products that disappear from the ERP', async () => {
@@ -94,13 +94,11 @@ describe('MockConnector', () => {
     expect(await mock.findExistingOrder('BREW001', 'PO-2')).toBeNull();
   });
 
-  it('only admins manage connectors; unavailable types are refused', async () => {
+  it('only admins manage connectors; invalid types are refused', async () => {
     const admin = await t.createUser({ role: 'admin' });
     const reviewer = await t.createUser({ role: 'reviewer', orgId: admin.orgId });
     const c = await t.loginAs(admin.email);
-    expect((await c.post('/api/connectors', { type: 'unleashed' })).body.error.code).toBe(
-      'CONNECTOR_UNAVAILABLE',
-    );
+    expect((await c.post('/api/connectors', { type: 'invalid_type' })).status).toBe(400);
     const { body } = await c.post('/api/connectors', { type: 'mock' });
 
     const rc = await t.loginAs(reviewer.email);

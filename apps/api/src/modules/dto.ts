@@ -26,6 +26,15 @@ export function toOrgDto(org: IOrganization): OrganizationDto {
     timezone: org.timezone,
     currency: org.currency,
     plan: org.plan,
+    settings: {
+      autoApproveEnabled: org.settings?.autoApproveEnabled ?? false,
+      greenConfidenceThreshold: org.settings?.greenConfidenceThreshold ?? 0.9,
+      amberConfidenceThreshold: org.settings?.amberConfidenceThreshold ?? 0.6,
+      priceTolerancePct: org.settings?.priceTolerancePct ?? 2,
+      highValueThreshold: org.settings?.highValueThreshold ?? null,
+      codeDescriptionMismatchThreshold: org.settings?.codeDescriptionMismatchThreshold ?? 0.5,
+      retentionDays: org.settings?.retentionDays ?? 90,
+    },
   };
 }
 

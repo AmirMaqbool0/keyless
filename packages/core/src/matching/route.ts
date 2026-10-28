@@ -14,6 +14,7 @@ export type RoutingSettings = {
   amberConfidenceThreshold: number;
   priceTolerancePct: number;
   highValueThreshold: number | null;
+  codeDescriptionMismatchThreshold: number;
 };
 
 export const DEFAULT_ROUTING: RoutingSettings = {
@@ -21,6 +22,7 @@ export const DEFAULT_ROUTING: RoutingSettings = {
   amberConfidenceThreshold: 0.6,
   priceTolerancePct: 2,
   highValueThreshold: null,
+  codeDescriptionMismatchThreshold: 0.5,
 };
 
 export type RoutableLine = {
@@ -42,10 +44,60 @@ export type RouteResult = {
   colour: RouteColour;
   status: OrderStatus;
   confidence: number;
+  confidenceHint: string | null;
 };
 
 /** Statuses routing may change. Once approved, an order's status is the reviewer's/ERP's. */
 export const REVIEWABLE: OrderStatus[] = ['needs_review', 'ready', 'on_hold', 'duplicate'];
+
+/**
+ * Computes overall order confidence (0.0 - 1.0) and the weakest area hint.
+ *
+ * Weighting formula:
+ * - Line matching: 50% (mean match quality of product lines)
+ * - Document extraction: 30% (OCR/LLM field extraction confidence)
+ * - Customer identification: 20% (sender/domain/account number confidence)
+ *
+ * Rationale:
+ * High-quality line items and clear document extraction are valuable signals that
+ * should be reflected in the overall score even when the customer is unrecognised.
+ * An unknown customer (customerConfidence = 0) contributes 0 to the customer weight,
+ * bringing total confidence to at most 80% (amber range), but does not zero out the
+ * entire score to 0%. The order is still safely routed to 'needs_review' (amber)
+ * because colour routing independently requires customerConfidence >= green threshold.
+ */
+export function computeOrderConfidence(input: {
+  customerConfidence: number;
+  extractionConfidence: number;
+  lineConfidence: number;
+  hasUnmatchedLines?: boolean;
+}): { confidence: number; confidenceHint: string | null } {
+  const { customerConfidence, extractionConfidence, lineConfidence, hasUnmatchedLines } = input;
+
+  const weighted =
+    0.50 * lineConfidence +
+    0.30 * extractionConfidence +
+    0.20 * customerConfidence;
+
+  const confidence = Math.round(Math.min(1.0, Math.max(0.0, weighted)) * 100) / 100;
+
+  let confidenceHint: string | null = null;
+  if (confidence < 0.95) {
+    if (customerConfidence === 0) {
+      confidenceHint = 'Customer unknown';
+    } else if (hasUnmatchedLines || lineConfidence < 0.6) {
+      confidenceHint = hasUnmatchedLines ? 'Unmatched lines' : 'Low line match';
+    } else if (extractionConfidence < 0.7) {
+      confidenceHint = 'Low read confidence';
+    } else if (customerConfidence < 0.75) {
+      confidenceHint = 'Customer unverified';
+    } else if (lineConfidence < 0.85) {
+      confidenceHint = 'Line review needed';
+    }
+  }
+
+  return { confidence, confidenceHint };
+}
 
 export function routeOrder(input: {
   lines: RoutableLine[];
@@ -89,8 +141,13 @@ export function routeOrder(input: {
   const lineConf = input.lines.length
     ? input.lines.reduce((s, l) => s + l.matchConfidence, 0) / input.lines.length
     : 0;
-  const confidence =
-    Math.round(Math.min(input.extractionConfidence, input.customerConfidence, lineConf) * 100) /
-    100;
-  return { lineColours, colour, status, confidence };
+
+  const { confidence, confidenceHint } = computeOrderConfidence({
+    customerConfidence: input.customerConfidence,
+    extractionConfidence: input.extractionConfidence,
+    lineConfidence: lineConf,
+    hasUnmatchedLines: input.lines.some((l) => !l.sku),
+  });
+
+  return { lineColours, colour, status, confidence, confidenceHint };
 }

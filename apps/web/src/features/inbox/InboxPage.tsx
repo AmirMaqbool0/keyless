@@ -78,7 +78,7 @@ export function InboxPage() {
   };
 
   const total = counts.data
-    ? Object.values(counts.data.byLabel).reduce((a, b) => a + b, 0)
+    ? Object.values(counts.data.byLabel).reduce((a, b) => a + b, 0) + (counts.data.failed ?? 0)
     : undefined;
   const countFor: Record<View, number | undefined> = {
     all: total,
@@ -92,14 +92,21 @@ export function InboxPage() {
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        title="Inbox"
-        description="Every email Keyless receives, sorted into orders and everything else."
+        title="Email Inbox"
+        description="Every customer communication received by Keyless, automatically classified by AI into purchase orders and general enquiries."
+        badge={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200/70">
+            <span className="size-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            AI Active
+          </span>
+        }
         actions={canUpload && <InboxActions onDone={refresh} />}
       />
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <nav className="flex gap-1 rounded-lg bg-slate-100 p-1" aria-label="Email views">
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <nav className="flex flex-wrap gap-1 rounded-xl bg-slate-100/90 p-1.5 ring-1 ring-slate-200/60" aria-label="Email views">
           {VIEWS.map((v) => (
             <button
               key={v.key}
@@ -108,15 +115,24 @@ export function InboxPage() {
                 setPage(1);
               }}
               className={clsx(
-                'rounded-md px-3 py-1.5 text-sm font-medium',
+                'inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-150',
                 view === v.key
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50',
               )}
             >
-              {v.label}
+              <span>{v.label}</span>
               {countFor[v.key] !== undefined && (
-                <span className="ml-1.5 text-xs text-slate-400">{countFor[v.key]}</span>
+                <span
+                  className={clsx(
+                    'rounded-full px-1.5 py-0.2 text-[10px] font-bold',
+                    view === v.key
+                      ? 'bg-brand-50 text-brand-700'
+                      : 'bg-slate-200/70 text-slate-600',
+                  )}
+                >
+                  {countFor[v.key]}
+                </span>
               )}
             </button>
           ))}
@@ -127,11 +143,11 @@ export function InboxPage() {
             setQ(v);
             setPage(1);
           }}
-          placeholder="Search subject or sender"
+          placeholder="Search subject or sender..."
         />
       </div>
       {canUpload ? <UploadZone onDone={refresh}>{list()}</UploadZone> : list()}
-    </>
+    </div>
   );
 
   function list() {
@@ -172,18 +188,18 @@ export function InboxPage() {
             {
               header: 'Subject',
               cell: (e) => (
-                <div className="min-w-64">
-                  <p className="text-slate-900">
-                    {e.subject}
+                <div className="min-w-64 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-900 truncate">{e.subject}</span>
                     {e.attachmentCount > 0 && (
                       <span
-                        className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500"
+                        className="shrink-0 inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200"
                         title="Attachments"
                       >
                         {e.attachmentCount} file{e.attachmentCount > 1 ? 's' : ''}
                       </span>
                     )}
-                  </p>
+                  </div>
                   <p className="line-clamp-1 text-xs text-slate-500">{e.error ?? e.snippet}</p>
                 </div>
               ),
@@ -203,8 +219,8 @@ export function InboxPage() {
                   return <span className="text-xs text-slate-400">reading...</span>;
                 if (x.status === 'needs_llm')
                   return <span className="text-xs text-slate-500">needs AI key</span>;
-                if (x.status === 'failed')
-                  return <span className="text-xs text-red-600">failed</span>;
+                if (x.status === 'failed' || e.status === 'failed')
+                  return <span className="text-xs font-medium text-red-600">failed</span>;
                 return (
                   <span className="whitespace-nowrap text-xs text-slate-600">
                     {x.orderCount > 1 ? `${x.orderCount} orders, ` : ''}
@@ -310,14 +326,14 @@ function InboxActions({ onDone }: { onDone: () => void }) {
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-3">
       {import.meta.env.DEV && (
-        <div className="flex items-center gap-1 rounded-md border border-dashed border-slate-300 p-1">
+        <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 shadow-2xs">
           <select
             aria-label="Test email type"
             value={scenario}
             onChange={(e) => setScenario(e.target.value)}
-            className="rounded border-0 bg-transparent py-1 text-sm"
+            className="rounded-md border-0 bg-transparent py-1 pl-2 pr-6 text-xs font-medium text-slate-700 focus:ring-0"
           >
             {SCENARIOS.map(([k, label]) => (
               <option key={k} value={k}>
@@ -325,13 +341,19 @@ function InboxActions({ onDone }: { onDone: () => void }) {
               </option>
             ))}
           </select>
-          <Button variant="ghost" loading={test.isPending} onClick={() => test.mutate()}>
+          <Button variant="ghost" loading={test.isPending} onClick={() => test.mutate()} className="px-2.5 py-1 text-xs">
+            <svg className="size-3.5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
             Send test email
           </Button>
         </div>
       )}
-      <Button onClick={() => input.current?.click()} loading={upload.isPending}>
-        Upload files
+      <Button onClick={() => input.current?.click()} loading={upload.isPending} variant="primary">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+        Upload PO documents
       </Button>
       <input
         ref={input}

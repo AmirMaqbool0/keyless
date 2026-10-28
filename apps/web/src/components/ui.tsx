@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
   loading?: boolean;
 };
 
@@ -26,13 +26,18 @@ export function Button({
       {...rest}
       disabled={disabled || loading}
       className={clsx(
-        'inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98]',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
         {
-          primary: 'bg-brand-600 text-white hover:bg-brand-700',
-          secondary: 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50',
-          danger: 'bg-red-600 text-white hover:bg-red-700',
-          ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+          primary:
+            'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-sm hover:from-brand-700 hover:to-indigo-700 hover:shadow',
+          secondary:
+            'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50/80 hover:text-slate-900',
+          danger:
+            'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-sm hover:from-red-700 hover:to-rose-700',
+          ghost: 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900',
+          success:
+            'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm hover:from-emerald-700 hover:to-teal-700',
         }[variant],
         className,
       )}
@@ -72,7 +77,7 @@ export const TextField = forwardRef<
   const inputId = id ?? autoId;
   return (
     <div className={className}>
-      <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={inputId} className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
         {label}
       </label>
       <input
@@ -81,14 +86,14 @@ export const TextField = forwardRef<
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined}
         className={clsx(
-          'mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm shadow-xs placeholder:text-slate-400',
-          'focus:outline-none focus:ring-2 focus:ring-brand-500',
-          error ? 'border-red-400' : 'border-slate-300',
+          'mt-1.5 block w-full rounded-lg border bg-white px-3.5 py-2 text-sm text-slate-800 shadow-xs transition placeholder:text-slate-400',
+          'focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/15',
+          error ? 'border-red-400 bg-red-50/20' : 'border-slate-200 hover:border-slate-300',
         )}
         {...rest}
       />
       {error ? (
-        <p id={`${inputId}-err`} className="mt-1 text-xs text-red-600">
+        <p id={`${inputId}-err`} className="mt-1 text-xs text-red-600 font-medium">
           {error}
         </p>
       ) : hint ? (
@@ -109,13 +114,13 @@ export const SelectField = forwardRef<
   const selectId = id ?? autoId;
   return (
     <div className={className}>
-      <label htmlFor={selectId} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={selectId} className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
         {label}
       </label>
       <select
         ref={ref}
         id={selectId}
-        className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="mt-1.5 block w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 shadow-xs transition hover:border-slate-300 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/15"
         {...rest}
       >
         {options.map((o) => (
@@ -124,7 +129,7 @@ export const SelectField = forwardRef<
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600 font-medium">{error}</p>}
     </div>
   );
 });
@@ -143,17 +148,17 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section className={clsx('rounded-lg border border-slate-200 bg-white shadow-xs', className)}>
+    <section className={clsx('rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03),0_4px_12px_rgba(0,0,0,0.02)] transition-shadow duration-200', className)}>
       {(title || actions) && (
-        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <header className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <div>
-            {title && <h2 className="text-base font-semibold text-slate-900">{title}</h2>}
-            {description && <p className="mt-0.5 text-sm text-slate-500">{description}</p>}
+            {title && <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>}
+            {description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
           </div>
           {actions}
         </header>
       )}
-      <div className="px-5 py-4">{children}</div>
+      <div className="px-6 py-5">{children}</div>
     </section>
   );
 }
@@ -161,33 +166,57 @@ export function Card({
 export function Badge({
   children,
   tone = 'slate',
+  dot = false,
 }: {
   children: ReactNode;
-  tone?: 'slate' | 'green' | 'amber' | 'red' | 'brand';
+  tone?: 'slate' | 'green' | 'amber' | 'red' | 'brand' | 'blue' | 'purple';
+  dot?: boolean;
 }) {
   return (
     <span
       className={clsx(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium tracking-wide',
         {
-          slate: 'bg-slate-100 text-slate-700',
-          green: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-          amber: 'bg-amber-50 text-amber-800 ring-1 ring-amber-200',
-          red: 'bg-red-50 text-red-700 ring-1 ring-red-200',
-          brand: 'bg-brand-50 text-brand-700 ring-1 ring-brand-200',
+          slate: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/70',
+          green: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80',
+          amber: 'bg-amber-50 text-amber-800 ring-1 ring-amber-200/80',
+          red: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/80',
+          brand: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/80',
+          blue: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200/80',
+          purple: 'bg-purple-50 text-purple-700 ring-1 ring-purple-200/80',
         }[tone],
       )}
     >
+      {dot && (
+        <span
+          className={clsx('size-1.5 rounded-full', {
+            slate: 'bg-slate-400',
+            green: 'bg-emerald-500',
+            amber: 'bg-amber-500',
+            red: 'bg-rose-500',
+            brand: 'bg-indigo-500',
+            blue: 'bg-sky-500',
+            purple: 'bg-purple-500',
+          }[tone])}
+        />
+      )}
       {children}
     </span>
   );
 }
 
-export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
+export function EmptyState({ title, children, icon }: { title: string; children?: ReactNode; icon?: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 px-6 py-12 text-center">
-      <p className="text-sm font-semibold text-slate-800">{title}</p>
-      {children && <div className="mt-1 text-sm text-slate-500">{children}</div>}
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center">
+      <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-xs ring-1 ring-slate-200 text-slate-400">
+        {icon ?? (
+          <svg className="size-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        )}
+      </div>
+      <p className="mt-3 text-sm font-semibold text-slate-900">{title}</p>
+      {children && <div className="mt-1 max-w-sm text-xs text-slate-500">{children}</div>}
     </div>
   );
 }
@@ -195,19 +224,24 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 export function PageHeader({
   title,
   description,
+  badge,
   actions,
 }: {
   title: string;
   description?: string;
+  badge?: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-5">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
+          {badge}
+        </div>
         {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
       </div>
-      {actions}
+      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </div>
   );
 }
@@ -232,6 +266,52 @@ export function FormError({ message }: { message?: string | null }) {
       className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
     >
       {message}
+    </div>
+  );
+}
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  maxWidth = 'max-w-lg',
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  maxWidth?: string;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+      <div
+        className={clsx(
+          'relative w-full rounded-xl bg-white shadow-2xl border border-slate-200 overflow-hidden',
+          maxWidth,
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            aria-label="Close dialog"
+            title="Close dialog"
+          >
+            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="p-5">{children}</div>
+      </div>
     </div>
   );
 }

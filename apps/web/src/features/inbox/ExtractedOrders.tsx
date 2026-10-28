@@ -238,8 +238,7 @@ export function ExtractedOrders({
         ))}
       </div>
       <p className="mt-3 text-xs text-slate-400">
-        Matching to your products and approval arrive in M5-M6. Amber cells are values the reader
-        was unsure of.
+        Amber cells indicate extracted values requiring reviewer verification.
       </p>
     </Card>
   );

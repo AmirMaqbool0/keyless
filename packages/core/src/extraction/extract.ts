@@ -1,6 +1,7 @@
-import { z } from 'zod';
 import {
   extractionOutputSchema,
+  normalizeExtractionOutput,
+  salvageOrders,
   type ExtractedOrderDto,
   type ExtractionDto,
 } from '@keyless/shared';
@@ -105,15 +106,55 @@ async function extractOne(
       usage.inputTokens += res.usage.inputTokens;
       usage.outputTokens += res.usage.outputTokens;
       usage.costUsd += res.usage.costUsd;
-      const parsed = extractionOutputSchema.safeParse(res.output);
+      const normalized = normalizeExtractionOutput(res.output);
+      const parsed = extractionOutputSchema.safeParse(normalized);
       if (!parsed.success) {
         // Retry once, telling the model exactly what was wrong (spec section 6).
-        retryFeedback = z.prettifyError(parsed.error).slice(0, 1500);
+        const issueDescriptions = parsed.error.issues
+          .map((iss) => `${iss.path.join('.')}: ${iss.message}`)
+          .join('; ');
+        retryFeedback = `The output had schema validation errors: ${issueDescriptions}. Please use null for any missing or omitted fields (such as tax, part code, unit, price, totals) rather than omitting keys or returning unexpected types.`.slice(0, 1500);
         logger.warn({ source: source.label, attempt }, 'Extraction output failed validation');
+
+        if (attempt === 2) {
+          // Attempt 2 failed: salvage whatever lines are valid
+          const salvaged = salvageOrders(res.output);
+          if (salvaged.orders.length > 0) {
+            const multiOrder = salvaged.orders.length > 1;
+            const orders: ExtractedOrderDto[] = salvaged.orders.map((o) => {
+              const checked = checkOrder(o, { now, documentText: doc.text, multiOrder });
+              const issues = [...checked.issues];
+              issues.push({
+                code: 'partial_extraction',
+                severity: 'warning',
+                message: 'Some fields could not be read — please check against the document',
+              });
+              return {
+                ...o,
+                confidence: Math.min(checked.confidence, 0.6),
+                issues,
+              };
+            });
+            return {
+              ...base,
+              status: 'completed',
+              model,
+              orders,
+              documentNotes:
+                typeof (res.output as Record<string, unknown>)?.documentNotes === 'string'
+                  ? ((res.output as Record<string, unknown>).documentNotes as string)
+                  : null,
+              error: null,
+              usage,
+              durationMs: Date.now() - started,
+              attempts: 2,
+            };
+          }
+        }
         continue;
       }
-      const multiOrder = parsed.data.orders.length > 1;
-      const orders: ExtractedOrderDto[] = parsed.data.orders.map((o) => ({
+      const multiOrder = normalized.orders.length > 1;
+      const orders: ExtractedOrderDto[] = normalized.orders.map((o) => ({
         ...o,
         ...checkOrder(o, { now, documentText: doc.text, multiOrder }),
       }));
@@ -122,7 +163,7 @@ async function extractOne(
         status: 'completed',
         model,
         orders,
-        documentNotes: parsed.data.documentNotes,
+        documentNotes: normalized.documentNotes,
         error: null,
         usage,
         durationMs: Date.now() - started,
@@ -144,16 +185,18 @@ async function extractOne(
       throw err; // transient (network, 5xx): let the job retry with backoff
     }
   }
+  const technicalError =
+    `The model's answer did not match the expected format twice: ${retryFeedback ?? ''}`.slice(
+      0,
+      2000,
+    );
   return {
     ...base,
     status: 'failed',
     model,
     orders: [],
-    error:
-      `The model's answer did not match the expected format twice: ${retryFeedback ?? ''}`.slice(
-        0,
-        2000,
-      ),
+    error: "We couldn't read this document fully. Please check the lines against the original.",
+    technicalError,
     usage,
     durationMs: Date.now() - started,
     attempts: 2,

@@ -35,6 +35,8 @@ function refreshSession(): Promise<boolean> {
   return refreshing;
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+
 async function send(method: string, path: string, body?: unknown): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   const isForm = body instanceof FormData;
@@ -43,10 +45,11 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
   const token = readCookie(CSRF_COOKIE) ?? csrfToken;
   if (token) headers[CSRF_HEADER] = token;
 
-  const res = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const res = await fetch(url, {
     method,
     headers,
-    credentials: 'same-origin',
+    credentials: 'include',
     body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   });
   csrfToken = res.headers.get(CSRF_HEADER) ?? csrfToken;
@@ -85,7 +88,7 @@ export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {}),
   patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
-  delete: <T = void>(path: string) => request<T>('DELETE', path),
+  delete: <T = void>(path: string, body?: unknown) => request<T>('DELETE', path, body),
   upload: <T>(path: string, form: FormData) => request<T>('POST', path, form),
 };
 

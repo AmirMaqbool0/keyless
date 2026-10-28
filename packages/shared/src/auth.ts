@@ -65,6 +65,17 @@ export const userDtoSchema = z.object({
 });
 export type UserDto = z.infer<typeof userDtoSchema>;
 
+export const organizationSettingsSchema = z.object({
+  autoApproveEnabled: z.boolean().optional(),
+  greenConfidenceThreshold: z.number().optional(),
+  amberConfidenceThreshold: z.number().optional(),
+  priceTolerancePct: z.number().optional(),
+  highValueThreshold: z.number().nullable().optional(),
+  codeDescriptionMismatchThreshold: z.number().optional(),
+  retentionDays: z.number().optional(),
+});
+export type OrganizationSettingsDto = z.infer<typeof organizationSettingsSchema>;
+
 export const organizationDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -73,6 +84,7 @@ export const organizationDtoSchema = z.object({
   timezone: z.string(),
   currency: z.string(),
   plan: z.string(),
+  settings: organizationSettingsSchema.optional(),
 });
 export type OrganizationDto = z.infer<typeof organizationDtoSchema>;
 
@@ -81,3 +93,29 @@ export type MeResponse = { user: UserDto; organization: OrganizationDto };
 /** Login either completes or asks for a TOTP code. */
 export type LoginResponse =
   ({ status: 'ok' } & MeResponse) | { status: 'two_factor_required'; challengeToken: string };
+
+export type IntegrationPipelineStatusDto = {
+  allOperational: boolean;
+  erp: {
+    name: string;
+    type: string | null;
+    status: 'connected' | 'not_connected' | 'error';
+    lastSyncAt: string | null;
+  };
+  email: {
+    status: 'listening' | 'not_configured' | 'error';
+    address: string | null;
+    lastReceivedAt: string | null;
+  };
+  ai: {
+    status: 'active' | 'degraded' | 'not_configured';
+    provider: string;
+    model: string;
+    lastExtractionAt: string | null;
+  };
+  mailer: {
+    status: 'verified' | 'not_configured';
+    provider: string;
+    from: string;
+  };
+};

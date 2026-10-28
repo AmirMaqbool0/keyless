@@ -20,6 +20,7 @@ export interface IExtraction {
   orders: ExtractedOrderDto[];
   documentNotes?: string;
   error?: string;
+  technicalError?: string;
   usage: { inputTokens: number; outputTokens: number; costUsd: number };
   pageCount: number;
   durationMs: number;
@@ -39,6 +40,7 @@ const extractionSchema = new Schema<IExtraction>(
     orders: { type: Schema.Types.Mixed, default: [] },
     documentNotes: String,
     error: String,
+    technicalError: String,
     usage: { inputTokens: Number, outputTokens: Number, costUsd: Number },
     pageCount: { type: Number, default: 0 },
     durationMs: { type: Number, default: 0 },

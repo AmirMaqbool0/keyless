@@ -48,13 +48,21 @@ export function OrdersPage() {
   });
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        title="Orders"
-        description="Every purchase order Keyless has read, routed green (ready), amber (check) or red (blocked)."
+        title="Purchase Orders"
+        description="Every purchase order read and processed by Keyless, color-coded for quick review and 1-click ERP synchronization."
+        badge={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200/70">
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            AI Matched
+          </span>
+        }
       />
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <nav className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1" aria-label="Order queues">
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Modern Segmented Navigation Tabs */}
+        <nav className="flex flex-wrap gap-1 rounded-xl bg-slate-100/90 p-1.5 ring-1 ring-slate-200/60" aria-label="Order queues">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -63,33 +71,44 @@ export function OrdersPage() {
                 setPage(1);
               }}
               className={clsx(
-                'rounded-md px-3 py-1.5 text-sm font-medium',
+                'inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-150',
                 view === t.key
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-300 font-bold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50',
               )}
             >
-              {t.label}
+              <span>{t.label}</span>
               {counts.data && (
-                <span className="ml-1.5 text-xs text-slate-400">{counts.data[t.key]}</span>
+                <span
+                  className={clsx(
+                    'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                    view === t.key
+                      ? 'bg-brand-100 text-brand-800'
+                      : 'bg-slate-200/80 text-slate-600',
+                  )}
+                >
+                  {counts.data[t.key]}
+                </span>
               )}
             </button>
           ))}
         </nav>
-        <div className="flex flex-wrap gap-2">
+
+        {/* Filters and Search Bar */}
+        <div className="flex flex-wrap items-center gap-2.5">
           <select
-            aria-label="Colour"
+            aria-label="Filter by route color"
             value={colour}
             onChange={(e) => {
               setColour(e.target.value as RouteColour | '');
               setPage(1);
             }}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-xs transition hover:border-slate-300 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/15"
           >
-            <option value="">All colours</option>
-            <option value="green">Green - ready</option>
-            <option value="amber">Amber - check</option>
-            <option value="red">Red - blocked</option>
+            <option value="">All statuses</option>
+            <option value="green">🟢 Green &bull; Ready</option>
+            <option value="amber">🟡 Amber &bull; Check</option>
+            <option value="red">🔴 Red &bull; Blocked</option>
           </select>
           <SearchInput
             value={q}
@@ -97,7 +116,7 @@ export function OrdersPage() {
               setQ(v);
               setPage(1);
             }}
-            placeholder="Search PO number or customer"
+            placeholder="Search PO # or customer..."
           />
         </div>
       </div>
@@ -142,7 +161,19 @@ export function OrdersPage() {
           { header: 'Lines', cell: (o) => o.lineCount, className: 'text-right' },
           {
             header: 'Value',
-            cell: (o) => money(o.value, o.currency),
+            cell: (o) => (
+              <span className="inline-flex items-center gap-1">
+                <span>{money(o.value, o.currency)}</span>
+                {o.valueEstimated && (
+                  <span
+                    className="rounded bg-amber-50 px-1 py-0.5 text-[10px] font-medium text-amber-700 border border-amber-200"
+                    title="Estimated based on catalogue list/contract prices"
+                  >
+                    est.
+                  </span>
+                )}
+              </span>
+            ),
             className: 'text-right whitespace-nowrap',
           },
           {
@@ -161,7 +192,16 @@ export function OrdersPage() {
           },
           {
             header: 'Confidence',
-            cell: (o) => `${Math.round(o.confidence * 100)}%`,
+            cell: (o) => (
+              <div className="text-right">
+                <span className="font-medium text-slate-800">{Math.round(o.confidence * 100)}%</span>
+                {o.confidenceHint && (
+                  <p className="text-xs text-slate-500 whitespace-nowrap" title={o.confidenceHint}>
+                    {o.confidenceHint}
+                  </p>
+                )}
+              </div>
+            ),
             className: 'text-right',
           },
           {
@@ -185,6 +225,6 @@ export function OrdersPage() {
       {orders.data && (
         <Pagination page={page} pageSize={50} total={orders.data.total} onPage={setPage} />
       )}
-    </>
+    </div>
   );
 }

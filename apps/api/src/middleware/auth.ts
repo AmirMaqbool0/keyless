@@ -59,6 +59,12 @@ export function requireRole(minimum: Role): RequestHandler {
   };
 }
 
+export function requireSuperAdmin(req: Request, _res: Response, next: NextFunction): void {
+  const user = authed(req).user;
+  if (!user.isSuperAdmin) throw forbidden('Super-admin privileges required', 'NOT_SUPERADMIN');
+  next();
+}
+
 /** The auth context for a route behind `requireAuth`. */
 export function authed(req: Request): NonNullable<Request['auth']> {
   if (!req.auth) throw unauthorized();

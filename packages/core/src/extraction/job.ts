@@ -37,17 +37,33 @@ export async function runExtraction(
   email.extraction = { status: 'running', orderCount: 0, lineCount: 0, issueCount: 0, costUsd: 0 };
   await email.save();
 
-  // TODO(M6): pass the identified customer's learned extractionHints (taught by reviewers).
-  const results = await extractEmail(deps.llm, {
-    email: {
-      subject: email.subject,
-      fromName: email.from?.name,
-      fromAddress: email.from?.address,
-      receivedAt: email.receivedAt,
-      text: email.text,
-    },
-    files,
-  });
+  let results;
+  try {
+    results = await extractEmail(deps.llm, {
+      email: {
+        subject: email.subject,
+        fromName: email.from?.name,
+        fromAddress: email.from?.address,
+        receivedAt: email.receivedAt,
+        text: email.text,
+      },
+      files,
+    });
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    email.extraction = {
+      status: 'failed',
+      orderCount: 0,
+      lineCount: 0,
+      issueCount: 0,
+      costUsd: 0,
+      completedAt: new Date(),
+    };
+    email.status = 'failed';
+    email.error = errorMsg;
+    await email.save();
+    throw err;
+  }
 
   await Extraction.deleteMany({ orgId, emailId: email._id });
   await Extraction.insertMany(
@@ -82,6 +98,11 @@ export async function runExtraction(
     completedAt: new Date(),
   };
   email.extraction = summary;
+  if (summary.status === 'failed') {
+    email.status = 'failed';
+    const firstErr = results.find((r) => r.error)?.error;
+    if (firstErr && !email.error) email.error = firstErr;
+  }
   await email.save();
 
   const llmCalls = results.reduce((n, r) => n + r.attempts, 0);

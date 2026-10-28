@@ -75,7 +75,7 @@ export function CrossReferenceTable({ customerId }: { customerId?: string }) {
         empty={
           <NoResults query={query}>
             {!query &&
-              'Cross-references are imported here, and learned automatically from reviewer corrections (M6).'}
+              'Cross-references are imported here, and learned automatically from reviewer corrections.'}
           </NoResults>
         }
         columns={[

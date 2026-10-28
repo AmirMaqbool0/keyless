@@ -61,7 +61,7 @@ export function useTestApp(opts: { fakeFetch?: FetchLike } = {}) {
       get: (url: string) => agent.get(url),
       post: (url: string, body?: object) => agent.post(url).set(CSRF_HEADER, csrf).send(body),
       patch: (url: string, body?: object) => agent.patch(url).set(CSRF_HEADER, csrf).send(body),
-      delete: (url: string) => agent.delete(url).set(CSRF_HEADER, csrf),
+      delete: (url: string, body?: object) => agent.delete(url).set(CSRF_HEADER, csrf).send(body),
       upload: (
         url: string,
         fields: Record<string, string>,

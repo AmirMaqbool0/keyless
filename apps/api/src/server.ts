@@ -2,14 +2,19 @@ import { createApp } from './app';
 import { env } from '@keyless/core/config/env';
 import { connectDb, disconnectDb } from '@keyless/core/db/connect';
 import { logger } from '@keyless/core/lib/logger';
-import { ConsoleMailer } from '@keyless/core/lib/mailer';
+import { ConsoleMailer, ResendMailer } from '@keyless/core/lib/mailer';
 import { createStorage } from '@keyless/core/lib/storage';
 import { createQueue } from '@keyless/core/queue/index';
 
 async function main(): Promise<void> {
   await connectDb(env.MONGO_URI);
+  const mailer =
+    env.EMAIL_PROVIDER === 'resend' && env.EMAIL_PROVIDER_API_KEY
+      ? new ResendMailer(env.EMAIL_PROVIDER_API_KEY, env.EMAIL_FROM)
+      : new ConsoleMailer();
+
   const app = createApp({
-    mailer: new ConsoleMailer(),
+    mailer,
     storage: createStorage(),
     queue: createQueue(),
   });

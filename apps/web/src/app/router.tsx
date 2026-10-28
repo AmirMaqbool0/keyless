@@ -15,6 +15,9 @@ import { EmailDetailPage } from '../features/inbox/EmailDetailPage';
 import { InboxPage } from '../features/inbox/InboxPage';
 import { OrderDetailPage } from '../features/orders/OrderDetailPage';
 import { OrdersPage } from '../features/orders/OrdersPage';
+import { RulesPage } from '../features/rules/RulesPage';
+import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
+import { BillingPage } from '../features/billing/BillingPage';
 import { MailboxesPage } from '../features/settings/MailboxesPage';
 import { ProcessingErrorsPage } from '../features/settings/ProcessingErrorsPage';
 import { IntegrationsPage } from '../features/settings/IntegrationsPage';
@@ -23,6 +26,7 @@ import { AuditPage } from '../features/settings/AuditPage';
 import { OrganizationPage } from '../features/settings/OrganizationPage';
 import { SecurityPage } from '../features/settings/SecurityPage';
 import { TeamPage } from '../features/settings/TeamPage';
+import { SuperAdminPage } from '../features/superadmin/SuperAdminPage';
 import { useSession } from '../lib/session';
 import { AppShell, RequireRole } from './AppShell';
 
@@ -127,26 +131,17 @@ export const router = createBrowserRouter([
         path: 'rules',
         element: (
           <RequireRole minimum="admin">
-            <ComingSoonPage
-              title="Rules"
-              milestone="M8"
-              description="Auto-approve, require-review and block rules."
-            />
+            <RulesPage />
           </RequireRole>
         ),
       },
       {
         path: 'analytics',
-        element: (
-          <ComingSoonPage
-            title="Analytics"
-            milestone="M9"
-            description="Touch-free rate, time saved and accuracy trends."
-          />
-        ),
+        element: <AnalyticsPage />,
       },
       { path: 'settings', element: <Navigate to="/settings/organization" replace /> },
       { path: 'settings/organization', element: <OrganizationPage /> },
+      { path: 'settings/billing', element: <BillingPage /> },
       { path: 'settings/team', element: <TeamPage /> },
       { path: 'settings/security', element: <SecurityPage /> },
       {
@@ -157,6 +152,7 @@ export const router = createBrowserRouter([
           </RequireRole>
         ),
       },
+      { path: 'superadmin', element: <SuperAdminPage /> },
       {
         path: '*',
         element: (

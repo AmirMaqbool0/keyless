@@ -5,6 +5,7 @@ import { CrossReference, type ICrossReference } from '../models/CrossReference';
 import { Customer, type ICustomer } from '../models/Customer';
 import { CustomerPrice, type ICustomerPrice } from '../models/CustomerPrice';
 import { Product, type IProduct } from '../models/Product';
+import { isPublicDomain } from '../matching/catalogue';
 
 /*
  * Idempotent bulk upserts shared by CSV imports and connector syncs.
@@ -99,6 +100,7 @@ export type CustomerRecord = {
   senderAddresses?: string[];
   priceListCode?: string;
   creditHold?: boolean;
+  trustedForAutoApprove?: boolean;
   deliveryAddresses?: Address[];
 };
 
@@ -128,9 +130,12 @@ export function upsertCustomers(
 
   const now = new Date();
   const ops: UpsertOp[] = [...merged.entries()].map(([key, r]) => {
+    const validDomains = r.emailDomains
+      ?.map((d) => d.toLowerCase().replace(/^@/, ''))
+      .filter((d) => d.length > 0 && !isPublicDomain(d));
     const addToSet = defined({
-      emailDomains: r.emailDomains?.length
-        ? { $each: r.emailDomains.map((d) => d.toLowerCase()) }
+      emailDomains: validDomains?.length
+        ? { $each: validDomains }
         : undefined,
       senderAddresses: r.senderAddresses?.length
         ? { $each: r.senderAddresses.map((e) => e.toLowerCase()) }
@@ -150,6 +155,7 @@ export function upsertCustomers(
             erpCustomerId: r.erpCustomerId,
             priceListCode: r.priceListCode,
             creditHold: r.creditHold,
+            trustedForAutoApprove: r.trustedForAutoApprove,
             searchText: searchText(r.accountCode, r.name),
             source,
             ...(source === 'connector' ? { lastSyncedAt: now } : {}),
