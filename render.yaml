@@ -46,4 +46,6 @@ services:
         sync: false
       - key: MS_TENANT
         value: common
+      - key: INBOUND_EMAIL_DOMAIN
+        sync: false
 

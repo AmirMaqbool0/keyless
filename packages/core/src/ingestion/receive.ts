@@ -132,7 +132,16 @@ export async function receiveUploadedDocument(
 /** Each org gets one forwarding address, created the first time it is needed. */
 export async function ensureForwardingMailbox(org: OrganizationDoc): Promise<MailboxDoc> {
   const existing = await Mailbox.findOne({ orgId: org._id, type: 'forwarding' });
-  if (existing) return existing;
+  if (existing) {
+    const expectedDomain = env.INBOUND_EMAIL_DOMAIN.toLowerCase();
+    const currentHost = existing.address.split('@')[1]?.toLowerCase();
+    if (currentHost && currentHost !== expectedDomain) {
+      const alias = existing.inboundAlias ?? existing.address.split('@')[0];
+      existing.address = `${alias}@${expectedDomain}`;
+      await existing.save();
+    }
+    return existing;
+  }
   // The random suffix stops anyone guessing another company's address from its name.
   const alias = `orders-${org.slug.slice(0, 30)}-${crypto.randomBytes(3).toString('hex')}`;
   try {
