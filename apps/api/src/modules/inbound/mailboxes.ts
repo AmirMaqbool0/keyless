@@ -3,7 +3,7 @@ import { Router, type Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { updateMailboxSchema, type MailboxDto, type MailboxesResponse } from '@keyless/shared';
-import { env, isProd } from '@keyless/core/config/env';
+import { env, getAppBaseUrl, isProd } from '@keyless/core/config/env';
 import { ensureForwardingMailbox, type IngestDeps } from '@keyless/core/ingestion/receive';
 import { audit } from '@keyless/core/lib/audit';
 import { badRequest, forbidden, notFound, param, validate } from '@keyless/core/lib/http';
@@ -14,6 +14,7 @@ import {
   fetchAccountAddress,
   isProviderConfigured,
   pkcePair,
+  redirectUri,
   saveTokens,
   type FetchLike,
   type MailProvider,
@@ -31,6 +32,7 @@ type OAuthState = {
   verifier: string;
   userId: string;
   orgId: string;
+  redirectUri?: string;
 };
 
 function toDto(m: IMailbox): MailboxDto {
@@ -47,8 +49,11 @@ function toDto(m: IMailbox): MailboxDto {
   };
 }
 
-const back = (res: Response, query: Record<string, string>) =>
-  res.redirect(`${env.APP_URL}/settings/mailboxes?${new URLSearchParams(query)}`);
+const back = (
+  res: Response,
+  query: Record<string, string>,
+  req?: { get?: (name: string) => string | undefined; protocol?: string },
+) => res.redirect(`${getAppBaseUrl(req)}/settings/mailboxes?${new URLSearchParams(query)}`);
 
 /** Mounted behind requireAuth + requireVerified. */
 export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Router {
@@ -77,6 +82,8 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
         'PROVIDER_NOT_CONFIGURED',
       );
     }
+    const baseUrl = getAppBaseUrl(req);
+    const redirect = redirectUri(provider, baseUrl);
     const { verifier, challenge } = pkcePair();
     const state: OAuthState = {
       provider,
@@ -84,6 +91,7 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
       verifier,
       userId: user._id.toString(),
       orgId: orgId.toString(),
+      redirectUri: redirect,
     };
     // The PKCE verifier stays server-side in an httpOnly cookie; only the nonce goes to the provider.
     res.cookie(OAUTH_COOKIE, jwt.sign(state, env.JWT_SECRET, { expiresIn: 600 }), {
@@ -93,7 +101,7 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
       path: OAUTH_COOKIE_PATH,
       maxAge: 600_000,
     });
-    res.redirect(authorizeUrl(provider, state.nonce, challenge));
+    res.redirect(authorizeUrl(provider, state.nonce, challenge, redirect));
   });
 
   r.get('/oauth/:provider/callback', async (req, res) => {
@@ -106,7 +114,7 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
     try {
       state = jwt.verify(typeof cookie === 'string' ? cookie : '', env.JWT_SECRET) as OAuthState;
     } catch {
-      return back(res, { error: 'Sign-in timed out. Please try connecting again.' });
+      return back(res, { error: 'Sign-in timed out. Please try connecting again.' }, req);
     }
     if (
       state.provider !== provider ||
@@ -114,18 +122,28 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
       state.userId !== user._id.toString() ||
       state.orgId !== orgId.toString()
     ) {
-      return back(res, { error: 'Sign-in could not be verified. Please try again.' });
+      return back(res, { error: 'Sign-in could not be verified. Please try again.' }, req);
     }
     if (typeof req.query.error === 'string') {
-      return back(res, {
-        error: `The provider refused access: ${String(req.query.error_description ?? req.query.error).slice(0, 200)}`,
-      });
+      return back(
+        res,
+        {
+          error: `The provider refused access: ${String(req.query.error_description ?? req.query.error).slice(0, 200)}`,
+        },
+        req,
+      );
     }
     if (typeof req.query.code !== 'string')
-      return back(res, { error: 'No authorisation code returned.' });
+      return back(res, { error: 'No authorisation code returned.' }, req);
 
     try {
-      const tokens = await exchangeCode(fetchFn, provider, req.query.code, state.verifier);
+      const tokens = await exchangeCode(
+        fetchFn,
+        provider,
+        req.query.code,
+        state.verifier,
+        state.redirectUri,
+      );
       const address = await fetchAccountAddress(fetchFn, provider, tokens.accessToken);
       const mailbox =
         (await Mailbox.findOne({ orgId, type: provider, address })) ??
@@ -156,12 +174,16 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
         summary: { provider, address },
         req,
       });
-      return back(res, { connected: address });
+      return back(res, { connected: address }, req);
     } catch (err) {
       logger.error({ err, provider }, 'Mailbox OAuth callback failed');
-      return back(res, {
-        error: err instanceof Error ? err.message : 'Connecting the mailbox failed',
-      });
+      return back(
+        res,
+        {
+          error: err instanceof Error ? err.message : 'Connecting the mailbox failed',
+        },
+        req,
+      );
     }
   });
 

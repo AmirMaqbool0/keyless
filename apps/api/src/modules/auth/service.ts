@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import argon2 from 'argon2';
 import type { Request } from 'express';
 import type { SignupInput } from '@keyless/shared';
-import { env } from '@keyless/core/config/env';
+import { env, getAppBaseUrl } from '@keyless/core/config/env';
 import { audit } from '@keyless/core/lib/audit';
 import { resetPasswordMail, verifyEmailMail } from '@keyless/core/lib/emailTemplates';
 import { badRequest, conflict, unauthorized } from '@keyless/core/lib/http';
@@ -51,7 +51,7 @@ export async function activeUserByEmail(email: string): Promise<UserDoc | null> 
 }
 
 export function createAuthService({ mailer }: { mailer: Mailer }) {
-  async function sendVerification(user: UserDoc): Promise<void> {
+  async function sendVerification(user: UserDoc, baseUrl?: string): Promise<void> {
     const token = randomToken();
     await AuthToken.create({
       orgId: user.orgId,
@@ -60,7 +60,8 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
       tokenHash: hashToken(token),
       expiresAt: new Date(Date.now() + VERIFY_TTL_MS),
     });
-    const url = `${env.APP_URL}/verify-email?token=${encodeURIComponent(token)}`;
+    const root = baseUrl || env.APP_URL;
+    const url = `${root}/verify-email?token=${encodeURIComponent(token)}`;
     await mailer.send(verifyEmailMail(user.email, user.name, url));
   }
 
@@ -120,7 +121,7 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
 
       // Outbound email failure must not abort sign-up; log warning and allow user to resend
       try {
-        await sendVerification(user);
+        await sendVerification(user, getAppBaseUrl(req));
       } catch (mailErr) {
         logger.warn(
           { err: mailErr, userId: user._id, email: user.email },
@@ -174,7 +175,7 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
       });
     },
 
-    async forgotPassword(email: string): Promise<void> {
+    async forgotPassword(email: string, baseUrl?: string): Promise<void> {
       const user = await activeUserByEmail(email);
       if (!user) return; // Same response either way.
       const token = randomToken();
@@ -185,10 +186,11 @@ export function createAuthService({ mailer }: { mailer: Mailer }) {
         tokenHash: hashToken(token),
         expiresAt: new Date(Date.now() + RESET_TTL_MS),
       });
+      const root = baseUrl || env.APP_URL;
       await mailer.send(
         resetPasswordMail(
           user.email,
-          `${env.APP_URL}/reset-password?token=${encodeURIComponent(token)}`,
+          `${root}/reset-password?token=${encodeURIComponent(token)}`,
         ),
       );
     },

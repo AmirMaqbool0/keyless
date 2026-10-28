@@ -31,8 +31,30 @@ const optional = z
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  APP_URL: z.url().default('http://localhost:5173'),
-  API_URL: z.url().default('http://localhost:4000'),
+  APP_URL: z
+    .string()
+    .optional()
+    .transform((v) => {
+      let raw = (v || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173').trim();
+      raw = raw.replace(/^["']|["']$/g, '').trim();
+      if (!/^https?:\/\//i.test(raw)) {
+        raw = `https://${raw}`;
+      }
+      return raw.replace(/\/+$/, '');
+    })
+    .pipe(z.string().url()),
+  API_URL: z
+    .string()
+    .optional()
+    .transform((v) => {
+      let raw = (v || process.env.RENDER_EXTERNAL_URL || 'http://localhost:4000').trim();
+      raw = raw.replace(/^["']|["']$/g, '').trim();
+      if (!/^https?:\/\//i.test(raw)) {
+        raw = `https://${raw}`;
+      }
+      return raw.replace(/\/+$/, '');
+    })
+    .pipe(z.string().url()),
   MONGO_URI: z
     .string()
     .optional()
@@ -99,4 +121,35 @@ export const isProd = env.NODE_ENV === 'production';
 if (isProd && !env.INBOUND_WEBHOOK_SECRET) {
   console.error('INBOUND_WEBHOOK_SECRET is required in production.');
   process.exit(1);
+}
+
+function isLoopback(val: string): boolean {
+  return /(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])/i.test(val);
+}
+
+/**
+ * Resolves the application base URL (e.g. "https://keyless-61vb.onrender.com").
+ * Prioritizes configured production/external APP_URL or RENDER_EXTERNAL_URL,
+ * with dynamic detection from request headers (origin / x-forwarded-host) when available,
+ * falling back safely to env.APP_URL.
+ */
+export function getAppBaseUrl(req?: {
+  get?: (name: string) => string | undefined;
+  protocol?: string;
+}): string {
+  if (env.APP_URL && !isLoopback(env.APP_URL)) {
+    return env.APP_URL;
+  }
+  if (req && typeof req.get === 'function') {
+    const origin = req.get('origin');
+    if (origin && !isLoopback(origin)) {
+      return origin.replace(/\/+$/, '');
+    }
+    const forwardedHost = req.get('x-forwarded-host') || req.get('host');
+    const forwardedProto = req.get('x-forwarded-proto') || req.protocol || 'https';
+    if (forwardedHost && !isLoopback(forwardedHost)) {
+      return `${forwardedProto}://${forwardedHost}`.replace(/\/+$/, '');
+    }
+  }
+  return env.APP_URL;
 }

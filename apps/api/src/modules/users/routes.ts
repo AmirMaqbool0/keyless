@@ -5,7 +5,7 @@ import {
   updateUserRoleSchema,
   type Role,
 } from '@keyless/shared';
-import { env } from '@keyless/core/config/env';
+import { env, getAppBaseUrl } from '@keyless/core/config/env';
 import { audit } from '@keyless/core/lib/audit';
 import { inviteMail } from '@keyless/core/lib/emailTemplates';
 import { conflict, forbidden, notFound, param, validate } from '@keyless/core/lib/http';
@@ -90,7 +90,7 @@ export function usersRouter({ mailer }: { mailer: Mailer }): Router {
       invitedBy: actor._id,
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
     });
-    const url = `${env.APP_URL}/accept-invite?token=${encodeURIComponent(token)}`;
+    const url = `${getAppBaseUrl(req)}/accept-invite?token=${encodeURIComponent(token)}`;
     await mailer.send(inviteMail(email, actor.name, org.name, role, url));
     await audit({
       orgId,

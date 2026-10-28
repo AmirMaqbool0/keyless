@@ -18,6 +18,7 @@ import { badRequest, notFound, param, unauthorized, validate } from '@keyless/co
 import type { Mailer } from '@keyless/core/lib/mailer';
 import { authed, requireAuth } from '../../middleware/auth';
 import { authLimiter } from '../../middleware/rateLimit';
+import { getAppBaseUrl } from '@keyless/core/config/env';
 import { Organization } from '@keyless/core/models/Organization';
 import { User, type UserDoc } from '@keyless/core/models/User';
 import { toOrgDto, toUserDto } from '../dto';
@@ -120,13 +121,13 @@ export function authRouter({ mailer }: { mailer: Mailer }): Router {
     const { user } = authed(req);
     if (user.emailVerifiedAt)
       throw badRequest('Your email is already verified', 'ALREADY_VERIFIED');
-    await service.sendVerification(user);
+    await service.sendVerification(user, getAppBaseUrl(req));
     res.json({ ok: true });
   });
 
   r.post('/forgot-password', authLimiter, async (req, res) => {
     const { email } = validate(forgotPasswordSchema, req.body);
-    await service.forgotPassword(email);
+    await service.forgotPassword(email, getAppBaseUrl(req));
     res.json({ ok: true });
   });
 

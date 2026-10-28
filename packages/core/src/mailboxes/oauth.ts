@@ -57,7 +57,11 @@ export function isProviderConfigured(provider: MailProvider): boolean {
 }
 
 /** Registered redirect URI: same origin as the web app so session cookies come along. */
-export function redirectUri(provider: MailProvider): string {
+export function redirectUri(provider: MailProvider, baseUrlOrUri?: string): string {
+  if (baseUrlOrUri?.startsWith('http://') || baseUrlOrUri?.startsWith('https://')) {
+    if (baseUrlOrUri.includes('/callback')) return baseUrlOrUri;
+    return `${baseUrlOrUri.replace(/\/+$/, '')}/api/mailboxes/oauth/${provider}/callback`;
+  }
   return `${env.APP_URL}/api/mailboxes/oauth/${provider}/callback`;
 }
 
@@ -66,12 +70,17 @@ export function pkcePair(): { verifier: string; challenge: string } {
   return { verifier, challenge: crypto.createHash('sha256').update(verifier).digest('base64url') };
 }
 
-export function authorizeUrl(provider: MailProvider, state: string, codeChallenge: string): string {
+export function authorizeUrl(
+  provider: MailProvider,
+  state: string,
+  codeChallenge: string,
+  redirect?: string,
+): string {
   const c = providerConfig(provider);
   const params = new URLSearchParams({
     client_id: c.clientId ?? '',
     response_type: 'code',
-    redirect_uri: redirectUri(provider),
+    redirect_uri: redirect ? redirectUri(provider, redirect) : redirectUri(provider),
     scope: c.scopes.join(' '),
     state,
     code_challenge: codeChallenge,
@@ -130,11 +139,12 @@ export async function exchangeCode(
   provider: MailProvider,
   code: string,
   codeVerifier: string,
+  redirect?: string,
 ): Promise<StoredTokens> {
   const tokens = await tokenRequest(fetchFn, provider, {
     grant_type: 'authorization_code',
     code,
-    redirect_uri: redirectUri(provider),
+    redirect_uri: redirect ? redirectUri(provider, redirect) : redirectUri(provider),
     code_verifier: codeVerifier,
   });
   if (!tokens.refreshToken) {
