@@ -10,6 +10,7 @@ import {
 } from '@keyless/shared';
 import { env, getAppBaseUrl, isProd } from '@keyless/core/config/env';
 import { encrypt } from '@keyless/core/lib/crypto';
+import { runMailboxSync } from '@keyless/core/mailboxes/sync';
 import { ensureForwardingMailbox, type IngestDeps } from '@keyless/core/ingestion/receive';
 import { audit } from '@keyless/core/lib/audit';
 import { badRequest, forbidden, notFound, param, validate } from '@keyless/core/lib/http';
@@ -305,18 +306,36 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
     res.json({ mailbox: toDto(mailbox) });
   });
 
+  r.post('/sync', requireRole('admin'), async (req, res) => {
+    const { orgId } = authed(req);
+    const mailbox =
+      (await Mailbox.findOne({ orgId, type: 'imap' })) ??
+      (await Mailbox.findOne({ orgId, type: { $ne: 'forwarding' } }));
+    if (!mailbox) throw notFound('No syncable mailbox found');
+
+    const result = await runMailboxSync(deps, {
+      orgId: orgId.toString(),
+      mailboxId: mailbox._id.toString(),
+    });
+    res.json({ success: true, result });
+  });
+
   r.post('/:id/sync', requireRole('admin'), async (req, res) => {
     const { orgId } = authed(req);
-    const mailbox = await Mailbox.findOne({ _id: objectId(param(req, 'id')), orgId });
+    let mailbox = await Mailbox.findOne({ _id: objectId(param(req, 'id')), orgId });
     if (!mailbox) throw notFound('Mailbox not found');
-    if (mailbox.type === 'forwarding')
-      throw badRequest('Forwarding addresses receive mail instantly; there is nothing to sync');
-    await deps.queue.add(
-      'mailbox-sync',
-      { orgId: orgId.toString(), mailboxId: mailbox._id.toString() },
-      { uniqueKey: `mailbox-sync:${mailbox._id}`, reset: true, maxAttempts: 3 },
-    );
-    res.json({ queued: true });
+
+    if (mailbox.type === 'forwarding') {
+      const imap = await Mailbox.findOne({ orgId, type: 'imap' });
+      if (imap) mailbox = imap;
+      else throw badRequest('Forwarding addresses receive mail instantly; there is nothing to sync');
+    }
+
+    const result = await runMailboxSync(deps, {
+      orgId: orgId.toString(),
+      mailboxId: mailbox._id.toString(),
+    });
+    res.json({ success: true, result });
   });
 
   r.delete('/:id', requireRole('admin'), async (req, res) => {
