@@ -33,7 +33,7 @@ export async function scheduleMailboxSyncs(queue: JobQueue): Promise<number> {
   const due = new Date(Date.now() - env.MAILBOX_SYNC_INTERVAL_SEC * 1000);
   const mailboxes = await Mailbox.find(
     {
-      type: { $in: ['graph', 'gmail'] },
+      type: { $in: ['graph', 'gmail', 'imap'] },
       status: 'active',
       $or: [{ lastSyncAt: null }, { lastSyncAt: { $lt: due } }],
     },

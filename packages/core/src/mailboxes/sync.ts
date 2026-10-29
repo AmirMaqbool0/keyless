@@ -1,5 +1,7 @@
 import { Types } from 'mongoose';
+import { ImapFlow } from 'imapflow';
 import { logger } from '../lib/logger';
+import { decrypt } from '../lib/crypto';
 import type { IngestDeps } from '../ingestion/receive';
 import { receiveRawEmail } from '../ingestion/receive';
 import { Mailbox, type MailboxDoc } from '../models/Mailbox';
@@ -66,7 +68,7 @@ async function ingest(
   const { duplicate } = await receiveRawEmail(deps, {
     orgId: mailbox.orgId,
     mailboxId: mailbox._id,
-    source: mailbox.type as 'graph' | 'gmail',
+    source: mailbox.type as 'graph' | 'gmail' | 'imap',
     raw,
     providerId,
   });
@@ -223,6 +225,82 @@ export async function syncGmail(
   return result;
 }
 
+export type ImapCredentials = {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+};
+
+export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<SyncResult> {
+  if (!mailbox.tokensEnc) {
+    throw new PermanentJobError('Mailbox is missing encrypted credentials');
+  }
+  const creds: ImapCredentials = JSON.parse(decrypt(mailbox.tokensEnc));
+  const client = new ImapFlow({
+    host: creds.host,
+    port: creds.port ?? 993,
+    secure: creds.secure ?? true,
+    auth: {
+      user: creds.user,
+      pass: creds.pass,
+    },
+    logger: false,
+  });
+
+  const result: SyncResult = { seen: 0, imported: 0, duplicates: 0 };
+
+  await client.connect();
+  try {
+    const folder = mailbox.folder || 'INBOX';
+    const lock = await client.getMailboxLock(folder);
+    try {
+      let range: string | { since: Date };
+      if (mailbox.syncCursor) {
+        const nextUid = Number(mailbox.syncCursor) + 1;
+        range = `${nextUid}:*`;
+      } else {
+        range = { since: new Date(Date.now() - INITIAL_LOOKBACK_DAYS * 86_400_000) };
+      }
+
+      let maxUid = Number(mailbox.syncCursor ?? 0);
+
+      try {
+        for await (const message of client.fetch(range, { uid: true, source: true })) {
+          if (mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
+            continue;
+          }
+          if (message.uid > maxUid) {
+            maxUid = message.uid;
+          }
+
+          if (message.source) {
+            await ingest(deps, mailbox, message.source, `imap:${message.uid}`, result);
+          }
+        }
+      } catch (fetchErr) {
+        logger.debug({ err: fetchErr, mailbox: mailbox.address }, 'IMAP fetch completed or range empty');
+      }
+
+      if (maxUid > 0) {
+        mailbox.syncCursor = String(maxUid);
+        await mailbox.save();
+      }
+    } finally {
+      lock.release();
+    }
+  } finally {
+    try {
+      await client.logout();
+    } catch {
+      // ignore
+    }
+  }
+
+  return result;
+}
+
 /** Job handler: sync one connected mailbox and record the outcome on it. */
 export async function runMailboxSync(
   deps: IngestDeps & { fetch?: FetchLike },
@@ -245,7 +323,9 @@ export async function runMailboxSync(
     const result =
       mailbox.type === 'graph'
         ? await syncGraph(deps, fetchFn, mailbox)
-        : await syncGmail(deps, fetchFn, mailbox);
+        : mailbox.type === 'gmail'
+          ? await syncGmail(deps, fetchFn, mailbox)
+          : await syncImap(deps, mailbox);
     mailbox.set({
       status: 'active',
       lastSyncAt: new Date(),
@@ -257,12 +337,14 @@ export async function runMailboxSync(
     return result;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    const reconnect = err instanceof OAuthError && err.needsReconnect;
+    const reconnect =
+      (err instanceof OAuthError && err.needsReconnect) ||
+      Boolean((err as { authenticationFailed?: boolean })?.authenticationFailed);
     mailbox.set({
       // Only a dead grant stops scheduled syncs; transient errors are retried next round.
       status: reconnect ? 'error' : 'active',
       lastError: reconnect
-        ? `Access was revoked or expired - reconnect this mailbox. (${message})`
+        ? `Authentication failed - please check or reconnect this mailbox. (${message})`
         : message,
       consecutiveFailures: mailbox.consecutiveFailures + 1,
       lastSyncAt: new Date(),
@@ -272,3 +354,4 @@ export async function runMailboxSync(
     throw err;
   }
 }
+

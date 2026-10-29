@@ -22,7 +22,7 @@ export const CLASSIFICATION_LABELS: Record<EmailClassification, string> = {
   not_order: 'Not an order',
 };
 
-export type EmailSource = 'forwarding' | 'upload' | 'graph' | 'gmail';
+export type EmailSource = 'forwarding' | 'upload' | 'graph' | 'gmail' | 'imap';
 export type EmailStatus = 'received' | 'parsed' | 'classified' | 'failed';
 
 export type AttachmentDto = {
@@ -89,7 +89,18 @@ export type EmailDetailDto = EmailListItemDto & {
 
 export const reclassifySchema = z.object({ label: emailClassificationSchema });
 
-export type MailboxType = 'forwarding' | 'graph' | 'gmail';
+export type MailboxType = 'forwarding' | 'graph' | 'gmail' | 'imap';
+
+export const connectImapSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  host: z.string().trim().min(1),
+  port: z.number().int().min(1).max(65535).default(993),
+  secure: z.boolean().default(true),
+  user: z.string().trim().email(),
+  pass: z.string().min(1),
+  folder: z.string().trim().default('INBOX'),
+});
+export type ConnectImapDto = z.infer<typeof connectImapSchema>;
 
 export type MailboxDto = {
   id: string;

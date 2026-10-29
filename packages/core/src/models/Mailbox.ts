@@ -28,7 +28,7 @@ export interface IMailbox {
 
 const mailboxSchema = new Schema<IMailbox>(
   {
-    type: { type: String, enum: ['forwarding', 'graph', 'gmail'], required: true },
+    type: { type: String, enum: ['forwarding', 'graph', 'gmail', 'imap'], required: true },
     name: { type: String, required: true },
     address: { type: String, required: true, lowercase: true },
     inboundAlias: { type: String, lowercase: true },

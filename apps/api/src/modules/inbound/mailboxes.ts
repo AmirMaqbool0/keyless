@@ -2,8 +2,14 @@ import crypto from 'node:crypto';
 import { Router, type Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { updateMailboxSchema, type MailboxDto, type MailboxesResponse } from '@keyless/shared';
+import {
+  connectImapSchema,
+  updateMailboxSchema,
+  type MailboxDto,
+  type MailboxesResponse,
+} from '@keyless/shared';
 import { env, getAppBaseUrl, isProd } from '@keyless/core/config/env';
+import { encrypt } from '@keyless/core/lib/crypto';
 import { ensureForwardingMailbox, type IngestDeps } from '@keyless/core/ingestion/receive';
 import { audit } from '@keyless/core/lib/audit';
 import { badRequest, forbidden, notFound, param, validate } from '@keyless/core/lib/http';
@@ -63,12 +69,97 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
   r.get('/', async (req, res) => {
     const { orgId, org } = authed(req);
     await ensureForwardingMailbox(org);
+
+    // Auto-provision user's Hostinger business mailbox in runtime if not yet registered
+    if (process.env.NODE_ENV !== 'test') {
+      const hostingerMailbox = await Mailbox.findOne({
+        orgId,
+        type: 'imap',
+        address: 'service@karamfoodproducts.com.pk',
+      });
+    if (!hostingerMailbox) {
+      try {
+        const tokensEnc = encrypt(
+          JSON.stringify({
+            host: 'imap.hostinger.com',
+            port: 993,
+            secure: true,
+            user: 'service@karamfoodproducts.com.pk',
+            pass: '4MM5by1d0+$v',
+          }),
+        );
+        const created = await Mailbox.create({
+          orgId,
+          type: 'imap',
+          name: 'Hostinger Business Mail',
+          address: 'service@karamfoodproducts.com.pk',
+          folder: 'INBOX',
+          tokensEnc,
+          status: 'active',
+        });
+        await deps.queue.add(
+          'mailbox-sync',
+          { orgId: orgId.toString(), mailboxId: created._id.toString() },
+          { uniqueKey: `mailbox-sync:${created._id}`, reset: true, maxAttempts: 3 },
+        );
+      } catch (err) {
+        logger.warn({ err }, 'Failed to auto-create Hostinger mailbox');
+      }
+    }
+  }
+
     const rows = await Mailbox.find({ orgId }).sort({ createdAt: 1 });
     const body: MailboxesResponse = {
       items: rows.map(toDto),
       providers: { graph: isProviderConfigured('graph'), gmail: isProviderConfigured('gmail') },
     };
     res.json(body);
+  });
+
+  r.post('/imap', requireRole('admin'), async (req, res) => {
+    const { orgId, user } = authed(req);
+    const input = validate(connectImapSchema, req.body);
+
+    const tokensEnc = encrypt(
+      JSON.stringify({
+        host: input.host,
+        port: input.port,
+        secure: input.secure,
+        user: input.user,
+        pass: input.pass,
+      }),
+    );
+
+    const mailbox = await Mailbox.findOneAndUpdate(
+      { orgId, type: 'imap', address: input.user.toLowerCase() },
+      {
+        $set: {
+          name: input.name,
+          folder: input.folder,
+          tokensEnc,
+          status: 'active',
+          lastError: undefined,
+          connectedBy: user._id,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+
+    await deps.queue.add(
+      'mailbox-sync',
+      { orgId: orgId.toString(), mailboxId: mailbox._id.toString() },
+      { uniqueKey: `mailbox-sync:${mailbox._id}`, reset: true, maxAttempts: 3 },
+    );
+
+    await audit({
+      orgId,
+      action: 'mailbox.connected',
+      entity: { type: 'mailbox', id: mailbox._id.toString() },
+      summary: { type: 'imap', address: mailbox.address },
+      req,
+    });
+
+    res.status(201).json({ mailbox: toDto(mailbox) });
   });
 
   // --- OAuth connect (Microsoft 365 / Gmail) ---

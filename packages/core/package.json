@@ -18,6 +18,7 @@
     "@keyless/shared": "workspace:*",
     "bullmq": "~5.79.4",
     "exceljs": "^4.4.0",
+    "imapflow": "^2.9.1",
     "mailparser": "~3.11.0",
     "mongoose": "^8.19.0",
     "nodemailer": "~7.0.13",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/imapflow": "^1.0.189",
     "@types/mailparser": "^3.9.0",
     "@types/nodemailer": "^7.0.12",
     "@types/papaparse": "^5.5.2",
