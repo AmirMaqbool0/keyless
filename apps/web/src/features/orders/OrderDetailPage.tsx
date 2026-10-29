@@ -132,6 +132,7 @@ export function OrderDetailPage() {
   // Line items editable state
   type EditableLine = OrderDetailDto['lines'][number] & { dirty?: boolean };
   const [lines, setLines] = useState<EditableLine[]>([]);
+  const [expandedLineId, setExpandedLineId] = useState<string | null>(null);
 
   // Modals state
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -862,18 +863,28 @@ export function OrderDetailPage() {
               </Card>
             )}
 
-            {/* Editable Lines Table */}
+            {/* Order Items Table - Clean, intuitive, non-technical design */}
             <Card
               title={
-                <div className="flex items-center justify-between">
-                  <span>Line Items ({lines.length})</span>
-                  <div className="flex items-center gap-3">
-                    {o.expectedValue !== null && o.expectedValue !== undefined && (
-                      <span className="text-xs text-slate-500 font-normal">
-                        Our list value: {money(o.expectedValue, currency)}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-bold text-slate-900">Order Items ({lines.length})</span>
+                    {lines.every((l) => l.match.sku) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
+                        <svg className="size-3 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        </svg>
+                        All products matched
                       </span>
                     )}
-                    <span className="text-sm font-semibold text-slate-900 inline-flex items-center gap-1.5">
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {o.expectedValue !== null && o.expectedValue !== undefined && o.expectedValue !== o.value && (
+                      <span className="text-xs text-slate-500 font-normal">
+                        List value: {money(o.expectedValue, currency)}
+                      </span>
+                    )}
+                    <span className="text-base font-bold text-slate-900 inline-flex items-center gap-1.5">
                       <span>Total: {money(o.value, currency)}</span>
                       {o.valueEstimated && (
                         <span
@@ -887,23 +898,21 @@ export function OrderDetailPage() {
                   </div>
                 </div>
               }
-              description="Review matched products, pack conversions, and prices. Correcting any SKU teaches Keyless for next time."
+              description="Review matched products, quantities, and prices. Everything can be adjusted before pushing."
             >
               {lines.length === 0 ? (
-                <p className="text-sm text-slate-500 py-4 text-center">No lines extracted.</p>
+                <p className="text-sm text-slate-500 py-6 text-center">No lines extracted from this document.</p>
               ) : (
-                <div className="-mx-5 overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-y border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <div className="overflow-hidden">
+                  <table className="w-full text-left text-sm table-auto">
+                    <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-500">
                       <tr>
-                        <th className="px-3 py-2 w-6" />
-                        <th className="px-3 py-2 w-10">#</th>
-                        <th className="px-3 py-2 min-w-48">Customer Part / Description</th>
-                        <th className="px-3 py-2 w-24 text-right">Qty &amp; Unit</th>
-                        <th className="px-3 py-2 min-w-64">Matched Product (Our SKU)</th>
-                        <th className="px-3 py-2 w-24 text-right">Our Qty</th>
-                        <th className="px-3 py-2 w-24 text-right">Doc Price</th>
-                        <th className="px-3 py-2 w-24 text-right">Expected Price</th>
+                        <th className="px-3 py-2.5 w-10 text-center">#</th>
+                        <th className="px-3 py-2.5">Product &amp; Match</th>
+                        <th className="px-3 py-2.5 w-24 text-right">Qty</th>
+                        <th className="px-3 py-2.5 w-24 text-right">Unit Price</th>
+                        <th className="px-3 py-2.5 w-24 text-right">Total</th>
+                        <th className="px-2 py-2.5 w-8 text-center" />
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -911,243 +920,311 @@ export function OrderDetailPage() {
                         const lineIssues = o.issues.filter(
                           (i) => i.lineNo === l.lineNo && !i.resolved && i.severity !== 'info',
                         );
+                        const isExpanded = expandedLineId === l.id;
+                        const lineTotal =
+                          l.quantity !== null && l.unitPrice !== null
+                            ? l.quantity * l.unitPrice
+                            : l.lineTotal;
+
                         return (
-                          <tr
-                            key={l.id}
-                            className={clsx(
-                              'align-top transition-colors',
-                              l.colour === 'red' && 'bg-red-50/40',
-                              l.colour === 'amber' && 'bg-amber-50/30',
-                              l.dirty && 'bg-brand-50/20',
-                            )}
-                          >
-                            <td className="px-3 py-2">
-                              <ColourDot colour={l.colour} className="mt-1.5" />
-                            </td>
-                            <td className="px-3 py-2 font-mono text-xs text-slate-400">
-                              {l.lineNo}
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Part code"
-                                disabled={!canReview || isFinalized}
-                                value={l.customerPartCode ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setLines((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index ? { ...item, customerPartCode: val, dirty: true } : item,
-                                    ),
-                                  );
-                                }}
-                                className="w-full rounded border border-slate-200 px-2 py-0.5 font-mono text-xs font-medium text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-transparent"
-                              />
-                              <input
-                                type="text"
-                                placeholder="Description"
-                                disabled={!canReview || isFinalized}
-                                value={l.description ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setLines((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index ? { ...item, description: val, dirty: true } : item,
-                                    ),
-                                  );
-                                }}
-                                className="mt-1 w-full rounded border border-slate-200 px-2 py-0.5 text-xs text-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-transparent"
-                              />
-                              {lineIssues.map((p) => (
-                                <p key={p.id} className="mt-1 text-xs text-amber-800 font-medium">
-                                  &bull; {p.message}
-                                </p>
-                              ))}
-                            </td>
-                            <td className="px-3 py-2 text-right">
-                              <input
-                                type="number"
-                                min={0}
-                                step="any"
-                                disabled={!canReview || isFinalized}
-                                value={l.quantity ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  setLines((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index
-                                        ? {
-                                            ...item,
-                                            quantity: val,
-                                            convertedQuantity: val !== null ? val * item.conversionFactor : null,
-                                            lineTotal: val !== null && item.unitPrice !== null && item.unitPrice !== undefined ? val * item.unitPrice : item.lineTotal,
-                                            dirty: true,
-                                          }
-                                        : item,
-                                    ),
-                                  );
-                                }}
-                                className="w-20 rounded border border-slate-200 px-2 py-0.5 text-right text-xs font-semibold focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-transparent"
-                              />
-                              <input
-                                type="text"
-                                placeholder="unit"
-                                disabled={!canReview || isFinalized}
-                                value={l.unit ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setLines((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index ? { ...item, unit: val, dirty: true } : item,
-                                    ),
-                                  );
-                                }}
-                                className="mt-1 w-20 rounded border border-slate-200 px-2 py-0.5 text-right text-xs text-slate-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-transparent"
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              {l.match.sku ? (
-                                <div>
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="font-mono text-xs font-bold text-slate-900">
-                                      {l.match.sku}
-                                    </span>
-                                    <Badge tone={l.match.method === 'manual' ? 'brand' : l.colour === 'green' ? 'green' : 'amber'}>
-                                      {METHOD_LABEL[l.match.method]}
-                                    </Badge>
-                                    {canReview && !isFinalized && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setTargetLineId(l.id);
-                                          setProductSearchTerm('');
-                                          setProductSearchOpen(true);
-                                        }}
-                                        className="text-xs text-brand-600 hover:underline"
-                                      >
-                                        Change
-                                      </button>
+                          <>
+                            <tr
+                              key={l.id}
+                              className={clsx(
+                                'align-top transition-colors hover:bg-slate-50/60',
+                                l.colour === 'red' && 'bg-red-50/40',
+                                l.colour === 'amber' && 'bg-amber-50/30',
+                                l.dirty && 'bg-brand-50/20',
+                              )}
+                            >
+                              {/* # & Status Dot */}
+                              <td className="px-3 py-3 text-center">
+                                <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                                  <ColourDot colour={l.colour} />
+                                  <span className="font-mono text-xs text-slate-400 font-medium">{l.lineNo}</span>
+                                </div>
+                              </td>
+
+                              {/* Product & Match Details */}
+                              <td className="px-3 py-3">
+                                {l.match.sku ? (
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 font-mono text-xs font-bold text-white shadow-2xs">
+                                        {l.match.sku}
+                                      </span>
+                                      <span className="text-sm font-semibold text-slate-900">
+                                        {l.match.description || l.description}
+                                      </span>
+                                    </div>
+
+                                    <div className="mt-1 flex items-center gap-2 flex-wrap text-xs">
+                                      <Badge tone={l.colour === 'green' ? 'green' : 'amber'} dot>
+                                        {l.match.method === 'manual' ? 'Manual Match' : 'Matched'}
+                                      </Badge>
+                                      {canReview && !isFinalized && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setTargetLineId(l.id);
+                                            setProductSearchTerm('');
+                                            setProductSearchOpen(true);
+                                          }}
+                                          className="font-medium text-brand-600 hover:text-brand-800 hover:underline cursor-pointer"
+                                        >
+                                          Change Product
+                                        </button>
+                                      )}
+                                      <span className="text-slate-300">•</span>
+                                      <span className="text-slate-500">
+                                        From order: <span className="font-medium text-slate-700 italic">"{l.description}"</span>
+                                        {l.customerPartCode && (
+                                          <span className="font-mono text-slate-500 ml-1">[{l.customerPartCode}]</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-sm font-bold text-rose-700">
+                                        {l.description || 'Unidentified Item'}
+                                      </span>
+                                      <Badge tone="red" dot>Needs Product Match</Badge>
+                                      {canReview && !isFinalized && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setTargetLineId(l.id);
+                                            setProductSearchTerm(l.description ?? '');
+                                            setProductSearchOpen(true);
+                                          }}
+                                          className="rounded-md bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-brand-500 cursor-pointer"
+                                        >
+                                          Select Product
+                                        </button>
+                                      )}
+                                    </div>
+
+                                    {/* Candidate suggestions only if unmatched or low confidence */}
+                                    {canReview && !isFinalized && l.match.candidates.length > 0 && (
+                                      <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-xs text-slate-400">Suggestions:</span>
+                                        {l.match.candidates.slice(0, 3).map((c: MatchCandidateDto) => (
+                                          <button
+                                            key={c.productId}
+                                            type="button"
+                                            onClick={() =>
+                                              applyProductToLine(l.id, {
+                                                id: c.productId,
+                                                sku: c.sku,
+                                                description: c.description,
+                                              })
+                                            }
+                                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 font-medium hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 shadow-2xs"
+                                          >
+                                            <span className="font-mono font-bold text-slate-900">{c.sku}</span>
+                                            <span className="truncate max-w-40">{c.description}</span>
+                                          </button>
+                                        ))}
+                                      </div>
                                     )}
                                   </div>
-                                  <p className="mt-0.5 text-xs text-slate-600">{l.match.description}</p>
+                                )}
+
+                                {/* Line issues if any */}
+                                {lineIssues.map((p) => (
+                                  <p key={p.id} className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900 border border-amber-200">
+                                    <span>⚠️</span>
+                                    <span>{p.message}</span>
+                                  </p>
+                                ))}
+                              </td>
+
+                              {/* Quantity */}
+                              <td className="px-3 py-3 text-right">
+                                <div className="flex flex-col items-end">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step="any"
+                                    disabled={!canReview || isFinalized}
+                                    value={l.quantity ?? ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value ? parseFloat(e.target.value) : null;
+                                      setLines((prev) =>
+                                        prev.map((item, i) =>
+                                          i === index
+                                            ? {
+                                                ...item,
+                                                quantity: val,
+                                                convertedQuantity: val !== null ? val * item.conversionFactor : null,
+                                                lineTotal:
+                                                  val !== null && item.unitPrice !== null && item.unitPrice !== undefined
+                                                    ? val * item.unitPrice
+                                                    : item.lineTotal,
+                                                dirty: true,
+                                              }
+                                            : item,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-16 rounded-md border border-slate-200 px-2 py-1 text-right text-sm font-semibold text-slate-900 shadow-2xs hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:border-transparent disabled:bg-transparent"
+                                  />
+                                  <span className="text-[11px] text-slate-400 mt-0.5">
+                                    {l.unit || 'units'}
+                                    {l.conversionFactor !== 1 && ` (x${l.conversionFactor})`}
+                                  </span>
                                 </div>
-                              ) : (
-                                <div>
-                                  <span className="text-xs font-semibold text-red-600">Unmatched</span>{' '}
-                                  {canReview && !isFinalized && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setTargetLineId(l.id);
-                                        setProductSearchTerm('');
-                                        setProductSearchOpen(true);
+                              </td>
+
+                              {/* Unit Price */}
+                              <td className="px-3 py-3 text-right">
+                                <div className="flex flex-col items-end">
+                                  <div className="relative flex items-center">
+                                    <span className="absolute left-2 text-xs text-slate-400 pointer-events-none">£</span>
+                                    <input
+                                      type="number"
+                                      step="any"
+                                      min={0}
+                                      disabled={!canReview || isFinalized}
+                                      value={l.unitPrice ?? ''}
+                                      onChange={(e) => {
+                                        const val = e.target.value ? parseFloat(e.target.value) : null;
+                                        setLines((prev) =>
+                                          prev.map((item, i) =>
+                                            i === index
+                                              ? {
+                                                  ...item,
+                                                  unitPrice: val,
+                                                  lineTotal:
+                                                    val !== null && item.quantity !== null && item.quantity !== undefined
+                                                      ? val * item.quantity
+                                                      : item.lineTotal,
+                                                  dirty: true,
+                                                }
+                                              : item,
+                                          ),
+                                        );
                                       }}
-                                      className="text-xs font-medium text-brand-600 hover:underline"
-                                    >
-                                      Select product
-                                    </button>
+                                      className="w-20 rounded-md border border-slate-200 pl-5 pr-2 py-1 text-right text-sm font-medium text-slate-900 shadow-2xs hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:border-transparent disabled:bg-transparent"
+                                    />
+                                  </div>
+                                  {l.expectedPrice !== null && l.expectedPrice !== undefined && l.expectedPrice !== l.unitPrice && (
+                                    <span className="text-[10px] text-slate-400 mt-0.5" title="Catalogue list price">
+                                      List: {money(l.expectedPrice, currency)}
+                                    </span>
                                   )}
                                 </div>
-                              )}
+                              </td>
 
-                              {/* Candidate suggestions */}
-                              {canReview && !isFinalized && l.match.candidates.length > 0 && (
-                                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                                  <span className="text-[11px] text-slate-400">Suggestions:</span>
-                                  {l.match.candidates
-                                    .filter((c) => c.sku !== l.match.sku)
-                                    .slice(0, 3)
-                                    .map((c: MatchCandidateDto) => (
-                                      <button
-                                        key={c.productId}
-                                        type="button"
-                                        onClick={() =>
-                                          applyProductToLine(l.id, {
-                                            id: c.productId,
-                                            sku: c.sku,
-                                            description: c.description,
-                                          })
-                                        }
-                                        className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] font-mono text-slate-700 hover:border-brand-300 hover:bg-brand-50"
-                                      >
-                                        {c.sku} ({Math.round(c.score * 100)}%)
-                                      </button>
-                                    ))}
+                              {/* Line Total */}
+                              <td className="px-3 py-3 text-right">
+                                <div className="flex flex-col items-end pt-1">
+                                  <span className="text-sm font-bold text-slate-900">
+                                    {money(lineTotal, currency)}
+                                  </span>
                                 </div>
-                              )}
-                            </td>
-                            <td className="px-3 py-2 text-right">
-                              <p className="font-semibold text-xs text-slate-800">
-                                {l.convertedQuantity ?? '-'}
-                              </p>
-                              {l.uom && <p className="text-[11px] text-slate-500">{l.uom.toLowerCase()}</p>}
-                              <div className="mt-1 flex items-center justify-end gap-1">
-                                <span className="text-[10px] text-slate-400">factor:</span>
-                                <input
-                                  type="number"
-                                  step="any"
-                                  min={0}
-                                  disabled={!canReview || isFinalized}
-                                  value={l.conversionFactor ?? 1}
-                                  onChange={(e) => {
-                                    const val = e.target.value ? parseFloat(e.target.value) : 1;
-                                    setLines((prev) =>
-                                      prev.map((item, i) =>
-                                        i === index
-                                          ? {
-                                              ...item,
-                                              conversionFactor: val,
-                                              convertedQuantity:
-                                                item.quantity !== null && item.quantity !== undefined
-                                                  ? Math.round(item.quantity * val * 10000) / 10000
-                                                  : null,
-                                              colour: val !== 1 ? 'amber' : item.colour,
-                                              dirty: true,
-                                            }
-                                          : item,
-                                      ),
-                                    );
-                                  }}
-                                  className="w-16 rounded border border-slate-200 px-1 py-0.5 text-right text-[11px] font-mono text-slate-700 disabled:bg-slate-50"
-                                />
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 text-right">
-                              <input
-                                type="number"
-                                step="any"
-                                min={0}
-                                disabled={!canReview || isFinalized}
-                                value={l.unitPrice ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  setLines((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index
-                                        ? {
-                                            ...item,
-                                            unitPrice: val,
-                                            lineTotal: val !== null && item.quantity !== null && item.quantity !== undefined ? val * item.quantity : item.lineTotal,
-                                            dirty: true,
-                                          }
-                                        : item,
-                                    ),
-                                  );
-                                }}
-                                className="w-20 rounded border border-slate-200 px-2 py-0.5 text-right text-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-transparent"
-                              />
-                            </td>
-                            <td className="px-3 py-2 text-right">
-                              <p className="text-xs font-medium text-slate-800">
-                                {money(l.expectedPrice, currency)}
-                              </p>
-                              {l.priceSource && (
-                                <p className="text-[10px] text-slate-400">
-                                  {l.priceSource.replace('_', ' ')}
-                                </p>
-                              )}
-                            </td>
-                          </tr>
+                              </td>
+
+                              {/* Details Toggle */}
+                              <td className="px-2 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedLineId(isExpanded ? null : l.id)}
+                                  className="rounded p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                                  title={isExpanded ? 'Hide details' : 'Edit part code or pack conversion'}
+                                >
+                                  <svg
+                                    className={clsx('size-4 transition-transform', isExpanded && 'rotate-180')}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+
+                            {/* Expandable Advanced Options Drawer */}
+                            {isExpanded && (
+                              <tr key={`${l.id}-expanded`} className="bg-slate-50/90 border-b border-slate-200">
+                                <td colSpan={6} className="px-6 py-3">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                                    <div>
+                                      <label className="font-semibold text-slate-700 block">Customer Part Code</label>
+                                      <input
+                                        type="text"
+                                        placeholder="e.g. CUST-REF-1"
+                                        disabled={!canReview || isFinalized}
+                                        value={l.customerPartCode ?? ''}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          setLines((prev) =>
+                                            prev.map((item, i) =>
+                                              i === index ? { ...item, customerPartCode: val, dirty: true } : item,
+                                            ),
+                                          );
+                                        }}
+                                        className="mt-1 w-full rounded border border-slate-300 bg-white px-2.5 py-1 text-xs font-mono text-slate-800"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="font-semibold text-slate-700 block">Extracted PO Description</label>
+                                      <input
+                                        type="text"
+                                        disabled={!canReview || isFinalized}
+                                        value={l.description ?? ''}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          setLines((prev) =>
+                                            prev.map((item, i) =>
+                                              i === index ? { ...item, description: val, dirty: true } : item,
+                                            ),
+                                          );
+                                        }}
+                                        className="mt-1 w-full rounded border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-800"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="font-semibold text-slate-700 block">Pack Conversion Factor</label>
+                                      <input
+                                        type="number"
+                                        step="any"
+                                        min={0}
+                                        disabled={!canReview || isFinalized}
+                                        value={l.conversionFactor ?? 1}
+                                        onChange={(e) => {
+                                          const val = e.target.value ? parseFloat(e.target.value) : 1;
+                                          setLines((prev) =>
+                                            prev.map((item, i) =>
+                                              i === index
+                                                ? {
+                                                    ...item,
+                                                    conversionFactor: val,
+                                                    convertedQuantity:
+                                                      item.quantity !== null && item.quantity !== undefined
+                                                        ? Math.round(item.quantity * val * 10000) / 10000
+                                                        : null,
+                                                    colour: val !== 1 ? 'amber' : item.colour,
+                                                    dirty: true,
+                                                  }
+                                                : item,
+                                            ),
+                                          );
+                                        }}
+                                        className="mt-1 w-full rounded border border-slate-300 bg-white px-2.5 py-1 text-xs font-mono text-slate-800"
+                                      />
+                                      <p className="mt-0.5 text-[10px] text-slate-500">
+                                        Converted total: <span className="font-semibold text-slate-700">{l.convertedQuantity ?? '-'}</span> units
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         );
                       })}
                     </tbody>
