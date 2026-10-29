@@ -17,6 +17,8 @@ export interface IAttachment {
   /** Embedded in the HTML body (logos, signatures). Usually not an order document. */
   isInline: boolean;
   contentId?: string;
+  /** Persisted file buffer in DB so files are never lost on ephemeral cloud disks. */
+  data?: Buffer;
   /** Filled by extraction (M4). */
   pageCount?: number;
   parsedText?: string;
@@ -31,6 +33,7 @@ const attachmentSchema = new Schema<IAttachment>(
     size: { type: Number, required: true },
     sha256: { type: String, required: true },
     storageKey: { type: String, required: true },
+    data: { type: Buffer },
     kind: {
       type: String,
       enum: ['pdf', 'image', 'spreadsheet', 'csv', 'email', 'document', 'other'],

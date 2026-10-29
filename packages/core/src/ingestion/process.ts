@@ -102,6 +102,7 @@ export async function processEmail(
       kind,
       isInline,
       contentId: att.cid,
+      data: att.size < 12 * 1024 * 1024 ? att.content : undefined,
     });
     attachmentIds.push(doc._id);
   }

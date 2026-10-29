@@ -53,26 +53,36 @@ function IssueList({
   canReview?: boolean;
 }) {
   const open = issues.filter((i) => !i.resolved);
-  if (!open.length) return <p className="text-sm text-emerald-700 font-medium">Nothing to check.</p>;
+  if (!open.length) return <p className="text-sm text-emerald-700 font-medium">Nothing to check — all validations passed.</p>;
   return (
-    <ul className="space-y-1.5 text-sm">
+    <ul className="space-y-2 text-xs">
       {open.map((i) => (
-        <li key={i.id} className="flex items-center justify-between gap-2">
-          <div className="flex items-start gap-2">
+        <li
+          key={i.id}
+          className={clsx(
+            'flex items-center justify-between gap-3 p-3 rounded-lg border transition-colors',
+            i.blocking
+              ? 'bg-rose-50/70 border-rose-200 text-rose-900'
+              : i.severity === 'info'
+                ? 'bg-slate-50 border-slate-200 text-slate-700'
+                : 'bg-amber-50/70 border-amber-200 text-amber-900',
+          )}
+        >
+          <div className="flex items-center gap-2.5">
             <span
               className={clsx(
-                'mt-0.5 shrink-0 rounded px-1.5 text-xs font-medium',
+                'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
                 i.blocking
-                  ? 'bg-red-100 text-red-800'
+                  ? 'bg-rose-200/80 text-rose-800'
                   : i.severity === 'info'
-                    ? 'bg-slate-100 text-slate-600'
-                    : 'bg-amber-100 text-amber-900',
+                    ? 'bg-slate-200 text-slate-700'
+                    : 'bg-amber-200/80 text-amber-900',
               )}
             >
               {i.blocking ? 'Blocking' : i.severity === 'info' ? 'Note' : 'Check'}
             </span>
-            <span className="text-slate-700">
-              {i.lineNo && <span className="font-medium">Line {i.lineNo}: </span>}
+            <span className="font-medium text-slate-800">
+              {i.lineNo && <span className="font-bold">Line {i.lineNo}: </span>}
               {i.message}
             </span>
           </div>
@@ -80,7 +90,7 @@ function IssueList({
             <button
               type="button"
               onClick={() => onDismiss(i.id)}
-              className="text-xs text-slate-400 hover:text-slate-700 underline shrink-0 cursor-pointer"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-900 hover:underline shrink-0 cursor-pointer"
               title="Dismiss warning"
             >
               Dismiss
@@ -433,67 +443,91 @@ export function OrderDetailPage() {
   return (
     <>
       {/* Top Header and Action Bar */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-3">
-          <Link to="/orders" className="text-sm font-medium text-slate-500 hover:text-slate-900">
-            &larr; Orders
-          </Link>
-          <span className="text-slate-300">|</span>
-          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span>{selectedCustomerName || o.customer.name || 'Unidentified customer'}</span>
-            <span className="font-mono text-sm font-normal text-slate-500">
-              PO: {poNumber || o.poNumber || '(none)'}
-            </span>
-          </h1>
-          <StatusPill status={o.status} colour={o.colour} />
-          {o.autoApproved && (
-            <span className="rounded-full border border-purple-300 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-800 flex items-center gap-1">
-              ⚡ Auto-approved {o.autoApprovedRuleName ? `(${o.autoApprovedRuleName})` : ''}
-            </span>
-          )}
-          {o.erpReference && (
-            <span className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-              ERP Ref: {o.erpReference}
-            </span>
-          )}
-          {o.approvedBy && (
-            <span className="text-xs text-slate-500">
-              Approved by <strong className="text-slate-700">{o.approvedBy.name}</strong>
-            </span>
-          )}
+      <div className="mb-5 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              to="/orders"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+            >
+              <span>&larr;</span>
+              <span>Orders</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                {selectedCustomerName || o.customer.name || 'Unidentified Customer'}
+              </h1>
+              <span className="rounded-md bg-slate-100 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-700 border border-slate-200/60">
+                PO: {poNumber || o.poNumber || '(none)'}
+              </span>
+            </div>
+            <StatusPill status={o.status} colour={o.colour} />
+            {o.autoApproved && (
+              <span className="rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-800">
+                ⚡ Auto-approved
+              </span>
+            )}
+            {o.erpReference && (
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                ERP Ref: {o.erpReference}
+              </span>
+            )}
+            {o.approvedBy && (
+              <span className="text-xs text-slate-400">
+                Approved by <strong className="text-slate-700">{o.approvedBy.name}</strong>
+              </span>
+            )}
+          </div>
+
+          {/* Right: Primary CTAs */}
+          <div className="flex items-center gap-2 shrink-0">
+            {canReview && o.status === 'push_failed' && (
+              <Button
+                variant="primary"
+                loading={retryPushMutation.isPending}
+                onClick={() => retryPushMutation.mutate()}
+                className="bg-amber-600 hover:bg-amber-700 px-3.5 py-1.5 text-xs font-semibold shadow-xs"
+              >
+                Retry Push
+              </Button>
+            )}
+            {canReview && !isFinalized && (
+              <>
+                <Button
+                  variant="secondary"
+                  loading={saveMutation.isPending}
+                  onClick={() => saveMutation.mutate()}
+                  className="px-3.5 py-1.5 text-xs font-medium"
+                  title="Save edits (Ctrl+S)"
+                >
+                  Save <kbd className="ml-1 text-[10px] opacity-60">Ctrl+S</kbd>
+                </Button>
+                <Button
+                  variant="primary"
+                  loading={approveMutation.isPending}
+                  onClick={() => approveMutation.mutate()}
+                  disabled={!selectedCustomerId}
+                  className="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 text-xs font-semibold shadow-xs"
+                  title="Approve order (Alt+A or Ctrl+Enter)"
+                >
+                  ✓ Approve &amp; Push <kbd className="ml-1 text-[10px] opacity-75">Alt+A</kbd>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Action Controls & Shortcuts */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Customer Email Drawer Button */}
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setEmailModalOpen(true);
-              const list = outboundEmails.data ?? [];
-              const latest = list[0];
-              if (latest && !activeEmailId) {
-                setActiveEmailId(latest.id);
-                setEmailTo(latest.to);
-                setEmailSubject(latest.subject);
-                setEmailBody(latest.body);
-              }
-            }}
-          >
-            Customer Email
-          </Button>
-
-          {/* View mode toggle */}
-          <div className="inline-flex rounded-md border border-slate-300 bg-white p-0.5 text-xs font-medium">
+        {/* Sub-bar: View Modes & Secondary Actions */}
+        <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Segmented View Mode Toggle */}
+          <div className="inline-flex rounded-xl bg-slate-100 p-1 font-medium text-slate-600">
             <button
               type="button"
               onClick={() => setViewMode('split')}
               className={clsx(
-                'rounded px-2.5 py-1',
-                viewMode === 'split' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900',
+                'rounded-lg px-3 py-1 text-xs transition cursor-pointer',
+                viewMode === 'split' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'hover:text-slate-900',
               )}
-              aria-label="Split view (document and order side-by-side)"
-              title="Split view (document and order side-by-side)"
             >
               Split View
             </button>
@@ -501,11 +535,9 @@ export function OrderDetailPage() {
               type="button"
               onClick={() => setViewMode('review')}
               className={clsx(
-                'rounded px-2.5 py-1',
-                viewMode === 'review' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900',
+                'rounded-lg px-3 py-1 text-xs transition cursor-pointer',
+                viewMode === 'review' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'hover:text-slate-900',
               )}
-              aria-label="Order only view"
-              title="Order only view"
             >
               Order Only
             </button>
@@ -514,82 +546,71 @@ export function OrderDetailPage() {
                 type="button"
                 onClick={() => setViewMode('doc')}
                 className={clsx(
-                  'rounded px-2.5 py-1',
-                  viewMode === 'doc' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900',
+                  'rounded-lg px-3 py-1 text-xs transition cursor-pointer',
+                  viewMode === 'doc' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'hover:text-slate-900',
                 )}
-                aria-label="Document only view"
-                title="Document only view"
               >
-                Doc Only
+                Document Only
               </button>
             )}
           </div>
 
-          {canReview && o.status === 'push_failed' && (
-            <Button
-              variant="primary"
-              loading={retryPushMutation.isPending}
-              onClick={() => retryPushMutation.mutate()}
-              className="bg-amber-600 hover:bg-amber-700"
+          {/* Secondary Actions */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setEmailModalOpen(true);
+                const list = outboundEmails.data ?? [];
+                const latest = list[0];
+                if (latest && !activeEmailId) {
+                  setActiveEmailId(latest.id);
+                  setEmailTo(latest.to);
+                  setEmailSubject(latest.subject);
+                  setEmailBody(latest.body);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
             >
-              Retry Push
-            </Button>
-          )}
-
-          {canReview && !isFinalized && (
-            <>
-              {o.issues.some((i) => i.code === 'unreadable_document' || i.code === 'needs_vision') && (
-                <Button
-                  variant="secondary"
-                  loading={reExtract.isPending}
-                  onClick={() => reExtract.mutate()}
-                  title="Re-extract document with AI"
-                  className="bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+              <span>✉</span>
+              <span>Customer Email</span>
+            </button>
+            {canReview && !isFinalized && (
+              <>
+                {o.issues.some((i) => i.code === 'unreadable_document' || i.code === 'needs_vision') && (
+                  <button
+                    type="button"
+                    onClick={() => reExtract.mutate()}
+                    className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+                  >
+                    Re-extract
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => rematch.mutate()}
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+                  title="Re-run product & customer matching"
                 >
-                  Re-extract
-                </Button>
-              )}
-              <Button
-                variant="secondary"
-                loading={rematch.isPending}
-                onClick={() => rematch.mutate()}
-                title="Re-run matching rules"
-              >
-                Re-match
-              </Button>
-              <Button
-                variant="secondary"
-                loading={holdMutation.isPending}
-                onClick={() => holdMutation.mutate()}
-              >
-                Hold
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() => setRejectOpen(true)}
-              >
-                Reject
-              </Button>
-              <Button
-                variant="secondary"
-                loading={saveMutation.isPending}
-                onClick={() => saveMutation.mutate()}
-                title="Save edits (Ctrl+S)"
-              >
-                Save <kbd className="ml-1 text-xs opacity-60">Ctrl+S</kbd>
-              </Button>
-              <Button
-                variant="primary"
-                loading={approveMutation.isPending}
-                onClick={() => approveMutation.mutate()}
-                disabled={!selectedCustomerId}
-                className="bg-emerald-600 hover:bg-emerald-700"
-                title="Approve order (Alt+A or Ctrl+Enter)"
-              >
-                Approve &amp; Push <kbd className="ml-1 text-xs opacity-75">Alt+A</kbd>
-              </Button>
-            </>
-          )}
+                  Re-match
+                </button>
+                <button
+                  type="button"
+                  onClick={() => holdMutation.mutate()}
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+                >
+                  Hold
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRejectOpen(true)}
+                  className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100 transition shadow-2xs cursor-pointer"
+                >
+                  Reject
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -637,23 +658,22 @@ export function OrderDetailPage() {
         {(viewMode === 'split' || viewMode === 'doc') && (
           <div className={clsx(viewMode === 'split' ? 'lg:col-span-5' : 'col-span-1')}>
             <Card
-              title={
-                <div className="flex items-center justify-between">
-                  <span>Source Document</span>
-                  {o.source.attachmentUrl && (
-                    <a
-                      href={o.source.attachmentUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs font-normal text-brand-600 hover:underline"
-                    >
-                      Open in new tab &nearr;
-                    </a>
-                  )}
-                </div>
-              }
+              title="Source Document"
               description={o.source.label}
-              className="h-[calc(100vh-140px)] flex flex-col"
+              actions={
+                o.source.attachmentUrl ? (
+                  <a
+                    href={o.source.attachmentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-brand-600 hover:text-brand-800 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Open in new tab</span>
+                    <span>&nearr;</span>
+                  </a>
+                ) : null
+              }
+              className="h-[calc(100vh-160px)] flex flex-col"
             >
               {o.source.attachmentUrl ? (
                 o.source.mimeType === 'application/pdf' || o.source.label.toLowerCase().endsWith('.pdf') ? (
@@ -699,22 +719,20 @@ export function OrderDetailPage() {
             <div className="grid gap-4 md:grid-cols-2">
               {/* Customer Selector */}
               <Card
-                title={
-                  <div className="flex items-center justify-between">
-                    <span>Customer</span>
-                    {canReview && !isFinalized && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerSearchTerm('');
-                          setCustomerSearchOpen(true);
-                        }}
-                        className="text-xs font-normal text-brand-600 hover:underline"
-                      >
-                        {selectedCustomerId ? 'Change customer' : 'Select customer'}
-                      </button>
-                    )}
-                  </div>
+                title="Customer"
+                actions={
+                  canReview && !isFinalized ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomerSearchTerm('');
+                        setCustomerSearchOpen(true);
+                      }}
+                      className="text-xs font-semibold text-brand-600 hover:text-brand-800 hover:underline cursor-pointer"
+                    >
+                      {selectedCustomerId ? 'Change customer' : 'Select customer'}
+                    </button>
+                  ) : null
                 }
               >
                 {selectedCustomerId ? (

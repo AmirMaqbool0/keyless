@@ -151,11 +151,11 @@ export function Card({
     <section className={clsx('rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03),0_4px_12px_rgba(0,0,0,0.02)] transition-shadow duration-200', className)}>
       {(title || actions) && (
         <header className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
-          <div>
-            {title && <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>}
+          <div className="flex-1 min-w-0">
+            {title && <div className="text-base font-semibold text-slate-900 tracking-tight">{title}</div>}
             {description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
           </div>
-          {actions}
+          {actions && <div className="shrink-0">{actions}</div>}
         </header>
       )}
       <div className="px-6 py-5">{children}</div>
