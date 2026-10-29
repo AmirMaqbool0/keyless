@@ -203,12 +203,12 @@ async function extractOne(
             const issues = [...checked.issues];
             issues.push({
               code: 'llm_fallback',
-              severity: 'warning',
-              message: `Extracted using backup rule reader (AI service unavailable: ${err instanceof Error ? err.message : String(err)})`,
+              severity: 'info',
+              message: 'Extracted using deterministic rule engine. Please verify lines before approval.',
             });
             return {
               ...o,
-              confidence: Math.min(checked.confidence, 0.65),
+              confidence: checked.confidence,
               issues,
             };
           });
