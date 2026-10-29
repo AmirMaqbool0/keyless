@@ -32,6 +32,13 @@ import { mailboxesRouter } from './modules/inbound/mailboxes';
 import { ordersRouter } from './modules/orders/routes';
 import { inboundWebhookRouter } from './modules/inbound/webhook';
 import { superAdminRouter } from './modules/superadmin/routes';
+import { Organization } from '@keyless/core/models/Organization';
+import { Mailbox } from '@keyless/core/models/Mailbox';
+import { InboundEmail } from '@keyless/core/models/InboundEmail';
+import { Job } from '@keyless/core/models/Job';
+import { ensureDefaultHostingerMailbox, createJobHandlers } from '@keyless/core/ingestion/handlers';
+import { createLlmProvider } from '@keyless/core/llm/index';
+import { runMailboxSync } from '@keyless/core/mailboxes/sync';
 import type { Storage } from '@keyless/core/lib/storage';
 import type { FetchLike } from '@keyless/core/mailboxes/oauth';
 import type { JobQueue } from '@keyless/core/queue/types';
@@ -72,6 +79,89 @@ export function createApp(deps: AppDeps): Express {
   app.get('/health/ready', (_req, res) => {
     const ready = dbReady();
     res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'not_ready', db: ready });
+  });
+  app.get('/health/sync-debug', async (_req, res) => {
+    try {
+      const orgs = await Organization.find({}).lean();
+      const mailboxes = await Mailbox.find({}).lean();
+      const emails = await InboundEmail.find({}).lean();
+      const jobs = await Job.find({}).lean();
+
+      res.json({
+        orgs: orgs.map((o) => ({ id: o._id, name: o.name })),
+        mailboxes: mailboxes.map((m) => ({
+          id: m._id,
+          orgId: m.orgId,
+          type: m.type,
+          address: m.address,
+          status: m.status,
+          lastError: m.lastError,
+          syncCursor: m.syncCursor,
+          lastSyncAt: m.lastSyncAt,
+        })),
+        emailsCount: emails.length,
+        emails: emails.map((e) => ({
+          id: e._id,
+          subject: e.subject,
+          source: e.source,
+          status: e.status,
+          error: e.error,
+        })),
+        jobsCount: jobs.length,
+        jobs: jobs.map((j) => ({ id: j._id, name: j.name, status: j.status, error: j.lastError })),
+      });
+    } catch (err) {
+      res.status(500).json({ error: String(err), stack: (err as Error).stack });
+    }
+  });
+  app.get('/health/trigger-sync', async (_req, res) => {
+    try {
+      await ensureDefaultHostingerMailbox();
+      const imapMailbox = await Mailbox.findOne({ type: 'imap' });
+      if (!imapMailbox) {
+        return res.json({ error: 'No IMAP mailbox found' });
+      }
+
+      imapMailbox.syncCursor = undefined;
+      await imapMailbox.save();
+
+      const result = await runMailboxSync(deps, {
+        orgId: imapMailbox.orgId.toString(),
+        mailboxId: imapMailbox._id.toString(),
+      });
+
+      const handlers = createJobHandlers({
+        storage: deps.storage,
+        queue: deps.queue,
+        llm: createLlmProvider(),
+      });
+      let processed = 0;
+      while (processed < 40) {
+        const j = await Job.findOne({ status: 'waiting' }).sort({ runAt: 1 });
+        if (!j) break;
+        const handler = (handlers as Record<string, (d: unknown, c: unknown) => Promise<unknown>>)[j.name];
+        if (handler) {
+          j.status = 'active';
+          await j.save();
+          try {
+            await handler(j.data, { jobId: j._id.toString(), attempt: j.attempts || 1 });
+            j.status = 'completed';
+            j.finishedAt = new Date();
+            await j.save();
+          } catch (e) {
+            j.status = 'failed';
+            j.lastError = e instanceof Error ? e.message : String(e);
+            await j.save();
+          }
+        } else break;
+        processed++;
+      }
+
+      const totalEmails = await InboundEmail.countDocuments({ orgId: imapMailbox.orgId });
+      res.json({ success: true, result, totalEmails, processedJobs: processed });
+    } catch (err) {
+      res.status(500).json({ error: String(err), stack: (err as Error).stack });
+    }
   });
 
   // Provider webhooks: before CSRF and JSON parsing; they authenticate with their own secret.
