@@ -1,17 +1,19 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { CustomerDto, Paginated } from '@keyless/shared';
 import { DataTable, NoResults, Pagination, SearchInput, useDebounced } from '../../components/data';
 import { Badge, Button, PageHeader } from '../../components/ui';
-import { api, qs } from '../../lib/api';
+import { api, errorMessage, qs } from '../../lib/api';
 import { useHasRole } from '../../lib/session';
 
 export function CustomersPage() {
   const navigate = useNavigate();
   const isAdmin = useHasRole('admin');
+  const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
+  const [clearing, setClearing] = useState(false);
   const query = useDebounced(q);
   const customers = useQuery({
     queryKey: ['customers', query, page],
@@ -19,6 +21,24 @@ export function CustomersPage() {
       api.get<Paginated<CustomerDto>>(`/api/customers${qs({ q: query, page, pageSize: 50 })}`),
     placeholderData: keepPreviousData,
   });
+
+  const clearAll = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete ALL customers from your directory? This cannot be undone.',
+      )
+    )
+      return;
+    try {
+      setClearing(true);
+      await api.delete('/api/customers/all');
+      await qc.invalidateQueries({ queryKey: ['customers'] });
+    } catch (err) {
+      alert(errorMessage(err));
+    } finally {
+      setClearing(false);
+    }
+  };
 
   return (
     <>
@@ -28,6 +48,14 @@ export function CustomersPage() {
         actions={
           isAdmin && (
             <div className="flex gap-2">
+              <Button
+                variant="danger"
+                loading={clearing}
+                onClick={clearAll}
+                disabled={!customers.data || customers.data.total === 0}
+              >
+                Delete all customers
+              </Button>
               <Link to="/imports/new?type=prices">
                 <Button variant="secondary">Import prices</Button>
               </Link>

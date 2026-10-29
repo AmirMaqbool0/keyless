@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Paginated, ProductDto } from '@keyless/shared';
@@ -11,15 +11,17 @@ import {
   useDebounced,
 } from '../../components/data';
 import { Badge, Button, PageHeader } from '../../components/ui';
-import { api, qs } from '../../lib/api';
+import { api, errorMessage, qs } from '../../lib/api';
 import { useHasRole, useMe } from '../../lib/session';
 
 export function ProductsPage() {
   const { organization } = useMe();
   const isAdmin = useHasRole('admin');
+  const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [active, setActive] = useState<'all' | 'true' | 'false'>('all');
   const [page, setPage] = useState(1);
+  const [clearing, setClearing] = useState(false);
   const query = useDebounced(q);
 
   const products = useQuery({
@@ -30,6 +32,24 @@ export function ProductsPage() {
       ),
     placeholderData: keepPreviousData,
   });
+
+  const clearAll = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete ALL products from your catalogue? This cannot be undone.',
+      )
+    )
+      return;
+    try {
+      setClearing(true);
+      await api.delete('/api/products/all');
+      await qc.invalidateQueries({ queryKey: ['products'] });
+    } catch (err) {
+      alert(errorMessage(err));
+    } finally {
+      setClearing(false);
+    }
+  };
 
   return (
     <>
@@ -44,9 +64,19 @@ export function ProductsPage() {
         }
         actions={
           isAdmin && (
-            <Link to="/imports/new?type=products">
-              <Button>Import products</Button>
-            </Link>
+            <div className="flex gap-2">
+              <Button
+                variant="danger"
+                loading={clearing}
+                onClick={clearAll}
+                disabled={!products.data || products.data.total === 0}
+              >
+                Delete all products
+              </Button>
+              <Link to="/imports/new?type=products">
+                <Button>Import products</Button>
+              </Link>
+            </div>
           )
         }
       />

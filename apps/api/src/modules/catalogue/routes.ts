@@ -83,6 +83,19 @@ export function catalogueRouter(): Router {
     res.json(page(rows.map(toProductDto), total, q));
   });
 
+  r.delete('/products/all', requireRole('admin'), async (req, res) => {
+    const { orgId } = authed(req);
+    const result = await Product.deleteMany({ orgId });
+    await audit({
+      orgId,
+      action: 'product.deleted',
+      entity: { type: 'product', id: orgId.toString() },
+      summary: { deletedCount: result.deletedCount },
+      req,
+    });
+    res.json({ success: true, deletedCount: result.deletedCount });
+  });
+
   r.get('/products/:id', async (req, res) => {
     const { orgId } = authed(req);
     const product = await Product.findOne({ _id: objectId(param(req, 'id')), orgId });
@@ -92,6 +105,19 @@ export function catalogueRouter(): Router {
   });
 
   // ---- Customers ----
+  r.delete('/customers/all', requireRole('admin'), async (req, res) => {
+    const { orgId } = authed(req);
+    const result = await Customer.deleteMany({ orgId });
+    await audit({
+      orgId,
+      action: 'customer.deleted',
+      entity: { type: 'customer', id: orgId.toString() },
+      summary: { deletedCount: result.deletedCount },
+      req,
+    });
+    res.json({ success: true, deletedCount: result.deletedCount });
+  });
+
   r.get('/customers', async (req, res) => {
     const { orgId } = authed(req);
     const q = validate(listQuerySchema, req.query);
