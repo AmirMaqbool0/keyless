@@ -71,6 +71,14 @@ export class AgentRouterProvider implements LlmProvider {
       throw new Error(`AgentRouter call failed (${res.status}): ${errText}`);
     }
 
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(
+        `AgentRouter at ${url} returned HTML (${res.status}) instead of JSON. Check your AGENTROUTER_BASE_URL: ${errText.slice(0, 150)}`,
+      );
+    }
+
     type ApiResponse = {
       output?: Array<{ type: string; content?: Array<{ text?: string }> }>;
       model?: string;

@@ -9,6 +9,7 @@ import { prepareAttachment, prepareBody, type PreparedDocument } from '../docume
 import { logger } from '../lib/logger';
 import { EXTRACTION_PROMPT_VERSION } from '../llm/prompts';
 import { LlmRefusalError, type LlmProvider, type LlmUsage } from '../llm/types';
+import { ruleExtract } from '../llm/ruleExtractor';
 import type { AttachmentKind } from '../models/Attachment';
 import { checkOrder } from './checks';
 
@@ -181,6 +182,48 @@ async function extractOne(
           durationMs: Date.now() - started,
           attempts: attempt,
         };
+      }
+      if (attempt === 2 && doc.text) {
+        logger.warn(
+          { err, source: source.label },
+          'LLM extraction failed on second attempt; falling back to rule-based extractor',
+        );
+        const fallback = ruleExtract(doc.text, {
+          fromName: email.fromName,
+          fromAddress: email.fromAddress,
+          isBody: source.kind === 'body',
+          subject: email.subject,
+          emailText: email.text,
+        });
+        const normalized = normalizeExtractionOutput(fallback);
+        if (normalized.orders.length > 0) {
+          const multiOrder = normalized.orders.length > 1;
+          const orders: ExtractedOrderDto[] = normalized.orders.map((o) => {
+            const checked = checkOrder(o, { now, documentText: doc.text, multiOrder });
+            const issues = [...checked.issues];
+            issues.push({
+              code: 'llm_fallback',
+              severity: 'warning',
+              message: `Extracted using backup rule reader (AI service unavailable: ${err instanceof Error ? err.message : String(err)})`,
+            });
+            return {
+              ...o,
+              confidence: Math.min(checked.confidence, 0.65),
+              issues,
+            };
+          });
+          return {
+            ...base,
+            status: 'completed',
+            model: 'rules-fallback',
+            orders,
+            documentNotes: normalized.documentNotes,
+            error: null,
+            usage,
+            durationMs: Date.now() - started,
+            attempts: attempt,
+          };
+        }
       }
       throw err; // transient (network, 5xx): let the job retry with backoff
     }
