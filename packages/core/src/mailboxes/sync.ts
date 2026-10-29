@@ -267,7 +267,7 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
       let maxUid = Number(mailbox.syncCursor ?? 0);
 
       try {
-        for await (const message of client.fetch(range, { uid: true, source: true }, { uid: Boolean(mailbox.syncCursor) })) {
+        for await (const message of client.fetch(range, { uid: true, source: true }, { uid: true })) {
           if (mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
             continue;
           }

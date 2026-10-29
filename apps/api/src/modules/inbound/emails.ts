@@ -34,6 +34,9 @@ import { Extraction, type IExtraction } from '@keyless/core/models/Extraction';
 import { queueExtraction } from '@keyless/core/ingestion/process';
 import { linkChangeEmail } from '@keyless/core/matching/job';
 import { Order } from '@keyless/core/models/Order';
+import { Job } from '@keyless/core/models/Job';
+import { createJobHandlers } from '@keyless/core/ingestion/handlers';
+import { createLlmProvider } from '@keyless/core/llm/index';
 import type { JobName } from '@keyless/core/queue/types';
 import { authed, requireRole } from '../../middleware/auth';
 import { objectId } from '../shared';
@@ -125,14 +128,45 @@ export function emailsRouter(deps: IngestDeps): Router {
     const { orgId } = authed(req);
 
     if (process.env.NODE_ENV !== 'test') {
-      await ensureDefaultHostingerMailbox();
-      const imap = await Mailbox.findOne({ orgId, type: 'imap' });
-      if (imap && (!imap.lastSyncAt || Date.now() - imap.lastSyncAt.getTime() > 45_000)) {
-        try {
+      try {
+        await ensureDefaultHostingerMailbox();
+        const imap = await Mailbox.findOne({ orgId, type: 'imap' });
+        const imapEmailCount = await InboundEmail.countDocuments({ orgId, source: 'imap' });
+        if (imap && (imapEmailCount === 0 || !imap.lastSyncAt || Date.now() - imap.lastSyncAt.getTime() > 30_000)) {
+          if (imapEmailCount === 0) {
+            imap.syncCursor = undefined;
+            await imap.save();
+          }
           await runMailboxSync(deps, { orgId: orgId.toString(), mailboxId: imap._id.toString() });
-        } catch {
-          // ignore
+          
+          const handlers = createJobHandlers({
+            storage: deps.storage,
+            queue: deps.queue,
+            llm: createLlmProvider(),
+          });
+          let c = 0;
+          while (c < 30) {
+            const j = await Job.findOne({ status: 'waiting' }).sort({ runAt: 1 });
+            if (!j) break;
+            const h = (handlers as Record<string, (d: unknown, ctx: unknown) => Promise<unknown>>)[j.name];
+            if (h) {
+              j.status = 'active';
+              await j.save();
+              try {
+                await h(j.data, { jobId: j._id.toString(), attempt: j.attempts || 1 });
+                j.status = 'completed';
+                j.finishedAt = new Date();
+                await j.save();
+              } catch {
+                j.status = 'failed';
+                await j.save();
+              }
+            } else break;
+            c++;
+          }
         }
+      } catch {
+        // ignore background sync errors during list fetch
       }
     }
 
