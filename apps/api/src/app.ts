@@ -83,8 +83,8 @@ export function createApp(deps: AppDeps): Express {
   app.get('/health/sync-debug', async (_req, res) => {
     try {
       const orgs = await Organization.find({}).lean();
-      const mailboxes = await Mailbox.find({}).lean();
-      const emails = await InboundEmail.find({}).lean();
+      const mailboxes = await Mailbox.find({}).setOptions({ skipTenant: true }).lean();
+      const emails = await InboundEmail.find({}).setOptions({ skipTenant: true }).lean();
       const jobs = await Job.find({}).lean();
 
       res.json({
@@ -117,7 +117,7 @@ export function createApp(deps: AppDeps): Express {
   app.get('/health/trigger-sync', async (_req, res) => {
     try {
       await ensureDefaultHostingerMailbox();
-      const imapMailbox = await Mailbox.findOne({ type: 'imap' });
+      const imapMailbox = await Mailbox.findOne({ type: 'imap' }).setOptions({ skipTenant: true });
       if (!imapMailbox) {
         return res.json({ error: 'No IMAP mailbox found' });
       }
