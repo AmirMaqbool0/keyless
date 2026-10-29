@@ -183,10 +183,10 @@ async function extractOne(
           attempts: attempt,
         };
       }
-      if (attempt === 2 && doc.text) {
+      if (doc.text) {
         logger.warn(
-          { err, source: source.label },
-          'LLM extraction failed on second attempt; falling back to rule-based extractor',
+          { err, source: source.label, attempt },
+          'LLM extraction failed; falling back to rule-based extractor',
         );
         const fallback = ruleExtract(doc.text, {
           fromName: email.fromName,
