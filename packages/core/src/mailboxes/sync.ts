@@ -256,18 +256,18 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
     const folder = mailbox.folder || 'INBOX';
     const lock = await client.getMailboxLock(folder);
     try {
-      let range: string | { since: Date };
+      let range: string;
       if (mailbox.syncCursor) {
         const nextUid = Number(mailbox.syncCursor) + 1;
         range = `${nextUid}:*`;
       } else {
-        range = { since: new Date(Date.now() - INITIAL_LOOKBACK_DAYS * 86_400_000) };
+        range = '1:*';
       }
 
       let maxUid = Number(mailbox.syncCursor ?? 0);
 
       try {
-        for await (const message of client.fetch(range, { uid: true, source: true })) {
+        for await (const message of client.fetch(range, { uid: true, source: true }, { uid: Boolean(mailbox.syncCursor) })) {
           if (mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
             continue;
           }
@@ -280,7 +280,7 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
           }
         }
       } catch (fetchErr) {
-        logger.debug({ err: fetchErr, mailbox: mailbox.address }, 'IMAP fetch completed or range empty');
+        logger.warn({ err: fetchErr, mailbox: mailbox.address, range }, 'IMAP fetch message notice');
       }
 
       if (maxUid > 0) {

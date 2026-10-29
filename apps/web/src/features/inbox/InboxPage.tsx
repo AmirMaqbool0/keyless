@@ -325,8 +325,38 @@ function InboxActions({ onDone }: { onDone: () => void }) {
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
+
+  const sync = useMutation({
+    mutationFn: () =>
+      api.post<{ success: boolean; result?: { seen: number; imported: number; duplicates: number } }>(
+        '/api/mailboxes/sync',
+      ),
+    onSuccess: (data) => {
+      const imported = data?.result?.imported ?? 0;
+      if (imported > 0) {
+        toast.success(`Sync complete! Received ${imported} new email order(s).`);
+      } else {
+        toast.success('Mailbox checked: Inbox is up to date.');
+      }
+      onDone();
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+
   return (
     <div className="flex flex-wrap items-center gap-3">
+      <Button
+        onClick={() => sync.mutate()}
+        loading={sync.isPending}
+        variant="secondary"
+        className="gap-1.5"
+        title="Check Hostinger inbox now for incoming orders"
+      >
+        <svg className="size-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Sync Mailbox
+      </Button>
       {import.meta.env.DEV && (
         <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 shadow-2xs">
           <select

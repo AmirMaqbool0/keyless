@@ -20,6 +20,8 @@ import {
 import { audit } from '@keyless/core/lib/audit';
 import { badRequest, notFound, param, validate } from '@keyless/core/lib/http';
 import { escapeRegex } from '@keyless/core/lib/normalise';
+import { runMailboxSync } from '@keyless/core/mailboxes/sync';
+import { ensureDefaultHostingerMailbox } from '@keyless/core/ingestion/handlers';
 import { Attachment, attachmentKind } from '@keyless/core/models/Attachment';
 import { ErrorLog } from '@keyless/core/models/ErrorLog';
 import {
@@ -121,6 +123,19 @@ export function emailsRouter(deps: IngestDeps): Router {
 
   r.get('/', async (req, res) => {
     const { orgId } = authed(req);
+
+    if (process.env.NODE_ENV !== 'test') {
+      await ensureDefaultHostingerMailbox();
+      const imap = await Mailbox.findOne({ orgId, type: 'imap' });
+      if (imap && (!imap.lastSyncAt || Date.now() - imap.lastSyncAt.getTime() > 45_000)) {
+        try {
+          await runMailboxSync(deps, { orgId: orgId.toString(), mailboxId: imap._id.toString() });
+        } catch {
+          // ignore
+        }
+      }
+    }
+
     const q = validate(listQuery, req.query);
     const viewFilter = {
       all: {},
