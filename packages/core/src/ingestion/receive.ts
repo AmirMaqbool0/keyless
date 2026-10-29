@@ -59,7 +59,16 @@ export async function receiveRawEmail(
 
   const key = dedupeKey(input.raw, input.providerId);
   const existing = await InboundEmail.findOne({ orgId: input.orgId, providerMessageId: key });
-  if (existing) return { email: existing, duplicate: true };
+  if (existing) {
+    if (existing.status === 'received' || existing.status === 'failed') {
+      await deps.queue.add(
+        'process-email',
+        { orgId: input.orgId.toString(), emailId: existing._id.toString() },
+        { uniqueKey: `process-email:${existing._id}`, reset: true },
+      );
+    }
+    return { email: existing, duplicate: true };
+  }
 
   const rawKey = storageKey(input.orgId.toString(), 'emails', 'message.eml');
   await deps.storage.put(rawKey, input.raw, 'message/rfc822');

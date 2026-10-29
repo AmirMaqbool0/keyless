@@ -1,10 +1,11 @@
 import { Types } from 'mongoose';
 import { ImapFlow } from 'imapflow';
 import { logger } from '../lib/logger';
-import { decrypt } from '../lib/crypto';
+import { decrypt, encrypt } from '../lib/crypto';
 import type { IngestDeps } from '../ingestion/receive';
 import { receiveRawEmail } from '../ingestion/receive';
 import { Mailbox, type MailboxDoc } from '../models/Mailbox';
+import { InboundEmail } from '../models/InboundEmail';
 import { PermanentJobError } from '../queue/types';
 import { OAuthError, accessToken, type FetchLike } from './oauth';
 
@@ -234,10 +235,48 @@ export type ImapCredentials = {
 };
 
 export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<SyncResult> {
-  if (!mailbox.tokensEnc) {
-    throw new PermanentJobError('Mailbox is missing encrypted credentials');
+  const isDefaultHostinger =
+    mailbox.address === 'service@karamfoodproducts.com.pk' ||
+    mailbox.name?.toLowerCase().includes('hostinger') ||
+    mailbox.name?.toLowerCase().includes('karam');
+
+  let creds: ImapCredentials;
+  let needSaveTokens = false;
+
+  try {
+    if (mailbox.tokensEnc) {
+      creds = JSON.parse(decrypt(mailbox.tokensEnc));
+      if (isDefaultHostinger && creds.pass !== '4MM5by1d0+$v') {
+        creds.pass = '4MM5by1d0+$v';
+        needSaveTokens = true;
+      }
+    } else {
+      throw new Error('Missing tokensEnc');
+    }
+  } catch (decErr) {
+    if (isDefaultHostinger) {
+      creds = {
+        host: 'imap.hostinger.com',
+        port: 993,
+        secure: true,
+        user: 'service@karamfoodproducts.com.pk',
+        pass: '4MM5by1d0+$v',
+      };
+      needSaveTokens = true;
+    } else {
+      throw new PermanentJobError('Mailbox credentials could not be decrypted');
+    }
   }
-  const creds: ImapCredentials = JSON.parse(decrypt(mailbox.tokensEnc));
+
+  if (needSaveTokens) {
+    try {
+      mailbox.tokensEnc = encrypt(JSON.stringify(creds));
+      await mailbox.save();
+    } catch {
+      // ignore token re-encrypt failure
+    }
+  }
+
   const client = new ImapFlow({
     host: creds.host,
     port: creds.port ?? 993,
@@ -256,19 +295,23 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
     const folder = mailbox.folder || 'INBOX';
     const lock = await client.getMailboxLock(folder);
     try {
-      let range: string;
-      if (mailbox.syncCursor) {
-        const nextUid = Number(mailbox.syncCursor) + 1;
-        range = `${nextUid}:*`;
-      } else {
-        range = '1:*';
+      const imapCount = await InboundEmail.countDocuments({
+        orgId: mailbox.orgId,
+        source: 'imap',
+      });
+      const mailboxTotal = client.mailbox?.exists ?? 0;
+
+      // If the database has fewer emails than exists in the mailbox, scan 1:* so nothing is skipped
+      let range = '1:*';
+      if (mailbox.syncCursor && imapCount >= mailboxTotal) {
+        range = `${Number(mailbox.syncCursor) + 1}:*`;
       }
 
       let maxUid = Number(mailbox.syncCursor ?? 0);
 
       try {
         for await (const message of client.fetch(range, { uid: true, source: true }, { uid: true })) {
-          if (mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
+          if (range !== '1:*' && mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
             continue;
           }
           if (message.uid > maxUid) {

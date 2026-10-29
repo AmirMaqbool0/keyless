@@ -330,6 +330,7 @@ function InboxActions({ onDone }: { onDone: () => void }) {
     mutationFn: () =>
       api.post<{ success: boolean; result?: { seen: number; imported: number; duplicates: number } }>(
         '/api/mailboxes/sync',
+        { reset: true },
       ),
     onSuccess: (data) => {
       const imported = data?.result?.imported ?? 0;
