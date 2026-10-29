@@ -1,0 +1,7 @@
+Account Code,Customer Name,Order Email,Email Domain,Delivery Address,City,Postcode,Credit Hold
+"CUST-001","Example Cafe Ltd","orders@example-cafe.example","example-cafe.example","1 High Street","Leeds","LS1 4AB","No"
+"CUST-002","Apex Fine Dining Group","procurement@apexdining.co.uk","apexdining.co.uk","12 Commercial Way","Manchester","M1 4ET","No"
+"CUST-003","The Highland Bistro","orders@highlandbistro.co.uk","highlandbistro.co.uk","44 Castle Street","Edinburgh","EH1 2NG","No"
+"CUST-004","Bayside Fish & Grill","supplies@baysidegrill.com","baysidegrill.com","8 Ocean Parade","Brighton","BN1 1AE","No"
+"CUST-005","Riverside Artisan Bakery","bake@riversidebakery.co.uk","riversidebakery.co.uk","22 River Lane","Bristol","BS1 6XN","No"
+"CUST-006","Metropolitan Hotel Supplies","purchasing@metrohotel.com","metrohotel.com","100 Kingsway","London","W1A 1AA","No"
