@@ -37,6 +37,7 @@ import { Mailbox } from '@keyless/core/models/Mailbox';
 import { InboundEmail } from '@keyless/core/models/InboundEmail';
 import { Job } from '@keyless/core/models/Job';
 import { User } from '@keyless/core/models/User';
+import { Order } from '@keyless/core/models/Order';
 import { ensureDefaultHostingerMailbox, createJobHandlers } from '@keyless/core/ingestion/handlers';
 import { classifyEmail } from '@keyless/core/ingestion/process';
 import { createLlmProvider } from '@keyless/core/llm/index';
@@ -89,9 +90,10 @@ export function createApp(deps: AppDeps): Express {
       const mailboxes = await Mailbox.find({}).setOptions({ skipTenant: true }).lean();
       const emails = await InboundEmail.find({}).setOptions({ skipTenant: true }).lean();
       const jobs = await Job.find({}).lean();
+      const orders = await Order.find({}).setOptions({ skipTenant: true }).lean();
 
       res.json({
-        build: 'v2.0-bundled-imapflow',
+        build: 'v2.1-forward-fix',
         orgs: orgs.map((o) => ({ id: o._id, name: o.name })),
         users: users.map((u) => ({ id: u._id, email: u.email, orgId: u.orgId, role: u.role })),
         mailboxes: mailboxes.map((m) => ({
@@ -111,7 +113,20 @@ export function createApp(deps: AppDeps): Express {
           subject: e.subject,
           source: e.source,
           status: e.status,
+          classification: e.classification?.label,
+          extraction: e.extraction?.status,
+          orderCount: e.extraction?.orderCount,
           error: e.error,
+        })),
+        ordersCount: orders.length,
+        orders: orders.map((o) => ({
+          id: o._id,
+          orgId: o.orgId,
+          orderNumber: o.orderNumber,
+          customerName: o.customerName,
+          status: o.status,
+          total: o.total,
+          sourceEmailId: o.sourceEmailId,
         })),
         jobsCount: jobs.length,
         jobs: jobs.map((j) => ({ id: j._id, name: j.name, status: j.status, error: j.lastError })),
