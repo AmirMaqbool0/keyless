@@ -36,6 +36,7 @@ import { Organization } from '@keyless/core/models/Organization';
 import { Mailbox } from '@keyless/core/models/Mailbox';
 import { InboundEmail } from '@keyless/core/models/InboundEmail';
 import { Job } from '@keyless/core/models/Job';
+import { User } from '@keyless/core/models/User';
 import { ensureDefaultHostingerMailbox, createJobHandlers } from '@keyless/core/ingestion/handlers';
 import { createLlmProvider } from '@keyless/core/llm/index';
 import { runMailboxSync } from '@keyless/core/mailboxes/sync';
@@ -83,12 +84,15 @@ export function createApp(deps: AppDeps): Express {
   app.get('/health/sync-debug', async (_req, res) => {
     try {
       const orgs = await Organization.find({}).lean();
+      const users = await User.find({}).setOptions({ skipTenant: true }).select('email orgId role').lean();
       const mailboxes = await Mailbox.find({}).setOptions({ skipTenant: true }).lean();
       const emails = await InboundEmail.find({}).setOptions({ skipTenant: true }).lean();
       const jobs = await Job.find({}).lean();
 
       res.json({
+        build: 'v2.0-bundled-imapflow',
         orgs: orgs.map((o) => ({ id: o._id, name: o.name })),
+        users: users.map((u) => ({ id: u._id, email: u.email, orgId: u.orgId, role: u.role })),
         mailboxes: mailboxes.map((m) => ({
           id: m._id,
           orgId: m.orgId,
@@ -102,6 +106,7 @@ export function createApp(deps: AppDeps): Express {
         emailsCount: emails.length,
         emails: emails.map((e) => ({
           id: e._id,
+          orgId: e.orgId,
           subject: e.subject,
           source: e.source,
           status: e.status,
@@ -117,18 +122,19 @@ export function createApp(deps: AppDeps): Express {
   app.get('/health/trigger-sync', async (_req, res) => {
     try {
       await ensureDefaultHostingerMailbox();
-      const imapMailbox = await Mailbox.findOne({ type: 'imap' }).setOptions({ skipTenant: true });
-      if (!imapMailbox) {
+      await Mailbox.updateMany({ type: 'imap' }, { $unset: { syncCursor: 1 } }).setOptions({ skipTenant: true });
+      const imapMailboxes = await Mailbox.find({ type: 'imap', status: 'active' }).setOptions({ skipTenant: true });
+      if (imapMailboxes.length === 0) {
         return res.json({ error: 'No IMAP mailbox found' });
       }
 
-      imapMailbox.syncCursor = undefined;
-      await imapMailbox.save();
-
-      const result = await runMailboxSync(deps, {
-        orgId: imapMailbox.orgId.toString(),
-        mailboxId: imapMailbox._id.toString(),
-      });
+      const results: Record<string, unknown> = {};
+      for (const mb of imapMailboxes) {
+        results[`${mb.orgId}_${mb._id}`] = await runMailboxSync(deps, {
+          orgId: mb.orgId.toString(),
+          mailboxId: mb._id.toString(),
+        });
+      }
 
       const handlers = createJobHandlers({
         storage: deps.storage,
@@ -136,17 +142,18 @@ export function createApp(deps: AppDeps): Express {
         llm: createLlmProvider(),
       });
       let processed = 0;
-      while (processed < 40) {
-        const j = await Job.findOne({ status: 'waiting' }).sort({ runAt: 1 });
+      while (processed < 50) {
+        const j = await Job.findOne({ status: { $in: ['waiting', 'failed'] } }).sort({ runAt: 1 });
         if (!j) break;
         const handler = (handlers as Record<string, (d: unknown, c: unknown) => Promise<unknown>>)[j.name];
         if (handler) {
           j.status = 'active';
           await j.save();
           try {
-            await handler(j.data, { jobId: j._id.toString(), attempt: j.attempts || 1 });
+            await handler(j.data, { jobId: j._id.toString(), attempt: (j.attempts || 0) + 1 });
             j.status = 'completed';
             j.finishedAt = new Date();
+            j.lastError = undefined;
             await j.save();
           } catch (e) {
             j.status = 'failed';
@@ -157,8 +164,8 @@ export function createApp(deps: AppDeps): Express {
         processed++;
       }
 
-      const totalEmails = await InboundEmail.countDocuments({ orgId: imapMailbox.orgId });
-      res.json({ success: true, result, totalEmails, processedJobs: processed });
+      const totalEmails = await InboundEmail.countDocuments({}).setOptions({ skipTenant: true });
+      res.json({ success: true, results, totalEmails, processedJobs: processed });
     } catch (err) {
       res.status(500).json({ error: String(err), stack: (err as Error).stack });
     }

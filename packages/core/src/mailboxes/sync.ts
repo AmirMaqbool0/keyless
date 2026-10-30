@@ -26,7 +26,7 @@ const MAX_PAGES_PER_RUN = 20;
 const GRAPH = 'https://graph.microsoft.com/v1.0';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
 
-export type SyncResult = { seen: number; imported: number; duplicates: number };
+export type SyncResult = { seen: number; imported: number; duplicates: number; errors?: string[] };
 
 class HttpError extends Error {
   constructor(
@@ -301,10 +301,11 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
       });
       const mailboxTotal = client.mailbox?.exists ?? 0;
 
-      // If the database has fewer emails than exists in the mailbox, scan 1:* so nothing is skipped
+      // Always fetch 1:* if no syncCursor or if imapCount in DB < mailboxTotal, otherwise nextUid:*
       let range = '1:*';
       if (mailbox.syncCursor && imapCount >= mailboxTotal) {
-        range = `${Number(mailbox.syncCursor) + 1}:*`;
+        const next = Number(mailbox.syncCursor) + 1;
+        range = `${next}:*`;
       }
 
       let maxUid = Number(mailbox.syncCursor ?? 0);
@@ -314,14 +315,17 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
           if (range !== '1:*' && mailbox.syncCursor && message.uid <= Number(mailbox.syncCursor)) {
             continue;
           }
-          if (message.uid > maxUid) {
-            maxUid = message.uid;
-          }
 
           if (message.source) {
             try {
               await ingest(deps, mailbox, message.source, `imap:${message.uid}`, result);
+              if (message.uid > maxUid) {
+                maxUid = message.uid;
+              }
             } catch (ingestErr) {
+              const errMsg = `UID ${message.uid}: ${ingestErr instanceof Error ? ingestErr.message : String(ingestErr)}`;
+              result.errors = result.errors ?? [];
+              result.errors.push(errMsg);
               logger.error(
                 { err: ingestErr, mailbox: mailbox.address, uid: message.uid },
                 'Failed to ingest IMAP message',
