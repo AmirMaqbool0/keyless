@@ -319,11 +319,19 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
           }
 
           if (message.source) {
-            await ingest(deps, mailbox, message.source, `imap:${message.uid}`, result);
+            try {
+              await ingest(deps, mailbox, message.source, `imap:${message.uid}`, result);
+            } catch (ingestErr) {
+              logger.error(
+                { err: ingestErr, mailbox: mailbox.address, uid: message.uid },
+                'Failed to ingest IMAP message',
+              );
+            }
           }
         }
       } catch (fetchErr) {
-        logger.warn({ err: fetchErr, mailbox: mailbox.address, range }, 'IMAP fetch message notice');
+        logger.error({ err: fetchErr, mailbox: mailbox.address, range }, 'IMAP fetch error');
+        throw fetchErr;
       }
 
       if (maxUid > 0) {

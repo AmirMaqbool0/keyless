@@ -47,6 +47,8 @@ export interface IInboundEmail {
   receivedAt: Date;
   rawStorageKey: string;
   rawSize: number;
+  /** Persisted raw email buffer in DB so emails survive container restarts on ephemeral storage */
+  rawData?: Buffer;
   status: EmailStatus;
   classification?: Classification;
   /** Every classification change, newest last (manual overrides included). */
@@ -82,7 +84,11 @@ const classificationSchema = new Schema<Classification>(
 const inboundEmailSchema = new Schema<IInboundEmail>(
   {
     mailboxId: { type: Schema.Types.ObjectId, ref: 'Mailbox' },
-    source: { type: String, enum: ['forwarding', 'upload', 'graph', 'gmail'], required: true },
+    source: {
+      type: String,
+      enum: ['forwarding', 'upload', 'graph', 'gmail', 'imap'],
+      required: true,
+    },
     providerMessageId: { type: String, required: true },
     messageId: String,
     from: { name: String, address: { type: String, lowercase: true } },
@@ -95,6 +101,7 @@ const inboundEmailSchema = new Schema<IInboundEmail>(
     receivedAt: { type: Date, required: true },
     rawStorageKey: { type: String, required: true },
     rawSize: { type: Number, required: true },
+    rawData: { type: Buffer },
     status: {
       type: String,
       enum: ['received', 'parsed', 'classified', 'failed'],

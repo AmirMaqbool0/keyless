@@ -28,10 +28,18 @@ export async function runExtraction(
   // Only load the bytes we will actually read.
   const wanted = new Set(extractionSources(files).map((f) => f.id));
   for (const f of files) {
-    if (wanted.has(f.id))
-      f.content = await deps.storage.get(
-        attachments.find((a) => a._id.toString() === f.id)!.storageKey,
-      );
+    if (wanted.has(f.id)) {
+      const att = attachments.find((a) => a._id.toString() === f.id)!;
+      try {
+        f.content = await deps.storage.get(att.storageKey);
+      } catch (storageErr) {
+        if (att.data) {
+          f.content = att.data;
+        } else {
+          throw storageErr;
+        }
+      }
+    }
   }
 
   email.extraction = { status: 'running', orderCount: 0, lineCount: 0, issueCount: 0, costUsd: 0 };

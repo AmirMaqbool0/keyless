@@ -22,7 +22,7 @@ export function filesRouter({ storage }: { storage: Storage }): Router {
     } catch {
       // 1. Try finding in MongoDB Attachment document (persisted across cloud container restarts)
       try {
-        const att = await Attachment.findOne({ storageKey: payload.k });
+        const att = await Attachment.findOne({ storageKey: payload.k }).setOptions({ skipTenant: true });
         if (att && att.data) {
           body = att.data;
           void storage.put(payload.k, body, payload.t).catch(() => {});

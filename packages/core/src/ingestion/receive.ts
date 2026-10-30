@@ -83,6 +83,7 @@ export async function receiveRawEmail(
       receivedAt: input.receivedAt ?? new Date(),
       rawStorageKey: rawKey,
       rawSize: input.raw.length,
+      rawData: input.raw.length < 12 * 1024 * 1024 ? input.raw : undefined,
       uploadedBy: input.uploadedBy,
     });
   } catch (err) {

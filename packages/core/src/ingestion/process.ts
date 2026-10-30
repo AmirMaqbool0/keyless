@@ -65,7 +65,17 @@ export async function processEmail(
 
   let parsed: ParsedMail;
   try {
-    parsed = await simpleParser(await deps.storage.get(email.rawStorageKey));
+    let rawBuffer: Buffer;
+    try {
+      rawBuffer = await deps.storage.get(email.rawStorageKey);
+    } catch (storageErr) {
+      if (email.rawData) {
+        rawBuffer = email.rawData;
+      } else {
+        throw storageErr;
+      }
+    }
+    parsed = await simpleParser(rawBuffer);
   } catch (err) {
     email.status = 'failed';
     email.error = `Could not read this email: ${err instanceof Error ? err.message : String(err)}`;
