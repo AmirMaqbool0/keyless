@@ -38,6 +38,7 @@ import { InboundEmail } from '@keyless/core/models/InboundEmail';
 import { Job } from '@keyless/core/models/Job';
 import { User } from '@keyless/core/models/User';
 import { ensureDefaultHostingerMailbox, createJobHandlers } from '@keyless/core/ingestion/handlers';
+import { classifyEmail } from '@keyless/core/ingestion/process';
 import { createLlmProvider } from '@keyless/core/llm/index';
 import { runMailboxSync } from '@keyless/core/mailboxes/sync';
 import type { Storage } from '@keyless/core/lib/storage';
@@ -136,13 +137,30 @@ export function createApp(deps: AppDeps): Express {
         });
       }
 
+      // Reclassify any emails with attachments that were mistakenly marked as not_order
+      const emailsToReclassify = await InboundEmail.find({
+        'attachmentIds.0': { $exists: true },
+        'classification.label': { $ne: 'new_order' },
+      }).setOptions({ skipTenant: true });
+
+      for (const em of emailsToReclassify) {
+        try {
+          await classifyEmail(
+            { storage: deps.storage, queue: deps.queue, llm: createLlmProvider() },
+            { orgId: em.orgId.toString(), emailId: em._id.toString() },
+          );
+        } catch {
+          // ignore
+        }
+      }
+
       const handlers = createJobHandlers({
         storage: deps.storage,
         queue: deps.queue,
         llm: createLlmProvider(),
       });
       let processed = 0;
-      while (processed < 50) {
+      while (processed < 60) {
         const j = await Job.findOne({ status: { $in: ['waiting', 'failed'] } }).sort({ runAt: 1 });
         if (!j) break;
         const handler = (handlers as Record<string, (d: unknown, c: unknown) => Promise<unknown>>)[j.name];

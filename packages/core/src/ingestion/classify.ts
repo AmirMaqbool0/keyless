@@ -43,9 +43,17 @@ export function classifyHeuristically(input: ClassifyInput): ClassifyResult {
   );
   const orderFiles = docFiles.filter((a) => ORDER_FILE.test(a.filename));
 
-  // 1. Machine-generated mail is never an order.
-  const autoSubmitted = h['auto-submitted'] && h['auto-submitted'].toLowerCase() !== 'no';
-  if (autoSubmitted || h['x-autoreply'] || h['x-autorespond'] || AUTO_REPLY_SUBJECT.test(subject)) {
+  // 1. Machine-generated mail is never an order, except auto-forwarded messages (which are forwarded orders)
+  const autoSubmittedVal = (h['auto-submitted'] || '').toLowerCase().trim();
+  const isAutoSubmitted =
+    autoSubmittedVal && autoSubmittedVal !== 'no' && autoSubmittedVal !== 'auto-forwarded';
+  const isAutoReply =
+    isAutoSubmitted ||
+    h['x-autoreply'] ||
+    h['x-autorespond'] ||
+    AUTO_REPLY_SUBJECT.test(subject);
+
+  if (isAutoReply && orderFiles.length === 0) {
     return {
       label: 'not_order',
       confidence: 0.95,
