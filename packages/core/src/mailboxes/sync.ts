@@ -1,5 +1,9 @@
+import { createRequire } from 'node:module';
 import { Types } from 'mongoose';
-import { ImapFlow } from 'imapflow';
+import type { ImapFlow as ImapFlowType } from 'imapflow';
+
+const req = createRequire(import.meta.url);
+const ImapFlow: typeof ImapFlowType = req('imapflow').ImapFlow;
 import { logger } from '../lib/logger';
 import { decrypt, encrypt } from '../lib/crypto';
 import type { IngestDeps } from '../ingestion/receive';
@@ -299,7 +303,7 @@ export async function syncImap(deps: IngestDeps, mailbox: MailboxDoc): Promise<S
         orgId: mailbox.orgId,
         source: 'imap',
       });
-      const mailboxTotal = client.mailbox?.exists ?? 0;
+      const mailboxTotal = (typeof client.mailbox === 'object' && client.mailbox ? client.mailbox.exists : 0) ?? 0;
 
       // Always fetch 1:* if no syncCursor or if imapCount in DB < mailboxTotal, otherwise nextUid:*
       let range = '1:*';

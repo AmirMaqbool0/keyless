@@ -333,7 +333,6 @@ export function mailboxesRouter(deps: IngestDeps & { fetch?: FetchLike }): Route
         const handler = (handlers as Record<string, (d: unknown, c: { jobId: string; attempt: number }) => Promise<unknown>>)[j.name];
         if (handler) {
           j.status = 'active';
-          j.startedAt = new Date();
           await j.save();
           try {
             await handler(j.data, { jobId: j._id.toString(), attempt: j.attempts || 1 });

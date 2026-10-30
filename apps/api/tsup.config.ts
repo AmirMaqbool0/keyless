@@ -8,7 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   skipNodeModulesBundle: true,
-  noExternal: [/^@keyless\//, 'imapflow'],
+  noExternal: [/^@keyless\//],
   banner: {
     js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
   },

@@ -162,7 +162,7 @@ export function NoResults({ query, children }: { query?: string; children?: Reac
 export const money = (n: number | null | undefined, currency = 'GBP') =>
   n === null || n === undefined ? '-' : n.toLocaleString('en-GB', { style: 'currency', currency });
 
-export const relativeTime = (iso: string | null) => {
+export const relativeTime = (iso: string | null | undefined) => {
   if (!iso) return 'never';
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
   if (mins < 1) return 'just now';

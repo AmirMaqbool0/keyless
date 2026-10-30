@@ -72,7 +72,7 @@ export function MailboxesPage() {
         description="All customer order emails and PDF purchase orders sent or forwarded to this address are automatically ingested, parsed by AI, and converted into dashboard orders."
         actions={
           <div className="flex items-center gap-2">
-            <Badge tone="indigo">Hostinger Direct IMAP</Badge>
+            <Badge tone="blue">Hostinger Direct IMAP</Badge>
             <Badge tone={STATUS_TONE[status]}>{status === 'active' ? 'Active & Receiving' : status}</Badge>
           </div>
         }
